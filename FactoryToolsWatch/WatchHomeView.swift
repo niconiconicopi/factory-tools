@@ -22,14 +22,18 @@ struct WatchHomeView: View {
                     } description: {
                         Text("watch.storageUnavailable.message")
                     } actions: {
-                        Button("watch.refresh", systemImage: "arrow.clockwise") {
+                        Button {
                             model.retryStorage()
+                        } label: {
+                            Label("watch.refresh", systemImage: "arrow.clockwise")
                         }
                     }
                 } else if model.sessions.isEmpty && model.cycleTimeHome == nil && model.progressCards.isEmpty {
                     ContentUnavailableView("watch.noCounters", systemImage: "counterclockwise") {
-                        Button("watch.refresh", systemImage: "arrow.clockwise") {
+                        Button {
                             model.refreshCatalog()
+                        } label: {
+                            Label("watch.refresh", systemImage: "arrow.clockwise")
                         }
                     } description: {
                         Text(model.queueLimitReached
@@ -410,8 +414,10 @@ private struct WatchCounterDetailView: View {
             .navigationBarTitleDisplayMode(.inline)
         } else {
             ContentUnavailableView("watch.sessionUnavailable", systemImage: "exclamationmark.triangle") {
-                Button("watch.refresh", systemImage: "arrow.clockwise") {
+                Button {
                     model.refreshCatalog()
+                } label: {
+                    Label("watch.refresh", systemImage: "arrow.clockwise")
                 }
             } description: {
                 if model.queueLimitReached {
