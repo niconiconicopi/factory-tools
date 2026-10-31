@@ -138,7 +138,10 @@ struct OEECalculatorView: View {
                         .chartYAxis {
                             AxisMarks(position: .leading) { _ in
                                 AxisGridLine()
-                                AxisValueLabel(format: .percent.precision(.fractionLength(0)))
+                                AxisValueLabel(
+                                    format: FloatingPointFormatStyle<Double>.Percent()
+                                        .precision(.fractionLength(0))
+                                )
                             }
                         }
                         .frame(height: 160)
