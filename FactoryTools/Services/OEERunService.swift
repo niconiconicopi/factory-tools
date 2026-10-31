@@ -53,6 +53,7 @@ struct OEERunService {
             try modelContext.save()
             return run
         } catch {
+            modelContext.delete(run)
             modelContext.rollback()
             throw error
         }
@@ -67,6 +68,7 @@ struct OEERunService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
+            modelContext.insert(run)
             throw error
         }
     }

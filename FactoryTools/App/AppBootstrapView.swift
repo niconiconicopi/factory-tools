@@ -167,6 +167,8 @@ struct AppBootstrapService {
         do {
             try modelContext.save()
         } catch {
+            if let homeToInsert { modelContext.delete(homeToInsert) }
+            if let settingsToInsert { modelContext.delete(settingsToInsert) }
             modelContext.rollback()
             throw error
         }
