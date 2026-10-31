@@ -398,17 +398,22 @@ struct FactoryToolsBackupService {
         let homeIDs = Set(backup.homes.map(\.id))
         let sessionsByID = Dictionary(uniqueKeysWithValues: backup.sessions.map { ($0.id, $0) })
         let eventIDs = Set(backup.events.map(\.id))
+        let invalidHomeIDsInSessions = backup.sessions.compactMap { session in
+            session.homeProfileID.flatMap { homeIDs.contains($0) ? nil : $0 }
+        }
+        let orphanEventSessionIDs = backup.events.map(\.sessionID).filter { sessionsByID[$0] == nil }
+        let orphanReceiptSessionIDs = backup.commandReceipts.map(\.sessionID).filter { sessionsByID[$0] == nil }
+        let invalidSelectedHomeIDs = backup.settings.compactMap { setting in
+            setting.selectedHomeProfileID.flatMap { homeIDs.contains($0) ? nil : $0 }
+        }
         guard backup.cards.allSatisfy({ homeIDs.contains($0.homeProfileID) && ToolID(rawValue: $0.toolID) != nil }),
               backup.cycleTimeSamples.allSatisfy({ homeIDs.contains($0.homeProfileID) }),
               backup.oeeRuns.allSatisfy({ homeIDs.contains($0.homeProfileID) }),
-              backup.settings.allSatisfy({ setting in
-                  setting.selectedHomeProfileID.map(homeIDs.contains) ?? true
-              }),
-              backup.sessions.allSatisfy({ session in
-                  session.homeProfileID.map(homeIDs.contains) ?? true
-              }),
-              backup.events.allSatisfy({ sessionsByID[$0.sessionID] != nil }),
-              backup.commandReceipts.allSatisfy({ sessionsByID[$0.sessionID] != nil }) else {
+              invalidSelectedHomeIDs.isEmpty,
+              invalidHomeIDsInSessions.isEmpty,
+              orphanEventSessionIDs.isEmpty,
+              orphanReceiptSessionIDs.isEmpty else {
+            print("Backup relationship diagnostic: homes=\(homeIDs.count), sessions=\(backup.sessions.count), events=\(backup.events.count), settings=\(backup.settings.count), invalidSessionHomes=\(invalidHomeIDsInSessions.count), orphanEvents=\(orphanEventSessionIDs.count), orphanReceipts=\(orphanReceiptSessionIDs.count), invalidSelectedHomes=\(invalidSelectedHomeIDs.count)")
             throw FactoryToolsBackupError.invalidRelationship
         }
         guard backup.commandReceipts.allSatisfy({ !eventIDs.contains($0.id) }) else {

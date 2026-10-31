@@ -2822,7 +2822,8 @@ def main() -> int:
             and "event.delta != -runningCount" in app_settings_service
             and "undoableEventIDs.last == reversedID" in app_settings_service
             and "initialCount >= 0" in app_settings_service
-            and "setting.selectedHomeProfileID.map(homeIDs.contains) ?? true" in app_settings_service
+            and "invalidSelectedHomeIDs.isEmpty" in app_settings_service
+            and "orphanEventSessionIDs.isEmpty" in app_settings_service
             and "struct FactoryToolsBackupImportService" in app_settings_service
             and "func addCopy(" in app_settings_service
             and "defaultHomeName: String" in app_settings_service

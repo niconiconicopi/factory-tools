@@ -1391,6 +1391,11 @@ final class CounterServiceTests: XCTestCase {
         context.insert(AppSettings(selectedHomeProfileID: home.id))
         try context.save()
 
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ProductionSession>()).map(\.id), [session.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<CountEvent>()).map(\.sessionID), [session.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<AppSettings>()).compactMap(\.selectedHomeProfileID), [home.id])
+
         let data = try FactoryToolsBackupService(modelContext: context).makeJSON()
         var backup = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         var events = try XCTUnwrap(backup["events"] as? [[String: Any]])
@@ -3008,15 +3013,15 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testFailedCountSaveRestoresAggregateEventAndSequence() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let session = ProductionSession(name: "Test")
-        context.insert(session)
+        let container = try makeContainer(allowsSave: false) { $0.insert(session) }
+        let context = ModelContext(container)
+        let storedSession = try XCTUnwrap(context.fetch(FetchDescriptor<ProductionSession>()).first)
 
-        XCTAssertThrowsError(try CounterService(modelContext: context).increment(session: session))
+        XCTAssertThrowsError(try CounterService(modelContext: context).increment(session: storedSession))
 
-        XCTAssertEqual(session.currentCount, 0)
-        XCTAssertEqual(session.nextEventSequence, 0)
+        XCTAssertEqual(storedSession.currentCount, 0)
+        XCTAssertEqual(storedSession.nextEventSequence, 0)
         XCTAssertTrue(try context.fetch(FetchDescriptor<CountEvent>()).isEmpty)
     }
 
@@ -3105,44 +3110,46 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testFailedResetSaveRestoresCountSequenceAndEventHistory() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let session = ProductionSession(name: "Test", currentCount: 5, nextEventSequence: 4)
-        context.insert(session)
+        let container = try makeContainer(allowsSave: false) { $0.insert(session) }
+        let context = ModelContext(container)
+        let storedSession = try XCTUnwrap(context.fetch(FetchDescriptor<ProductionSession>()).first)
 
-        XCTAssertThrowsError(try CounterService(modelContext: context).reset(session: session))
+        XCTAssertThrowsError(try CounterService(modelContext: context).reset(session: storedSession))
 
-        XCTAssertEqual(session.currentCount, 5)
-        XCTAssertEqual(session.nextEventSequence, 4)
+        XCTAssertEqual(storedSession.currentCount, 5)
+        XCTAssertEqual(storedSession.nextEventSequence, 4)
         XCTAssertTrue(try context.fetch(FetchDescriptor<CountEvent>()).isEmpty)
     }
 
     func testFailedUndoSaveRestoresAggregateSequenceAndHistory() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let session = ProductionSession(name: "Test", currentCount: 5, nextEventSequence: 1)
         let originalEvent = CountEvent(sessionID: session.id, delta: 5, sequence: 0)
-        context.insert(session)
-        context.insert(originalEvent)
+        let container = try makeContainer(allowsSave: false) { context in
+            context.insert(session)
+            context.insert(originalEvent)
+        }
+        let context = ModelContext(container)
+        let storedSession = try XCTUnwrap(context.fetch(FetchDescriptor<ProductionSession>()).first)
 
-        XCTAssertThrowsError(try CounterService(modelContext: context).undo(session: session))
+        XCTAssertThrowsError(try CounterService(modelContext: context).undo(session: storedSession))
 
-        XCTAssertEqual(session.currentCount, 5)
-        XCTAssertEqual(session.nextEventSequence, 1)
+        XCTAssertEqual(storedSession.currentCount, 5)
+        XCTAssertEqual(storedSession.nextEventSequence, 1)
         let events = try context.fetch(FetchDescriptor<CountEvent>())
         XCTAssertEqual(events.map(\.id), [originalEvent.id])
         XCTAssertEqual(events.map(\.delta), [5])
     }
 
     func testFailedTargetSaveRestoresPreviousTarget() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let session = ProductionSession(name: "Test", targetCount: 600)
-        context.insert(session)
+        let container = try makeContainer(allowsSave: false) { $0.insert(session) }
+        let context = ModelContext(container)
+        let storedSession = try XCTUnwrap(context.fetch(FetchDescriptor<ProductionSession>()).first)
 
-        XCTAssertThrowsError(try CounterService(modelContext: context).setTarget(800, for: session))
+        XCTAssertThrowsError(try CounterService(modelContext: context).setTarget(800, for: storedSession))
 
-        XCTAssertEqual(session.targetCount, 600)
+        XCTAssertEqual(storedSession.targetCount, 600)
     }
 
     func testQuickAddSaturatesAtIntegerMaximumWithoutOverflow() throws {
@@ -4569,31 +4576,35 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testHomeProfileServiceRollsBackDeleteWhenSaveFails() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let first = HomeProfile(name: "Production", sortOrder: 0)
         let second = HomeProfile(name: "Assembly", sortOrder: 1)
-        context.insert(first)
-        context.insert(second)
-        context.insert(AppSettings(selectedHomeProfileID: second.id))
+        let settings = AppSettings(selectedHomeProfileID: second.id)
+        let container = try makeContainer(allowsSave: false) { context in
+            context.insert(first)
+            context.insert(second)
+            context.insert(settings)
+        }
+        let context = ModelContext(container)
 
         XCTAssertThrowsError(try HomeProfileService(modelContext: context).deleteHome(second.id))
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<AppSettings>()).isEmpty)
+        XCTAssertEqual(Set(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id)), [first.id, second.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<AppSettings>()).first?.selectedHomeProfileID, second.id)
     }
 
     func testHomeCardServiceRollsBackWhenSaveFails() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let home = HomeProfile(name: "Assembly", sortOrder: 0)
         let card = ToolCard(homeProfileID: home.id, toolID: .productionCounter, size: .small, sortOrder: 0)
-        context.insert(home)
-        context.insert(card)
+        let container = try makeContainer(allowsSave: false) { context in
+            context.insert(home)
+            context.insert(card)
+        }
+        let context = ModelContext(container)
+        let storedCard = try XCTUnwrap(context.fetch(FetchDescriptor<ToolCard>()).first)
 
-        XCTAssertThrowsError(try HomeCardService(modelContext: context).setSize(.large, for: card))
+        XCTAssertThrowsError(try HomeCardService(modelContext: context).setSize(.large, for: storedCard))
 
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<ToolCard>()).isEmpty)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
+        XCTAssertEqual(try context.fetch(FetchDescriptor<ToolCard>()).first?.size, .small)
     }
 
     func testHomeCardServiceRejectsSizesNotAllowedByToolRegistry() throws {
@@ -4726,10 +4737,9 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testAssemblyPresetRollsBackAllNewRecordsWhenBatchSaveFails() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let home = HomeProfile(name: "Assembly", sortOrder: 0)
-        context.insert(home)
+        let container = try makeContainer(allowsSave: false) { $0.insert(home) }
+        let context = ModelContext(container)
 
         XCTAssertThrowsError(
             try HomeToolService(modelContext: context).applyAssemblyPreset(
@@ -4738,7 +4748,7 @@ final class CounterServiceTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
         XCTAssertTrue(try context.fetch(FetchDescriptor<ToolCard>()).isEmpty)
         XCTAssertTrue(try context.fetch(FetchDescriptor<ProductionSession>()).isEmpty)
     }
@@ -4815,10 +4825,9 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testPackagingPresetRollsBackAllNewRecordsWhenBatchSaveFails() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let home = HomeProfile(name: "Packaging", sortOrder: 0)
-        context.insert(home)
+        let container = try makeContainer(allowsSave: false) { $0.insert(home) }
+        let context = ModelContext(container)
 
         XCTAssertThrowsError(
             try HomeToolService(modelContext: context).applyPackagingPreset(
@@ -4828,7 +4837,7 @@ final class CounterServiceTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
         XCTAssertTrue(try context.fetch(FetchDescriptor<ToolCard>()).isEmpty)
         XCTAssertTrue(try context.fetch(FetchDescriptor<ProductionSession>()).isEmpty)
     }
@@ -4988,11 +4997,10 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testHomeToolServiceRollsBackCardAndSessionWhenSaveFails() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let tool = try XCTUnwrap(ToolRegistry.definition(for: .productionCounter))
         let home = HomeProfile(name: "Assembly", sortOrder: 0)
-        context.insert(home)
+        let container = try makeContainer(allowsSave: false) { $0.insert(home) }
+        let context = ModelContext(container)
 
         XCTAssertThrowsError(
             try HomeToolService(modelContext: context).add(
@@ -5002,12 +5010,15 @@ final class CounterServiceTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
         XCTAssertTrue(try context.fetch(FetchDescriptor<ToolCard>()).isEmpty)
         XCTAssertTrue(try context.fetch(FetchDescriptor<ProductionSession>()).isEmpty)
     }
 
-    private func makeContainer(allowsSave: Bool = true) throws -> ModelContainer {
+    private func makeContainer(
+        allowsSave: Bool = true,
+        seed: ((ModelContext) throws -> Void)? = nil
+    ) throws -> ModelContainer {
         let schema = Schema([
             HomeProfile.self,
             ToolCard.self,
@@ -5020,7 +5031,13 @@ final class CounterServiceTests: XCTestCase {
         ])
         guard !allowsSave else {
             let configuration = ModelConfiguration(UUID().uuidString, schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
-            return try ModelContainer(for: schema, configurations: [configuration])
+            let container = try ModelContainer(for: schema, configurations: [configuration])
+            if let seed {
+                let context = ModelContext(container)
+                try seed(context)
+                try context.save()
+            }
+            return container
         }
 
         let directory = FileManager.default.temporaryDirectory
@@ -5030,7 +5047,12 @@ final class CounterServiceTests: XCTestCase {
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let configurationName = UUID().uuidString
         let writable = ModelConfiguration(configurationName, schema: schema, url: storeURL, cloudKitDatabase: .none)
-        _ = try ModelContainer(for: schema, configurations: [writable])
+        let writableContainer = try ModelContainer(for: schema, configurations: [writable])
+        if let seed {
+            let context = ModelContext(writableContainer)
+            try seed(context)
+            try context.save()
+        }
         let readOnly = ModelConfiguration(configurationName, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
         return try ModelContainer(for: schema, configurations: [readOnly])
     }
@@ -5805,10 +5827,9 @@ final class ToolRegistryTests: XCTestCase {
     }
 
     func testOEERunServiceRollsBackWhenSaveFails() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let home = HomeProfile(name: "Packaging", sortOrder: 0)
-        context.insert(home)
+        let container = try makeContainer(allowsSave: false) { $0.insert(home) }
+        let context = ModelContext(container)
 
         XCTAssertThrowsError(try OEERunService(modelContext: context).save(
             plannedProductionMinutes: 10,
@@ -5820,7 +5841,7 @@ final class ToolRegistryTests: XCTestCase {
             isPro: true
         ))
         XCTAssertTrue(try context.fetch(FetchDescriptor<OEERun>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
+        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
     }
 
     func testPersistentStoreRestoresOEERunHistory() throws {
@@ -6115,10 +6136,9 @@ final class ToolRegistryTests: XCTestCase {
     }
 
     func testCycleTimeSampleSaveFailureRollsBackInsertedSample() throws {
-        let container = try makeContainer(allowsSave: false)
-        let context = ModelContext(container)
         let home = HomeProfile(name: "Assembly", sortOrder: 0)
-        context.insert(home)
+        let container = try makeContainer(allowsSave: false) { $0.insert(home) }
+        let context = ModelContext(container)
 
         XCTAssertThrowsError(
             try CycleTimeSampleService(modelContext: context).save(
@@ -6809,7 +6829,10 @@ final class ToolRegistryTests: XCTestCase {
         XCTAssertEqual(ToolSessionPolicy.defectCounter.defaultTargetCount, 0)
     }
 
-    private func makeContainer(allowsSave: Bool = true) throws -> ModelContainer {
+    private func makeContainer(
+        allowsSave: Bool = true,
+        seed: ((ModelContext) throws -> Void)? = nil
+    ) throws -> ModelContainer {
         let schema = Schema([
             HomeProfile.self,
             ToolCard.self,
@@ -6822,7 +6845,13 @@ final class ToolRegistryTests: XCTestCase {
         ])
         guard !allowsSave else {
             let configuration = ModelConfiguration(UUID().uuidString, schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
-            return try ModelContainer(for: schema, configurations: [configuration])
+            let container = try ModelContainer(for: schema, configurations: [configuration])
+            if let seed {
+                let context = ModelContext(container)
+                try seed(context)
+                try context.save()
+            }
+            return container
         }
 
         let directory = FileManager.default.temporaryDirectory
@@ -6832,7 +6861,12 @@ final class ToolRegistryTests: XCTestCase {
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let configurationName = UUID().uuidString
         let writable = ModelConfiguration(configurationName, schema: schema, url: storeURL, cloudKitDatabase: .none)
-        _ = try ModelContainer(for: schema, configurations: [writable])
+        let writableContainer = try ModelContainer(for: schema, configurations: [writable])
+        if let seed {
+            let context = ModelContext(writableContainer)
+            try seed(context)
+            try context.save()
+        }
         let readOnly = ModelConfiguration(configurationName, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
         return try ModelContainer(for: schema, configurations: [readOnly])
     }
