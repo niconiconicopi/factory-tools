@@ -10,6 +10,7 @@ from validate_static import (
     DuplicateJSONKeyError,
     OpenStepParseError,
     apple_workflow_contract_errors,
+    apple_upload_workflow_contract_errors,
     apply_release_candidate_overrides,
     app_store_metadata_limit_errors,
     bypasses_app_theme_manager,
@@ -63,6 +64,42 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing checkout credential persistence disabled", errors)
         self.assertIn("workflow must not access repository secrets", errors)
+
+
+class AppleUploadWorkflowContractTests(unittest.TestCase):
+    def test_current_upload_workflow_is_manual_and_confirmed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+
+        self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
+
+    def test_upload_workflow_rejects_automatic_distribution_or_secret_echo(self) -> None:
+        source = """name: Upload
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      confirm_app_store_connect_upload:
+        description: This uploads a signed build to App Store Connect only; it does not submit for App Review.
+        required: true
+        type: boolean
+        default: true
+permissions:
+  contents: write
+jobs:
+  upload:
+    if: inputs.confirm_app_store_connect_upload == true
+    runs-on: macos-26
+    steps:
+      - run: echo "$APP_STORE_CONNECT_API_KEY_CONTENTS"
+"""
+
+        errors = apple_upload_workflow_contract_errors(source)
+
+        self.assertIn("missing confirmation default is false", errors)
+        self.assertIn("missing read-only repository permission", errors)
+        self.assertIn("distribution upload workflow must not run on push, pull request, or schedule", errors)
+        self.assertIn("workflow must not enable shell tracing or print App Store Connect key material", errors)
 
 
 class SwiftRuntimeSafetySourceTests(unittest.TestCase):

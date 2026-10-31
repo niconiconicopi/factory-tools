@@ -369,6 +369,36 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
     return errors
 
 
+def apple_upload_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the manually confirmed, API-key authenticated App Store upload workflow."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "upload confirmation defaults off": "confirm_app_store_connect_upload:\n        description:",
+        "confirmation default is false": "confirm_app_store_connect_upload:\n        description: This uploads a signed build to App Store Connect only; it does not submit for App Review.\n        required: true\n        type: boolean\n        default: false",
+        "upload job requires explicit confirmation": "if: inputs.confirm_app_store_connect_upload == true",
+        "unconfirmed run is a no-upload path": "if: inputs.confirm_app_store_connect_upload != true",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "checkout credentials disabled": "persist-credentials: false",
+        "Apple-hosted macOS runner": "runs-on: macos-26",
+        "release source preflight": "--release-preflight",
+        "generic iOS archive": "-destination 'generic/platform=iOS'",
+        "automatic signing is enabled": "CODE_SIGN_STYLE=Automatic",
+        "API-key provisioning access": "-allowProvisioningUpdates",
+        "API key used for signing and export": "-authenticationKeyPath",
+        "App Store Connect upload export": '"destination": "upload"',
+        "App Store Connect distribution method": '"method": "app-store-connect"',
+        "no App Review submission": "does not submit for App Review",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
+        errors.append("distribution upload workflow must not run on push, pull request, or schedule")
+    if "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}" not in source:
+        errors.append("workflow must use the dedicated App Store Connect API key secret")
+    if re.search(r"\bset\s+-x\b|echo\s+.*APP_STORE_CONNECT_API_KEY_CONTENTS", source):
+        errors.append("workflow must not enable shell tracing or print App Store Connect key material")
+    return errors
+
+
 def swift_unsafe_escape_hatches(source: str) -> list[str]:
     patterns = {
         "fatalError": r"\bfatalError\s*\(",
@@ -744,6 +774,13 @@ def main() -> int:
             ERRORS.append(f"Apple native workflow contract: {workflow_issue}")
     else:
         ERRORS.append("Apple native verification workflow is missing")
+    upload_workflow_path = ROOT / ".github" / "workflows" / "apple-app-store-upload.yml"
+    if upload_workflow_path.is_file():
+        upload_workflow_source = upload_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_upload_workflow_contract_errors(upload_workflow_source):
+            ERRORS.append(f"Apple App Store upload workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple App Store upload workflow is missing")
     scheme = ROOT / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryTools.xcscheme"
     core_scheme = ROOT / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryToolsCore.xcscheme"
     watch_scheme = ROOT / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryToolsWatch.xcscheme"
@@ -4579,7 +4616,7 @@ def main() -> int:
             print(f"FAIL: {error}")
         return 1
 
-    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native workflow contract.")
+    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native and manually confirmed release workflow contracts.")
     print("PASS: bilingual App Store listing draft fits Apple's name, subtitle, description, and keyword limits.")
     print("PASS: localized Factory Tools Pro in-app purchase metadata fits Apple's display-name and description limits.")
     print("PASS: no Swift packages, third-party billing SDKs, external service endpoints, or distributed counter backends; Apple StoreKit is isolated to the one-time Pro manager; local peer transport is isolated.")

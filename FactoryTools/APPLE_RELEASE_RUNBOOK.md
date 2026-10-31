@@ -1,6 +1,6 @@
 # Factory Tools Apple Release Runbook
 
-This runbook is for the Apple-platform verification and archive gates. It does not replace App Store Connect review, device testing, or publisher-owned release values. The current Windows workspace cannot execute these commands. The included Xcode Cloud option and its limits are documented in [XCODE_CLOUD_RUNBOOK.md](XCODE_CLOUD_RUNBOOK.md).
+This runbook is for the Apple-platform verification and archive gates. It does not replace App Store Connect review, device testing, or publisher-owned release values. The current Windows workspace cannot execute these commands. The public GitHub Actions workflow can run a manually confirmed signed upload without a personal Mac after the publisher values and API key are configured; see [APPLE_GITHUB_RELEASE_SETUP.md](APPLE_GITHUB_RELEASE_SETUP.md). The optional Xcode Cloud route and its limits are documented in [XCODE_CLOUD_RUNBOOK.md](XCODE_CLOUD_RUNBOOK.md).
 
 Enrollment in the paid Apple Developer Program is intentionally the final paid preparation step, after no-cost implementation, documentation, and source checks. It is not a prerequisite for those tasks. Team ID, App Store Connect setup, signed distribution, and TestFlight require enrollment and follow it; no paid enrollment or service is to be started during preparation.
 

@@ -1,0 +1,201 @@
+name: Apple App Store upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_app_store_connect_upload:
+        description: This uploads a signed build to App Store Connect only; it does not submit for App Review.
+        required: true
+        type: boolean
+        default: false
+      marketing_version:
+        description: Release version to archive (for example 1.0).
+        required: true
+        type: string
+        default: "1.0"
+      build_number:
+        description: New, unused App Store Connect build number.
+        required: true
+        type: string
+        default: "1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: factory-tools-app-store-upload
+  cancel-in-progress: false
+
+jobs:
+  no_upload:
+    if: inputs.confirm_app_store_connect_upload != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain skipped upload
+        run: echo "No upload was confirmed. No credentials were read and no Apple build or upload was started."
+
+  upload:
+    if: inputs.confirm_app_store_connect_upload == true
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      FACTORYTOOLS_APP_BUNDLE_ID: ${{ vars.FACTORYTOOLS_APP_BUNDLE_ID }}
+      DEVELOPMENT_TEAM: ${{ vars.APPLE_TEAM_ID }}
+      FACTORYTOOLS_PRIVACY_POLICY_URL: ${{ vars.FACTORYTOOLS_PRIVACY_POLICY_URL }}
+      FACTORYTOOLS_SUPPORT_URL: ${{ vars.FACTORYTOOLS_SUPPORT_URL }}
+      FACTORYTOOLS_PRO_PRODUCT_ID: ${{ vars.FACTORYTOOLS_PRO_PRODUCT_ID }}
+      ASC_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+      ASC_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+      MARKETING_VERSION: ${{ inputs.marketing_version }}
+      CURRENT_PROJECT_VERSION: ${{ inputs.build_number }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Show Apple toolchain
+        run: xcodebuild -version
+
+      - name: Validate release values and existing public pages
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in FACTORYTOOLS_APP_BUNDLE_ID DEVELOPMENT_TEAM FACTORYTOOLS_PRIVACY_POLICY_URL FACTORYTOOLS_SUPPORT_URL FACTORYTOOLS_PRO_PRODUCT_ID ASC_KEY_ID ASC_ISSUER_ID MARKETING_VERSION CURRENT_PROJECT_VERSION; do
+            if [[ -z "${!name}" ]]; then
+              echo "Required GitHub variable or workflow input is missing: $name" >&2
+              exit 1
+            fi
+          done
+          python3 -B -m unittest discover -s Scripts -p 'test_*.py'
+          python3 Scripts/validate_static.py --release-preflight \
+            --candidate-bundle-id "$FACTORYTOOLS_APP_BUNDLE_ID" \
+            --candidate-team-id "$DEVELOPMENT_TEAM" \
+            --candidate-privacy-policy-url "$FACTORYTOOLS_PRIVACY_POLICY_URL" \
+            --candidate-support-url "$FACTORYTOOLS_SUPPORT_URL" \
+            --candidate-pro-product-id "$FACTORYTOOLS_PRO_PRODUCT_ID" \
+            --candidate-marketing-version "$MARKETING_VERSION" \
+            --candidate-build-number "$CURRENT_PROJECT_VERSION" \
+            --candidate-base-storefront JP \
+            --candidate-pro-price JPY:980 \
+            --candidate-family-sharing disabled
+          curl --fail --silent --show-error --location --max-time 30 "$FACTORYTOOLS_PRIVACY_POLICY_URL" -o /dev/null
+          curl --fail --silent --show-error --location --max-time 30 "$FACTORYTOOLS_SUPPORT_URL" -o /dev/null
+
+      - name: Prepare temporary App Store Connect API key
+        shell: bash
+        env:
+          APP_STORE_CONNECT_API_KEY_CONTENTS: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key_path="$RUNNER_TEMP/FactoryToolsAuthKey.p8"
+          if [[ -z "$APP_STORE_CONNECT_API_KEY_CONTENTS" ]]; then
+            printf '%s\n' 'The App Store Connect API key secret is missing.' >&2
+            exit 1
+          fi
+          printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENTS" > "$key_path"
+          openssl pkey -in "$key_path" -noout
+          echo "FACTORYTOOLS_ASC_API_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+          unset APP_STORE_CONNECT_API_KEY_CONTENTS
+
+      - name: Run current iPhone and shared Core regression suites
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((device["udid"] for devices in data["devices"].values() for device in devices if device["isAvailable"] and device["name"].startswith("iPhone")), ""))')"
+          if [[ -z "$simulator_id" ]]; then
+            echo "No available iPhone Simulator device was found." >&2
+            exit 1
+          fi
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \
+            FACTORYTOOLS_PRIVACY_POLICY_URL="$FACTORYTOOLS_PRIVACY_POLICY_URL" \
+            FACTORYTOOLS_SUPPORT_URL="$FACTORYTOOLS_SUPPORT_URL" \
+            FACTORYTOOLS_PRO_PRODUCT_ID="$FACTORYTOOLS_PRO_PRODUCT_ID"
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryToolsCore \
+            -destination 'platform=macOS' \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID"
+
+      - name: Build Watch Simulator target
+        run: >-
+          xcodebuild build
+          -project FactoryTools.xcodeproj
+          -scheme FactoryToolsWatch
+          -destination 'generic/platform=watchOS Simulator'
+          -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
+          CODE_SIGNING_ALLOWED=NO
+          DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
+          FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID"
+
+      - name: Create signed App Store archive with automatic signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive_path="$RUNNER_TEMP/FactoryTools.xcarchive"
+          xcodebuild archive \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$archive_path" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$FACTORYTOOLS_ASC_API_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \
+            FACTORYTOOLS_PRIVACY_POLICY_URL="$FACTORYTOOLS_PRIVACY_POLICY_URL" \
+            FACTORYTOOLS_SUPPORT_URL="$FACTORYTOOLS_SUPPORT_URL" \
+            FACTORYTOOLS_PRO_PRODUCT_ID="$FACTORYTOOLS_PRO_PRODUCT_ID" \
+            MARKETING_VERSION="$MARKETING_VERSION" \
+            CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION"
+          app_info="$archive_path/Products/Applications/FactoryTools.app/Info.plist"
+          watch_info="$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app/Info.plist"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_info")" = "$FACTORYTOOLS_APP_BUNDLE_ID"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$watch_info")" = "$FACTORYTOOLS_APP_BUNDLE_ID.watchkitapp"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :FactoryToolsPrivacyPolicyURL' "$app_info")" = "$FACTORYTOOLS_PRIVACY_POLICY_URL"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :FactoryToolsSupportURL' "$app_info")" = "$FACTORYTOOLS_SUPPORT_URL"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :FactoryToolsProProductID' "$app_info")" = "$FACTORYTOOLS_PRO_PRODUCT_ID"
+
+      - name: Upload signed build to App Store Connect
+        shell: bash
+        run: |
+          set -euo pipefail
+          export_options="$RUNNER_TEMP/FactoryToolsExportOptions.plist"
+          python3 - <<'PY'
+          import os
+          import plistlib
+
+          options = {
+              "destination": "upload",
+              "method": "app-store-connect",
+              "signingStyle": "automatic",
+              "teamID": os.environ["DEVELOPMENT_TEAM"],
+              "uploadSymbols": True,
+          }
+          with open(os.environ["RUNNER_TEMP"] + "/FactoryToolsExportOptions.plist", "wb") as stream:
+              plistlib.dump(options, stream, fmt=plistlib.FMT_XML, sort_keys=True)
+          PY
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/FactoryTools.xcarchive" \
+            -exportPath "$RUNNER_TEMP/FactoryToolsUpload" \
+            -exportOptionsPlist "$export_options" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$FACTORYTOOLS_ASC_API_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "Upload complete. App Store Connect processing and review submission are separate steps."
