@@ -648,7 +648,8 @@ struct FactoryToolsBackupService {
             cards: cards.map { card in
                 FactoryToolsBackup.Card(
                     card,
-                    resolvedProductionSessionID: ToolSessionAssignment.session(for: card, in: sessions)?.id
+                    resolvedProductionSessionID: sessions.first(where: { $0.id == card.productionSessionID })?.id
+                        ?? ToolSessionAssignment.session(for: card, in: sessions)?.id
                 )
             },
             sessions: sessions.map(FactoryToolsBackup.Session.init),
@@ -698,6 +699,8 @@ struct FactoryToolsBackupImportService {
         let sampleIDMap = remappedIDs(backup.cycleTimeSamples.map(\.id), occupied: Set(existingSamples.map(\.id)))
         let oeeRunIDMap = remappedIDs(backup.oeeRuns.map(\.id), occupied: Set(existingOEERuns.map(\.id)))
         let homeOrder = HomeProfileOrdering.ordered(existingHomes)
+        let previousHomeSortOrders = Dictionary(uniqueKeysWithValues: existingHomes.map { ($0.id, $0.sortOrder) })
+        let previousSelectedHomeID = AppSettingsOrdering.primary(in: existingSettings)?.selectedHomeProfileID
         var inferredSessionHomes: [UUID: UUID] = [:]
         var inferredSessionTools: [UUID: String] = [:]
         for card in backup.cards {
@@ -827,7 +830,19 @@ struct FactoryToolsBackupImportService {
             HomeProfileOrdering.assignSortOrders(isPro ? homeOrder + importedHomes : importedHomes + homeOrder)
             try modelContext.save()
         } catch {
-            modelContext.rollback()
+            for importedRecord in importedHomes { modelContext.delete(importedRecord) }
+            for importedRecord in importedSessions { modelContext.delete(importedRecord) }
+            for importedRecord in importedCards { modelContext.delete(importedRecord) }
+            for importedRecord in importedEvents { modelContext.delete(importedRecord) }
+            for importedRecord in importedCommandReceipts { modelContext.delete(importedRecord) }
+            for importedRecord in importedSamples { modelContext.delete(importedRecord) }
+            for importedRecord in importedOEERuns { modelContext.delete(importedRecord) }
+            for existingHome in existingHomes {
+                existingHome.sortOrder = previousHomeSortOrders[existingHome.id] ?? existingHome.sortOrder
+            }
+            if let primarySettings = AppSettingsOrdering.primary(in: existingSettings) {
+                primarySettings.selectedHomeProfileID = previousSelectedHomeID
+            }
             throw error
         }
 
@@ -846,7 +861,7 @@ struct FactoryToolsBackupImportService {
         var used = occupied
         var mapping: [UUID: UUID] = [:]
         for identifier in identifiers {
-            var destination = identifier
+            var destination = UUID()
             while used.contains(destination) { destination = UUID() }
             used.insert(destination)
             mapping[identifier] = destination

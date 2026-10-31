@@ -47,14 +47,21 @@ struct HomeToolService {
         let homes = try modelContext.fetch(homeDescriptor)
         guard homes.contains(where: { $0.id == homeID }) else { throw HomeToolServiceError.homeNotFound }
 
+        var sessions: [ProductionSession] = []
+        var existingSessionIDs = Set<UUID>()
+        var homeCards: [ToolCard] = []
+        var previousSortOrders: [UUID: Int] = [:]
+        var addedCards: [ToolCard] = []
         do {
             var sessionDescriptor = FetchDescriptor<ProductionSession>()
             sessionDescriptor.includePendingChanges = true
-            var sessions = try modelContext.fetch(sessionDescriptor)
+            sessions = try modelContext.fetch(sessionDescriptor)
+            existingSessionIDs = Set(sessions.map(\.id))
             var cardDescriptor = FetchDescriptor<ToolCard>()
             cardDescriptor.includePendingChanges = true
             let allCards = try modelContext.fetch(cardDescriptor)
-            var homeCards = HomeCardOrdering.ordered(allCards.filter { $0.homeProfileID == homeID })
+            homeCards = HomeCardOrdering.ordered(allCards.filter { $0.homeProfileID == homeID })
+            previousSortOrders = Dictionary(uniqueKeysWithValues: homeCards.map { ($0.id, $0.sortOrder) })
             let existingToolIDs = Set(homeCards.compactMap { ToolID(rawValue: $0.toolID) })
             let toolsToAdd = skippingExisting
                 ? accessibleTools.filter { !existingToolIDs.contains($0.id) }
@@ -62,7 +69,6 @@ struct HomeToolService {
 
             guard !toolsToAdd.isEmpty else { return [] }
 
-            var addedCards: [ToolCard] = []
             for tool in toolsToAdd {
                 let card = makeCard(
                     for: tool,
@@ -82,7 +88,15 @@ struct HomeToolService {
             LocalPeerCounterTransport.shared.publishCatalog()
             return addedCards
         } catch {
-            modelContext.rollback()
+            for card in addedCards { modelContext.delete(card) }
+            for session in sessions where !existingSessionIDs.contains(session.id) {
+                modelContext.delete(session)
+            }
+            for card in homeCards {
+                if let previousSortOrder = previousSortOrders[card.id] {
+                    card.sortOrder = previousSortOrder
+                }
+            }
             throw error
         }
     }
@@ -133,7 +147,12 @@ struct HomeCardService {
         let orderedCards = try orderedCards(in: homeID)
         guard let movedCards = HomeCardOrdering.moving(cardID, before: destinationID, in: orderedCards) else { return false }
         HomeCardOrdering.assignSortOrders(movedCards)
-        try saveChanges()
+        do {
+            try saveChanges()
+        } catch {
+            HomeCardOrdering.assignSortOrders(orderedCards)
+            throw error
+        }
         return true
     }
 
@@ -142,7 +161,13 @@ struct HomeCardService {
         guard orderedCards.contains(where: { $0.id == card.id }) else { return }
         modelContext.delete(card)
         HomeCardOrdering.assignSortOrders(orderedCards.filter { $0.id != card.id })
-        try saveChanges()
+        do {
+            try saveChanges()
+        } catch {
+            modelContext.insert(card)
+            HomeCardOrdering.assignSortOrders(orderedCards)
+            throw error
+        }
     }
 
     func setSize(_ size: ToolCardSize, for card: ToolCard) throws {
@@ -152,8 +177,14 @@ struct HomeCardService {
             throw HomeCardServiceError.unsupportedCardSize
         }
         guard card.size != size else { return }
+        let previousSize = card.size
         card.size = size
-        try saveChanges()
+        do {
+            try saveChanges()
+        } catch {
+            card.size = previousSize
+            throw error
+        }
     }
 
     private func orderedCards(in homeID: UUID) throws -> [ToolCard] {
@@ -171,7 +202,6 @@ struct HomeCardService {
             WatchConnectivityReceiver.shared.publishCatalog()
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
-            modelContext.rollback()
             throw error
         }
     }
@@ -211,13 +241,13 @@ struct HomeProfileService {
             LocalPeerCounterTransport.shared.publishCatalog()
             return home
         } catch {
-            modelContext.rollback()
             for existingHome in homes {
                 if let previousSortOrder = previousSortOrders[existingHome.id] {
                     existingHome.sortOrder = previousSortOrder
                 }
             }
             primarySettings.selectedHomeProfileID = previousSelection
+            modelContext.delete(home)
             throw error
         }
     }
@@ -340,7 +370,13 @@ struct HomeProfileService {
             WatchConnectivityReceiver.shared.publishCatalog()
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
-            modelContext.rollback()
+            for event in events { modelContext.insert(event) }
+            for receipt in commandReceipts { modelContext.insert(receipt) }
+            for card in cards { modelContext.insert(card) }
+            for session in sessions { modelContext.insert(session) }
+            for sample in samples { modelContext.insert(sample) }
+            for run in oeeRuns { modelContext.insert(run) }
+            modelContext.insert(home)
             for setting in settings {
                 setting.selectedHomeProfileID = previouslySelectedHomeIDs[setting.id] ?? nil
             }

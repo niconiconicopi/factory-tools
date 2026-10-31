@@ -681,7 +681,7 @@ final class CounterServiceTests: XCTestCase {
         )
         let homeToolService = HomeToolService(modelContext: context)
         let oeeTool = try XCTUnwrap(ToolRegistry.definition(for: .oee))
-        try homeToolService.add(oeeTool, to: importedHome.id, locale: AppLanguage.english.locale)
+        try homeToolService.add(oeeTool, to: importedHome.id, locale: AppLanguage.english.locale, isPro: true)
 
         let importedCards = HomeCardOrdering.ordered(
             try context.fetch(FetchDescriptor<ToolCard>()).filter { $0.homeProfileID == importedHome.id }
@@ -1577,10 +1577,17 @@ final class CounterServiceTests: XCTestCase {
                 "delta": delta,
                 "sequence": sequence,
                 "occurredAt": 1_000 + sequence,
-                "kindRawValue": reverses == nil ? CounterEventKind.increment.rawValue : CounterEventKind.undo.rawValue
+                "kindRawValue": eventKind(delta: delta, reverses: reverses).rawValue
             ]
             if let reverses { value["reversesEventID"] = reverses.uuidString }
             return value
+        }
+        func eventKind(delta: Int, reverses: UUID?) -> CounterEventKind {
+            if reverses != nil { return .undo }
+            if delta == 1 { return .increment }
+            if delta == -1 { return .decrement }
+            if delta > 1 { return .quickAdd }
+            return .reset
         }
 
         let negativeFirstID = UUID()
@@ -2060,13 +2067,13 @@ final class CounterServiceTests: XCTestCase {
         try context.save()
 
         let processor = WatchCommandProcessor(modelContext: context)
-        XCTAssertEqual(try processor.catalog().sessions.map(\.sessionID), [firstSession.id])
+        XCTAssertEqual(try processor.catalog(isPro: true).sessions.map(\.sessionID), [firstSession.id])
 
         settings.selectedHomeProfileID = secondHome.id
         try context.save()
-        XCTAssertEqual(try processor.catalog().sessions.map(\.sessionID), [secondSession.id])
+        XCTAssertEqual(try processor.catalog(isPro: true).sessions.map(\.sessionID), [secondSession.id])
         XCTAssertEqual(
-            try processor.process(CounterCommand(sessionID: firstSession.id, operation: .increment)).acknowledgement.status,
+            try processor.process(CounterCommand(sessionID: firstSession.id, operation: .increment), isPro: true).acknowledgement.status,
             .rejected,
             "Commands from a previously selected home must not remain authorized after switching homes."
         )
@@ -2076,7 +2083,7 @@ final class CounterServiceTests: XCTestCase {
         try context.save()
         XCTAssertTrue(try processor.catalog().sessions.isEmpty)
         XCTAssertEqual(
-            try processor.process(CounterCommand(sessionID: secondSession.id, operation: .increment)).acknowledgement.status,
+            try processor.process(CounterCommand(sessionID: secondSession.id, operation: .increment), isPro: true).acknowledgement.status,
             .rejected
         )
     }
@@ -2153,7 +2160,7 @@ final class CounterServiceTests: XCTestCase {
         )
         XCTAssertEqual(session.currentCount, 2)
         XCTAssertEqual(try context.fetch(FetchDescriptor<CountEvent>()).count, 2)
-        XCTAssertEqual(try context.fetch(FetchDescriptor<CounterCommandReceipt>()).count, 2)
+        XCTAssertTrue(try context.fetch(FetchDescriptor<CounterCommandReceipt>()).isEmpty)
     }
 
     func testCounterCommandPayloadSignatureIsCanonicalAndRejectsMalformedValues() {
@@ -5001,17 +5008,29 @@ final class CounterServiceTests: XCTestCase {
     }
 
     private func makeContainer(allowsSave: Bool = true) throws -> ModelContainer {
-        try ModelContainer(
-            for: HomeProfile.self,
+        let schema = Schema([
+            HomeProfile.self,
             ToolCard.self,
             ProductionSession.self,
             CountEvent.self,
             AppSettings.self,
             CycleTimeSample.self,
             OEERun.self,
-            CounterCommandReceipt.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true, allowsSave: allowsSave)
-        )
+            CounterCommandReceipt.self
+        ])
+        guard !allowsSave else {
+            return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        }
+
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FactoryToolsReadOnly-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("FactoryTools.store")
+        let writable = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, cloudKitDatabase: .none)
+        _ = try ModelContainer(for: schema, configurations: [writable])
+        let readOnly = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
+        return try ModelContainer(for: schema, configurations: [readOnly])
     }
 }
 
@@ -5214,35 +5233,59 @@ final class ToolRegistryTests: XCTestCase {
     func testHomeManagementAccessibilityLabelsNameTheTargetInBothLanguages() {
         let homeName = "Assembly"
         XCTAssertEqual(
-            String(localized: "home.renameNamed \(homeName)", locale: AppLanguage.english.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.renameNamed \(homeName)"),
+                locale: AppLanguage.english.locale
+            )),
             "Rename Assembly"
         )
         XCTAssertEqual(
-            String(localized: "home.renameNamed \(homeName)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.renameNamed \(homeName)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "Assemblyの名前を変更"
         )
         XCTAssertEqual(
-            String(localized: "home.moveEarlierNamed \(homeName)", locale: AppLanguage.english.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.moveEarlierNamed \(homeName)"),
+                locale: AppLanguage.english.locale
+            )),
             "Move Assembly earlier"
         )
         XCTAssertEqual(
-            String(localized: "home.moveEarlierNamed \(homeName)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.moveEarlierNamed \(homeName)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "Assemblyを上へ移動"
         )
         XCTAssertEqual(
-            String(localized: "home.moveLaterNamed \(homeName)", locale: AppLanguage.english.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.moveLaterNamed \(homeName)"),
+                locale: AppLanguage.english.locale
+            )),
             "Move Assembly later"
         )
         XCTAssertEqual(
-            String(localized: "home.moveLaterNamed \(homeName)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.moveLaterNamed \(homeName)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "Assemblyを下へ移動"
         )
         XCTAssertEqual(
-            String(localized: "home.deleteNamed \(homeName)", locale: AppLanguage.english.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.deleteNamed \(homeName)"),
+                locale: AppLanguage.english.locale
+            )),
             "Delete Assembly"
         )
         XCTAssertEqual(
-            String(localized: "home.deleteNamed \(homeName)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.deleteNamed \(homeName)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "Assemblyを削除"
         )
         let localizedDefaultName = String(localized: "home.defaultName", locale: AppLanguage.japanese.locale)
@@ -5309,19 +5352,31 @@ final class ToolRegistryTests: XCTestCase {
     func testHistoryDeletionAccessibilityLabelsIdentifyTheRecordInBothLanguages() {
         let timestamp = "Nov 2, 2026"
         XCTAssertEqual(
-            String(localized: "cycleTime.removeSampleNamed \(timestamp)", locale: AppLanguage.english.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("cycleTime.removeSampleNamed \(timestamp)"),
+                locale: AppLanguage.english.locale
+            )),
             "Delete Cycle Time sample from Nov 2, 2026"
         )
         XCTAssertEqual(
-            String(localized: "cycleTime.removeSampleNamed \(timestamp)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("cycleTime.removeSampleNamed \(timestamp)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "Nov 2, 2026のサイクルタイム記録を削除"
         )
         XCTAssertEqual(
-            String(localized: "oee.removeRunNamed \(timestamp)", locale: AppLanguage.english.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("oee.removeRunNamed \(timestamp)"),
+                locale: AppLanguage.english.locale
+            )),
             "Delete OEE result from Nov 2, 2026"
         )
         XCTAssertEqual(
-            String(localized: "oee.removeRunNamed \(timestamp)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("oee.removeRunNamed \(timestamp)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "Nov 2, 2026のOEE結果を削除"
         )
     }
@@ -6494,7 +6549,7 @@ final class ToolRegistryTests: XCTestCase {
         XCTAssertTrue(progress.isAvailable)
         XCTAssertEqual(progress.supportedCardSizes, [.medium, .large])
         let service = HomeToolService(modelContext: context)
-        let progressCard = try service.add(progress, to: home.id, locale: AppLanguage.english.locale)
+        let progressCard = try service.add(progress, to: home.id, locale: AppLanguage.english.locale, isPro: true)
         let counter = try XCTUnwrap(ToolRegistry.definition(for: .productionCounter))
         let counterCard = try service.add(counter, to: home.id, locale: AppLanguage.english.locale)
 
@@ -6747,16 +6802,29 @@ final class ToolRegistryTests: XCTestCase {
     }
 
     private func makeContainer(allowsSave: Bool = true) throws -> ModelContainer {
-        try ModelContainer(
-            for: HomeProfile.self,
+        let schema = Schema([
+            HomeProfile.self,
             ToolCard.self,
             ProductionSession.self,
             CountEvent.self,
             CounterCommandReceipt.self,
             AppSettings.self,
             CycleTimeSample.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true, allowsSave: allowsSave)
-        )
+            OEERun.self
+        ])
+        guard !allowsSave else {
+            return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        }
+
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FactoryToolsReadOnly-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("FactoryTools.store")
+        let writable = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, cloudKitDatabase: .none)
+        _ = try ModelContainer(for: schema, configurations: [writable])
+        let readOnly = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
+        return try ModelContainer(for: schema, configurations: [readOnly])
     }
 }
 

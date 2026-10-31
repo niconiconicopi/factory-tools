@@ -1204,8 +1204,9 @@ def main() -> int:
             and bootstrap_fetch_positions == sorted(bootstrap_fetch_positions)
             and bootstrap_insert_position > max(bootstrap_fetch_positions)
             and "if let settingsToInsert { modelContext.insert(settingsToInsert) }" in bootstrap_service_body
-            and "modelContext.rollback()" in bootstrap_service_body,
-            "bootstrap must complete all fallible reads before inserting seed records and roll back failed saves")
+            and "if let settingsToInsert { modelContext.delete(settingsToInsert) }" in bootstrap_service_body
+            and "originalSessionAssignments" in bootstrap_service_body,
+            "bootstrap must complete all fallible reads before inserting seed records and restore state after failed saves")
     require(".task { seedInitialDataIfNeeded() }" in bootstrap,
             "bootstrap must repair missing initial data after the root view appears")
     seed_retry = re.search(r"private func seedInitialDataIfNeeded\(\) \{(.*?)(?=\n    \})", bootstrap, re.DOTALL)
@@ -1516,8 +1517,9 @@ def main() -> int:
             and "homeProfileID == selectedHomeID" in cycle_time_view
             and "CycleTimeSampleService(modelContext: modelContext).save" in cycle_time_view
             and "CycleTimeSampleService(modelContext: modelContext).delete" in cycle_time_view
-            and "modelContext.rollback()" in cycle_sample_service,
-            "Cycle Time home cards must open a home-scoped calculator with rollback-safe sample history")
+            and "modelContext.delete(sample)" in cycle_sample_service
+            and "modelContext.insert(sample)" in cycle_sample_service,
+            "Cycle Time home cards must open a home-scoped calculator with save-failure-safe sample history")
     require("id: .taktTime" in registry and "isAvailable: true" in registry.split("id: .taktTime", 1)[1].split("),", 1)[0]
             and "var supportedCardSizes: Set<ToolCardSize> { id.capabilities.supportedCardSizes }" in tool_definition_source,
             "Takt Time must be available with medium and large cards in the canonical Tool Registry")
@@ -2634,7 +2636,9 @@ def main() -> int:
     ):
         require(evidence in add_tools_body + card_builder_body,
                 f"home-tool add transaction must include {description} so failures roll back pending changes")
-    require("modelContext.rollback()" in add_tools_body and "func applyAssemblyPreset" in home_tool_service
+    require("for card in addedCards { modelContext.delete(card) }" in add_tools_body
+            and "for session in sessions where !existingSessionIDs.contains(session.id)" in add_tools_body
+            and "func applyAssemblyPreset" in home_tool_service
             and "func applyPackagingPreset" in home_tool_service,
             "home preset card and session creation must roll back together and use the home-tool service")
     app_settings_service = (ROOT / "FactoryTools" / "Settings" / "AppSettings.swift").read_text(encoding="utf-8")
@@ -2827,9 +2831,10 @@ def main() -> int:
             and "value.usesDefaultName ? defaultHomeName : value.name" in app_settings_service
             and 'defaultHomeName: localized("home.defaultName")' in settings_view
             and "HomeProfileOrdering.assignSortOrders(isPro ? homeOrder + importedHomes : importedHomes + homeOrder)" in app_settings_service
-            and "modelContext.rollback()" in app_settings_service
-            and "modelContext.delete" not in app_settings_service.split("struct FactoryToolsBackupImportService", 1)[1],
-            "backup import must validate references, add a separate ID-remapped copy, and roll back failed saves without deleting existing records")
+            and "modelContext.delete(importedRecord)" in app_settings_service
+            and "previousHomeSortOrders" in app_settings_service
+            and "var destination = UUID()" in app_settings_service,
+            "backup import must validate references, remap each copy, and remove only new records after failed saves")
     require("if (3...4).contains(schemaVersion)" in app_settings_service
             and "values.decode([CommandReceipt].self, forKey: .commandReceipts)" in app_settings_service
             and "if (2...4).contains(schemaVersion)" in app_settings_service
@@ -2955,7 +2960,8 @@ def main() -> int:
             and "guard homes.count > 1 else { throw HomeProfileServiceError.lastHome }" in home_tool_service
             and "sessionIDs.contains($0.sessionID)" in home_tool_service
             and "modelContext.delete(home)" in home_tool_service
-            and "modelContext.rollback()" in home_tool_service
+            and "for event in events { modelContext.insert(event) }" in home_tool_service
+            and "modelContext.insert(home)" in home_tool_service
             and {"home.delete", "home.deleteConfirmation.title", "home.deleteConfirmation.message"}.issubset(strings),
             "home deletion must confirm data loss, retain one home, clean home-scoped data, and roll back failures")
     card_view = (ROOT / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")
@@ -2978,7 +2984,8 @@ def main() -> int:
             and "func remove(_ card: ToolCard" in home_tool_service
             and "func setSize(_ size: ToolCardSize" in home_tool_service
             and "definition.supportedCardSizes.contains(size)" in home_tool_service
-            and "modelContext.rollback()" in home_tool_service,
+            and "modelContext.insert(card)" in home_tool_service
+            and "HomeCardOrdering.assignSortOrders(orderedCards)" in home_tool_service,
             "HomeCardService must enforce registry-supported sizes and restore state after save failures")
     require("homes.contains(where: { $0.id == homeID })" in home_tool_service
             and "homeDescriptor.includePendingChanges = true" in home_tool_service
@@ -3495,11 +3502,10 @@ def main() -> int:
     )
     named_home_accessibility_body = named_home_accessibility_test.group(1) if named_home_accessibility_test else ""
     for evidence, description in (
-        ('String(localized: "home.renameNamed \\(homeName)", locale: AppLanguage.english.locale)', "English named-home rename label"),
-        ('String(localized: "home.renameNamed \\(homeName)", locale: AppLanguage.japanese.locale)', "Japanese named-home rename label"),
+        ('String.LocalizationValue("home.renameNamed \\(homeName)")', "localized named-home rename resource"),
         ('"Rename Assembly"', "English home-name interpolation"),
         ('"Assemblyの名前を変更"', "Japanese home-name interpolation"),
-        ('String(localized: "home.deleteNamed \\(homeName)", locale: AppLanguage.japanese.locale)', "Japanese named-home delete label"),
+        ('String.LocalizationValue("home.deleteNamed \\(homeName)")', "localized named-home delete resource"),
         ('"通常生産を削除"', "Japanese localized-default home label"),
     ):
         require(evidence in named_home_accessibility_body, f"named-home accessibility test does not verify {description}")
@@ -3654,7 +3660,7 @@ def main() -> int:
             "persisted date validation must reject non-finite or non-ISO-year timestamps")
     backup_service_source = (ROOT / "FactoryTools" / "Settings" / "AppSettings.swift").read_text(encoding="utf-8")
     require("try Self.validate(backup)" in backup_service_source
-            and "resolvedProductionSessionID: ToolSessionAssignment.session(for: card, in: sessions)?.id" in backup_service_source,
+            and "resolvedProductionSessionID: sessions.first(where: { $0.id == card.productionSessionID })?.id" in backup_service_source,
             "backup export must validate the complete snapshot before encoding it")
     stale_link_export_test = re.search(
         r"func testBackupExportResolvesStaleCardSessionLinksAndImportsCopyWithoutMutation\(\) throws \{(.*?)(?=\n    func test|\Z)",
