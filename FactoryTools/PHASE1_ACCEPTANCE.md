@@ -14,13 +14,14 @@ This checklist maps the agreed iPhone Phase 1 goal to the current source and reg
 
 ## Verification on this workspace
 
-- `python Scripts/validate_static.py`: passed with the Free/Pro access registry and purchase integration; it inspects 66 Swift files, 269 XCTest methods, 428 Japanese/English strings, resources, target membership, privacy manifest, and architecture contracts. These static checks do not compile or run Swift tests.
+- `python Scripts/validate_static.py`: passed with the Free/Pro access registry and purchase integration; it inspects 66 Swift files, 270 XCTest methods, 428 Japanese/English strings, resources, target membership, privacy manifest, and architecture contracts. These static checks do not compile or run Swift tests.
 - `python -B -m unittest discover -s Scripts -p "test_*.py"`: 70 verifier, public-site, and source-hygiene self-tests pass, including public-free and manually guarded private native-workflow checks, crash-prone Swift escape-hatch checks (including app-source forced unwraps), App Store SKU syntax checks, iPhone `ThemeManager` routing/direct-palette bypass checks, Watch `WatchTheme` color-token isolation, bilingual site generation, publication-candidate field/date/contact/URL validation, HTML structure/accessibility checks, generated-file synchronization, sensitive/unrelated-path ignore rules, and secret-pattern detection.
-- These checks do not compile or type-check Swift and do not execute XCTest.
+- The 2026-10-31 hosted Mac run [41247612063](https://github.com/niconiconicopi/factory-tools/actions/runs/41247612063) compiled and tested the app on iPhone and iPad simulators: 222 tests passed on each, including the local TLS-PSK loopback handshake. It also passed all 48 shared Core tests, the Watch Simulator build, and an unsigned generic iOS archive with the Watch app embedded.
+- This Windows workspace still cannot run Apple's build tools or simulate interaction with physical devices. The simulator results are hosted CI evidence, not physical-device verification.
 
 ## Remaining gates
 
-- Native Xcode build, XCTest, and device/simulator behavior remain unverified because this workspace runs on Windows without Apple's toolchain.
+- Physical-device behavior and paired-device network operation remain unverified because this workspace has no Apple hardware.
 - `python Scripts/validate_static.py --release-preflight` applies the selected Japan (JP), JPY ¥980 base-storefront candidates for syntax checks and reports five remaining publisher identity blockers: the development `com.example` Bundle ID in Debug and Release, Apple Developer Team ID, and HTTPS Privacy Policy and Support URLs. The Japan customer price is confirmed at ¥980; the product ID candidate is `factorytools.pro.lifetime`. Both require App Store Connect setup, where the price must be configured as decided. Version 1.0/build 1 is the first-release candidate; publisher identity and store setup are not configured in this workspace.
 - App Store Connect privacy and export-compliance answers remain publisher-owned release steps; source-based review drafts and the encryption plist declaration are present, but the final archive and distribution regions still need publisher review.
 
