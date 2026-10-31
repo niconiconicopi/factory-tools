@@ -22,11 +22,11 @@ struct AppBootstrapView: View {
             if let home = selectedHome {
                 HomeView(home: home)
             } else if showingSeedError {
-                ContentUnavailableView(
-                    "error.saveFailed",
-                    systemImage: "externaldrive.badge.exclamationmark",
-                    description: Text("error.saveMessage")
-                ) {
+                ContentUnavailableView {
+                    Label("error.saveFailed", systemImage: "externaldrive.badge.exclamationmark")
+                } description: {
+                    Text("error.saveMessage")
+                } actions: {
                     Button("common.retry", action: seedInitialDataIfNeeded)
                         .buttonStyle(.borderedProminent)
                         .tint(activeTheme.accent)

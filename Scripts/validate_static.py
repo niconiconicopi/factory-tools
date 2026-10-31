@@ -1211,7 +1211,7 @@ def main() -> int:
     seed_retry = re.search(r"private func seedInitialDataIfNeeded\(\) \{(.*?)(?=\n    \})", bootstrap, re.DOTALL)
     seed_retry_body = seed_retry.group(1) if seed_retry else ""
     require("else if showingSeedError" in bootstrap
-            and "ContentUnavailableView(" in bootstrap.split("else if showingSeedError", 1)[1].split("} else {", 1)[0]
+            and 'Label("error.saveFailed", systemImage: "externaldrive.badge.exclamationmark")' in bootstrap
             and 'Button("common.retry", action: seedInitialDataIfNeeded)' in bootstrap
             and seed_retry_body.find("showingSeedError = false") < seed_retry_body.find("AppBootstrapService(modelContext: modelContext).seedMissingRecords()")
             and "catch {\n            showingSeedError = true" in seed_retry_body,

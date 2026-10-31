@@ -205,6 +205,7 @@ struct HomeToolCardView: View {
         }
     }
 
+    @ViewBuilder
     private func counterContent(session: ProductionSession, showsTargetSettings: Bool) -> some View {
         let isAtMaximumCount = session.currentCount == Int.max
         VStack(alignment: .leading, spacing: HomeCardPresentation.counterSpacing(for: card.size)) {

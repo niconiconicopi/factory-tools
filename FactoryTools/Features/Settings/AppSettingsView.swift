@@ -223,9 +223,7 @@ struct AppSettingsView: View {
                             Label("settings.support.contact", systemImage: "questionmark.circle")
                         }
                     } else {
-                        Text("settings.support.notConfigured")
-                            .font(theme.captionFont)
-                            .foregroundStyle(theme.secondaryText)
+                        unconfiguredSupportMessage
                     }
                 }
                 Section("settings.backup") {
@@ -526,11 +524,13 @@ struct AppSettingsView: View {
     }
 
     private func startPeerAuthority() {
-        guard let container = modelContext.container else {
-            showingPeerError = true
-            return
-        }
-        peerTransport.startAuthority(modelContainer: container)
+        peerTransport.startAuthority(modelContainer: modelContext.container)
+    }
+
+    private var unconfiguredSupportMessage: some View {
+        Text("settings.support.notConfigured")
+            .font(theme.captionFont)
+            .foregroundStyle(theme.secondaryText)
     }
 
     private func handleBackupFileSelection(_ result: Result<[URL], Error>) {

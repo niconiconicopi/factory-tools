@@ -150,6 +150,7 @@ struct ToolPickerView: View {
         }
     }
 
+    @ViewBuilder
     private func toolRow(_ tool: ToolDefinition) -> some View {
         let canAccess = FeatureAccessRegistry.allows(tool.accessTier, isPro: proPurchases.hasPro)
         Button {

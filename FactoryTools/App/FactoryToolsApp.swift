@@ -66,11 +66,11 @@ private struct StoreUnavailableView: View {
     private let theme = ThemeManager().theme(for: .industrialDark)
 
     var body: some View {
-        ContentUnavailableView(
-            "error.storeUnavailable.title",
-            systemImage: "externaldrive.badge.exclamationmark",
-            description: Text("error.storeUnavailable.message")
-        ) {
+        ContentUnavailableView {
+            Label("error.storeUnavailable.title", systemImage: "externaldrive.badge.exclamationmark")
+        } description: {
+            Text("error.storeUnavailable.message")
+        } actions: {
             Button("common.retry", action: onRetry)
                 .buttonStyle(.borderedProminent)
                 .tint(theme.accent)
