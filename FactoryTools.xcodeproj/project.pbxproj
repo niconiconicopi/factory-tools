@@ -239,7 +239,7 @@ D10000000000000000000007 /* FactoryToolsWatch */ = {isa = PBXGroup; children = (
 	};
 	E00000000000000000000012 /* FactoryToolsCore */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000004; buildPhases = (D40000000000000000000005, D00000000000000000000003,); buildRules = (); dependencies = (); name = FactoryToolsCore; productName = FactoryToolsCore; productReference = C00000000000000000000060; productType = "com.apple.product-type.framework";};
 E00000000000000000000013 /* FactoryToolsCoreTests */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000005; buildPhases = (D40000000000000000000006, D00000000000000000000004, D40000000000000000000007,); buildRules = (); dependencies = (F00000000000000000000008,); name = FactoryToolsCoreTests; productName = FactoryToolsCoreTests; productReference = C00000000000000000000064; productType = "com.apple.product-type.bundle.unit-test";};
-E00000000000000000000014 /* FactoryToolsWatch */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000006; buildPhases = (D40000000000000000000008, D00000000000000000000005, D40000000000000000000009,); buildRules = (); dependencies = (F00000000000000000000012,); name = FactoryToolsWatch; productName = FactoryToolsWatch; productReference = C00000000000000000000075; productType = "com.apple.product-type.application.watchapp2";};
+E00000000000000000000014 /* FactoryToolsWatch */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000006; buildPhases = (D40000000000000000000008, D00000000000000000000005, D40000000000000000000009,); buildRules = (); dependencies = (F00000000000000000000012,); name = FactoryToolsWatch; productName = FactoryToolsWatch; productReference = C00000000000000000000075; productType = "com.apple.product-type.application";};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -272,7 +272,7 @@ D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActio
 D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000008 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000068, B00000000000000000000069, B00000000000000000000070, B00000000000000000000071,); runOnlyForDeploymentPostprocessing = 0;};
 D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084,); runOnlyForDeploymentPostprocessing = 0;};
-D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 16; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
+D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */

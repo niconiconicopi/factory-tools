@@ -850,8 +850,21 @@ def main() -> int:
             "FactoryToolsCore must be a local framework target")
     require(core_test_target.get("productType") == "com.apple.product-type.bundle.unit-test",
             "FactoryToolsCoreTests must be a standalone unit-test bundle")
-    require(watch_target.get("productType") == "com.apple.product-type.application.watchapp2",
+    require(watch_target.get("productType") == "com.apple.product-type.application",
             "FactoryToolsWatch must be a native companion watchOS application target")
+    watch_embed_phases = [
+        value
+        for value in project_objects.values()
+        if isinstance(value, dict)
+        and value.get("isa") == "PBXCopyFilesBuildPhase"
+        and value.get("name") == "Embed Watch Content"
+    ]
+    require(
+        len(watch_embed_phases) == 1
+        and watch_embed_phases[0].get("dstSubfolderSpec") == "13"
+        and watch_embed_phases[0].get("dstPath") == "",
+        "Watch companion app must embed in the parent PlugIns directory for current Xcode",
+    )
     target_ids_by_name = {target.get("name"): target_id for target_id, target in native_targets.items()}
 
     def direct_target_dependencies(target: object) -> set[str]:

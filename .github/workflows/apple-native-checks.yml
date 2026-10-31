@@ -51,8 +51,6 @@ jobs:
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
-            ARCHS=arm64 \
-            ONLY_ACTIVE_ARCH=YES \
             CODE_SIGNING_ALLOWED=NO
 
       - name: Test shared Core contracts
@@ -62,8 +60,6 @@ jobs:
           -scheme FactoryToolsCore
           -destination 'platform=macOS'
           -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
-          ARCHS=arm64
-          ONLY_ACTIVE_ARCH=YES
           CODE_SIGNING_ALLOWED=NO
 
       - name: Build Watch Simulator target
@@ -73,6 +69,4 @@ jobs:
           -scheme FactoryToolsWatch
           -destination 'generic/platform=watchOS Simulator'
           -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
-          ARCHS=arm64
-          ONLY_ACTIVE_ARCH=YES
           CODE_SIGNING_ALLOWED=NO
