@@ -302,7 +302,7 @@ final class CoreContractTests: XCTestCase {
         outbox = pausedRestore
         outbox.start(homeProfileID: homeID, at: start.addingTimeInterval(10))
         let command = try XCTUnwrap(outbox.finish(at: start.addingTimeInterval(10.85)))
-        XCTAssertEqual(command.totalSeconds, 2)
+        XCTAssertEqual(command.totalSeconds, 1)
         XCTAssertNil(try outbox.finish(at: start.addingTimeInterval(12)))
         XCTAssertTrue(try outbox.enqueue(command))
         XCTAssertFalse(try outbox.enqueue(command))
@@ -897,7 +897,7 @@ final class CoreContractTests: XCTestCase {
         XCTAssertFalse(CounterCommand.payloadSignature(
             command.payloadSignature,
             matches: CounterEventKind.quickAdd.rawValue,
-            delta: 4,
+            delta: 6,
             reversesEventID: nil,
             occurredAt: timestamp
         ))

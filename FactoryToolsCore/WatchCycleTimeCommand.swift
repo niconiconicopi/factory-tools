@@ -133,7 +133,7 @@ public struct WatchCycleTimeOutbox: Codable, Equatable {
     public func elapsedSeconds(at date: Date = .now) -> Double {
         let runningMilliseconds: Int64
         if let startedAt, date >= startedAt {
-            let interval = (date.timeIntervalSince(startedAt) * 1_000).rounded(.down)
+            let interval = (date.timeIntervalSince(startedAt) * 1_000).rounded()
             runningMilliseconds = interval.isFinite && interval <= Double(Self.maximumDurationMilliseconds)
                 ? max(0, Int64(interval))
                 : Self.maximumDurationMilliseconds
@@ -154,7 +154,7 @@ public struct WatchCycleTimeOutbox: Codable, Equatable {
 
     public mutating func pause(at date: Date = .now) {
         guard let startedAt, date >= startedAt else { return }
-        let milliseconds = (date.timeIntervalSince(startedAt) * 1_000).rounded(.down)
+        let milliseconds = (date.timeIntervalSince(startedAt) * 1_000).rounded()
         guard milliseconds.isFinite, milliseconds >= 0,
               milliseconds <= Double(Self.maximumDurationMilliseconds - accumulatedMilliseconds) else {
             accumulatedMilliseconds = Self.maximumDurationMilliseconds
