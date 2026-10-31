@@ -561,7 +561,7 @@ struct AppSettingsView: View {
             Text("settings.peer.description")
                 .font(theme.captionFont)
                 .foregroundStyle(theme.secondaryText)
-            if FeatureAccessRegistry.allows(.ipadCounterControl, isPro: proPurchases.hasPro) {
+            if hasPeerFeatureAccess {
                 peerPairingControls
             } else {
                 peerProLockedContent
@@ -573,6 +573,10 @@ struct AppSettingsView: View {
                 Button("settings.peer.remove", role: .destructive, action: requestPairingCodeRemoval)
             }
         }
+    }
+
+    private var hasPeerFeatureAccess: Bool {
+        FeatureAccessRegistry.allows(.ipadCounterControl, isPro: proPurchases.hasPro)
     }
 
     @ViewBuilder
