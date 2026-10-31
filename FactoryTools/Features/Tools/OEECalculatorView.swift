@@ -205,7 +205,7 @@ struct OEECalculatorView: View {
                                 }
                                 .accessibilityLabel(Text("oee.removeRunNamed \(run.createdAt.formatted(
                                     .dateTime.year().month().day().hour().minute().locale(locale)
-                                ))"))
+                                )))"))
                             }
                         }
                     }

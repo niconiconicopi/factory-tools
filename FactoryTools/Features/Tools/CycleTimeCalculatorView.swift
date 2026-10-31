@@ -307,7 +307,7 @@ struct CycleTimeCalculatorView: View {
             }
             .accessibilityLabel(Text("cycleTime.removeSampleNamed \(sample.createdAt.formatted(
                 .dateTime.year().month().day().hour().minute().locale(locale)
-            ))"))
+            )))"))
         }
     }
 
