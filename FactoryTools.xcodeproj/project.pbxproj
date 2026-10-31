@@ -86,9 +86,10 @@ B00000000000000000000081 /* LocalPeerCounterOutboxRepository.swift in Sources */
 B00000000000000000000086 /* ProPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000086 /* ProPurchaseManager.swift */; };
 	B00000000000000000000087 /* WatchCycleTimeCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000087 /* WatchCycleTimeCommand.swift */; };
 B00000000000000000000088 /* FactoryToolsSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000088 /* FactoryToolsSchema.swift */; };
-	B00000000000000000000089 /* StoreKitPurchaseIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000089 /* StoreKitPurchaseIntegrationTests.swift */; };
-	B00000000000000000000090 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000091 /* StoreKitTest.framework */; };
+	B00000000000000000000089 /* StoreKitTransactionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000089 /* StoreKitTransactionTests.swift */; };
 	B00000000000000000000091 /* FactoryToolsPro.storekit in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000090 /* FactoryToolsPro.storekit */; };
+	B00000000000000000000092 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000092 /* StoreKit.framework */; };
+	B00000000000000000000093 /* StoreKitTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000091 /* StoreKitTest.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -178,9 +179,10 @@ C00000000000000000000085 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; 
 C00000000000000000000086 /* ProPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/ProPurchaseManager.swift; sourceTree = "<group>"; };
 C00000000000000000000087 /* WatchCycleTimeCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCycleTimeCommand.swift; sourceTree = "<group>"; };
 C00000000000000000000088 /* FactoryToolsSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence/FactoryToolsSchema.swift; sourceTree = "<group>"; };
-C00000000000000000000089 /* StoreKitPurchaseIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitPurchaseIntegrationTests.swift; sourceTree = "<group>"; };
+C00000000000000000000089 /* StoreKitTransactionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitTransactionTests.swift; sourceTree = "<group>"; };
 C00000000000000000000090 /* FactoryToolsPro.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = FactoryToolsPro.storekit; sourceTree = "<group>"; };
 C00000000000000000000091 /* StoreKitTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKitTest.framework; path = System/Library/Frameworks/StoreKitTest.framework; sourceTree = SDKROOT; };
+C00000000000000000000092 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 C00000000000000000000075 /* FactoryToolsWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FactoryToolsWatch.app; sourceTree = BUILT_PRODUCTS_DIR;};
 C00000000000000000000076 /* CounterPeerMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPeerMessage.swift; sourceTree = "<group>";};
 C00000000000000000000077 /* CounterPeerFrameCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPeerFrameCodec.swift; sourceTree = "<group>";};
@@ -194,9 +196,9 @@ C00000000000000000000083 /* LocalPeerCounterOutboxRepository.swift */ = {isa = P
 
 /* Begin PBXFrameworksBuildPhase section */
 	D00000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000056 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
-	D00000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000023 /* XCTest.framework in Frameworks */, B00000000000000000000057 /* FactoryToolsCore.framework in Frameworks */, B00000000000000000000090 /* StoreKitTest.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
+	D00000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000023 /* XCTest.framework in Frameworks */, B00000000000000000000057 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
 	D00000000000000000000003 /* Core Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
-D00000000000000000000004 /* Core Tests Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000061 /* XCTest.framework in Frameworks */, B00000000000000000000062 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0;};
+D00000000000000000000004 /* Core Tests Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000061 /* XCTest.framework in Frameworks */, B00000000000000000000062 /* FactoryToolsCore.framework in Frameworks */, B00000000000000000000092 /* StoreKit.framework in Frameworks */, B00000000000000000000093 /* StoreKitTest.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0;};
 	D00000000000000000000005 /* Watch Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000073 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0;};
 /* End PBXFrameworksBuildPhase section */
 
@@ -212,10 +214,10 @@ D00000000000000000000004 /* Core Tests Frameworks */ = {isa = PBXFrameworksBuild
 		path = FactoryTools;
 		sourceTree = "<group>";
 	};
-D10000000000000000000003 /* FactoryToolsTests */ = {isa = PBXGroup; children = (C00000000000000000000022, C00000000000000000000082, C00000000000000000000089, C00000000000000000000090,); path = FactoryToolsTests; sourceTree = "<group>"; };
+D10000000000000000000003 /* FactoryToolsTests */ = {isa = PBXGroup; children = (C00000000000000000000022, C00000000000000000000082,); path = FactoryToolsTests; sourceTree = "<group>"; };
 	D10000000000000000000005 /* FactoryToolsCore */ = {isa = PBXGroup; children = (C00000000000000000000055, C00000000000000000000056, C00000000000000000000057, C00000000000000000000058, C00000000000000000000061, C00000000000000000000062, C00000000000000000000065, C00000000000000000000066, C00000000000000000000067, C00000000000000000000076, C00000000000000000000077, C00000000000000000000087,); path = FactoryToolsCore; sourceTree = "<group>"; };
 	C00000000000000000000047 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (C00000000000000000000048 /* en */, C00000000000000000000049 /* ja */,); name = InfoPlist.strings; sourceTree = "<group>"; };
-	D10000000000000000000006 /* FactoryToolsCoreTests */ = {isa = PBXGroup; children = (C00000000000000000000063,); path = FactoryToolsCoreTests; sourceTree = "<group>"; };
+D10000000000000000000006 /* FactoryToolsCoreTests */ = {isa = PBXGroup; children = (C00000000000000000000063, C00000000000000000000089, C00000000000000000000090,); path = FactoryToolsCoreTests; sourceTree = "<group>"; };
 	D10000000000000000000004 /* Products */ = {isa = PBXGroup; children = (C00000000000000000000024, C00000000000000000000025, C00000000000000000000060, C00000000000000000000064, C00000000000000000000075,); name = Products; sourceTree = "<group>"; };
 D10000000000000000000007 /* FactoryToolsWatch */ = {isa = PBXGroup; children = (C00000000000000000000070, C00000000000000000000071, C00000000000000000000072, C00000000000000000000073, C00000000000000000000074, C00000000000000000000084,); path = FactoryToolsWatch; sourceTree = "<group>";};
 /* End PBXGroup section */
@@ -267,15 +269,15 @@ E00000000000000000000014 /* FactoryToolsWatch */ = {isa = PBXNativeTarget; build
 
 /* Begin PBXResourcesBuildPhase section */
 	D40000000000000000000002 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000020, B00000000000000000000021, B00000000000000000000045, B00000000000000000000085,); runOnlyForDeploymentPostprocessing = 0; };
-D40000000000000000000004 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000091,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000004 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 D40000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000001, B00000000000000000000002, B00000000000000000000003, B00000000000000000000004, B00000000000000000000005, B00000000000000000000006, B00000000000000000000007, B00000000000000000000011, B00000000000000000000012, B00000000000000000000013, B00000000000000000000014, B00000000000000000000015, B00000000000000000000016, B00000000000000000000017, B00000000000000000000018, B00000000000000000000019, B00000000000000000000024, B00000000000000000000025, B00000000000000000000026, B00000000000000000000027, B00000000000000000000028, B00000000000000000000030, B00000000000000000000031, B00000000000000000000032, B00000000000000000000034, B00000000000000000000035, B00000000000000000000036, B00000000000000000000037, B00000000000000000000038, B00000000000000000000039, B00000000000000000000040, B00000000000000000000041, B00000000000000000000042, B00000000000000000000043, B00000000000000000000044, B00000000000000000000047, B00000000000000000000009, B00000000000000000000010, B00000000000000000000050, B00000000000000000000066, B00000000000000000000067, B00000000000000000000077, B00000000000000000000078, B00000000000000000000079, B00000000000000000000081, B00000000000000000000086, B00000000000000000000088,); runOnlyForDeploymentPostprocessing = 0; };
-D40000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000022, B00000000000000000000080, B00000000000000000000089,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000022, B00000000000000000000080,); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000051, B00000000000000000000052, B00000000000000000000053, B00000000000000000000054, B00000000000000000000058, B00000000000000000000059, B00000000000000000000063, B00000000000000000000064, B00000000000000000000065, B00000000000000000000075, B00000000000000000000076, B00000000000000000000087,); runOnlyForDeploymentPostprocessing = 0; };
-D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000060,); runOnlyForDeploymentPostprocessing = 0; };
-D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000060, B00000000000000000000089,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000091,); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000008 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000068, B00000000000000000000069, B00000000000000000000070, B00000000000000000000071,); runOnlyForDeploymentPostprocessing = 0;};
 D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084,); runOnlyForDeploymentPostprocessing = 0;};
 D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
