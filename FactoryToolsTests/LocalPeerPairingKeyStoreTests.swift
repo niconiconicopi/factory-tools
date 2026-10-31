@@ -1,10 +1,45 @@
 import Foundation
 import XCTest
+import Dispatch
+import Network
 import Security
 import FactoryToolsCore
 @testable import FactoryTools
 
 final class LocalPeerPairingKeyStoreTests: XCTestCase {
+    func testLocalPeerTLSParametersCompleteLoopbackPSKHandshake() throws {
+        let pairingKey = Data(repeating: 0x5a, count: 32)
+        let listenerParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: pairingKey))
+        let clientParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: pairingKey))
+        let listener = try NWListener(using: listenerParameters)
+        let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS")
+        let listenerReady = expectation(description: "TLS-PSK listener becomes ready")
+        let clientReady = expectation(description: "matching pairing key completes TLS-PSK handshake")
+
+        listener.stateUpdateHandler = { state in
+            if case .ready = state { listenerReady.fulfill() }
+        }
+        listener.newConnectionHandler = { connection in
+            connection.start(queue: callbackQueue)
+        }
+        listener.start(queue: callbackQueue)
+        defer { listener.cancel() }
+
+        wait(for: [listenerReady], timeout: 10)
+        let port = try XCTUnwrap(listener.port)
+        let client = NWConnection(
+            to: .hostPort(host: "127.0.0.1", port: port),
+            using: clientParameters
+        )
+        client.stateUpdateHandler = { state in
+            if case .ready = state { clientReady.fulfill() }
+        }
+        client.start(queue: callbackQueue)
+        defer { client.cancel() }
+
+        wait(for: [clientReady], timeout: 10)
+    }
+
     func testPairingCodeDecodesThirtyTwoBytes() throws {
         let key = try LocalPeerPairingKeyStore.keyData(from: String(repeating: "a5", count: 32))
 

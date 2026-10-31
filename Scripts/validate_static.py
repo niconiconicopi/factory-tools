@@ -1844,7 +1844,11 @@ def main() -> int:
     other_swift = "\n".join(
         path.read_text(encoding="utf-8")
         for path in source_files
-        if path not in {local_peer_transport_path, ROOT / "FactoryTools" / "App" / "ProPurchaseManager.swift"}
+        if path not in {
+            local_peer_transport_path,
+            ROOT / "FactoryTools" / "App" / "ProPurchaseManager.swift",
+            peer_outbox_tests_path,
+        }
     )
     require("data.count - offset" in peer_frame_codec
             and "min(remainingCapacity, data.count - offset)" in peer_frame_codec
@@ -1854,6 +1858,11 @@ def main() -> int:
         r"\b(?:URLSession|URLRequest|NSURLConnection|NWConnection|NWBrowser|NWPathMonitor|WebSocket|Alamofire|AFNetworking|Moya|Apollo|GraphQL)\b|\bURL\s*\(",
         other_swift,
     ), "Only the local peer transport may use Network.framework clients")
+    require("import Network" in peer_outbox_tests
+            and "testLocalPeerTLSParametersCompleteLoopbackPSKHandshake" in peer_outbox_tests
+            and "LocalPeerTLSParameters.make(pairingKey: pairingKey)" in peer_outbox_tests
+            and 'host: "127.0.0.1"' in peer_outbox_tests,
+            "the local peer transport's production TLS-PSK parameters must pass a loopback handshake test")
     require(not re.search(r"\bimport\s+(?:Network|CFNetwork|FoundationNetworking|WebKit|SafariServices)\b", other_swift)
             and "import Network" in local_peer_transport
             and "NWListener" in local_peer_transport

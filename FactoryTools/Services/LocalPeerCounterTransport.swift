@@ -55,7 +55,7 @@ final class LocalPeerCounterTransport: ObservableObject {
         guard listener == nil else { return }
 
         do {
-            guard let parameters = Self.parameters(pairingKey: key) else {
+            guard let parameters = LocalPeerTLSParameters.make(pairingKey: key) else {
                 statusKey = "peer.status.unavailable"
                 return
             }
@@ -121,7 +121,7 @@ final class LocalPeerCounterTransport: ObservableObject {
         guard loadOutboxIfNeeded() else { return }
         guard browser == nil else { return }
         do {
-            guard let parameters = Self.parameters(pairingKey: key) else {
+            guard let parameters = LocalPeerTLSParameters.make(pairingKey: key) else {
                 statusKey = "peer.status.unavailable"
                 return
             }
@@ -232,7 +232,7 @@ final class LocalPeerCounterTransport: ObservableObject {
 
     private func connect(to endpoint: NWEndpoint, pairingKey: Data) {
         guard !isAuthority, wire == nil else { return }
-        guard let parameters = Self.parameters(pairingKey: pairingKey) else {
+        guard let parameters = LocalPeerTLSParameters.make(pairingKey: pairingKey) else {
             statusKey = "peer.status.unavailable"
             browser?.cancel()
             browser = nil
@@ -530,8 +530,10 @@ final class LocalPeerCounterTransport: ObservableObject {
             return nil
         }
     }
+}
 
-    private static func parameters(pairingKey: Data) -> NWParameters? {
+enum LocalPeerTLSParameters {
+    static func make(pairingKey: Data) -> NWParameters? {
         let tls = NWProtocolTLS.Options()
         let identity = Data("factory-tools-local-peer-v1".utf8)
         let keyDispatchData = pairingKey.withUnsafeBytes { DispatchData(bytes: $0) }
