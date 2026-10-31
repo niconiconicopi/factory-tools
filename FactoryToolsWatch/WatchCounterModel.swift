@@ -21,6 +21,9 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
 
     private var outbox = CounterCommandOutbox()
     private var cycleTimeOutbox = WatchCycleTimeOutbox()
+    private let cycleClock = ContinuousClock()
+    private var cycleTimerRuntimeStartedAt: ContinuousClock.Instant?
+    private var cycleTimerRuntimeBaseMilliseconds: Int64?
     private var fileStore: CounterCommandOutboxFileStore?
     private var cycleTimeFileStore: WatchCycleTimeOutboxFileStore?
     private var sendingCommandID: UUID?
@@ -80,31 +83,43 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
 
     func startCycleTimer(for home: WatchCycleTimeHomeSnapshot) {
         guard !storageUnavailable, cycleTimeFileStore != nil else { return }
+        let wasRunning = cycleTimeOutbox.isRunning
         var updated = cycleTimeOutbox
         updated.start(homeProfileID: home.homeProfileID)
-        persistCycleTimeOutbox(updated)
+        guard persistCycleTimeOutbox(updated) else { return }
+        if !wasRunning, updated.isRunning {
+            cycleTimerRuntimeBaseMilliseconds = updated.elapsedMilliseconds(at: .now)
+            cycleTimerRuntimeStartedAt = cycleClock.now
+        }
     }
 
     func pauseCycleTimer() {
+        guard cycleTimeOutbox.isRunning else { return }
         var updated = cycleTimeOutbox
-        updated.pause()
-        persistCycleTimeOutbox(updated)
+        updated.pause(totalElapsedMilliseconds: cycleTimerElapsedMilliseconds())
+        guard persistCycleTimeOutbox(updated) else { return }
+        cycleTimerRuntimeBaseMilliseconds = nil
+        cycleTimerRuntimeStartedAt = nil
     }
 
     func resetCycleTimer() {
         var updated = cycleTimeOutbox
         updated.resetTimer()
-        persistCycleTimeOutbox(updated)
+        guard persistCycleTimeOutbox(updated) else { return }
+        cycleTimerRuntimeBaseMilliseconds = nil
+        cycleTimerRuntimeStartedAt = nil
     }
 
     func finishCycleTimer() {
         guard !storageUnavailable, let cycleTimeFileStore else { return }
         var updated = cycleTimeOutbox
         do {
-            guard let command = try updated.finish() else { return }
+            guard let command = try updated.finish(totalElapsedMilliseconds: cycleTimerElapsedMilliseconds()) else { return }
             _ = try updated.enqueue(command)
             try cycleTimeFileStore.save(updated)
             commitCycleTimeOutbox(updated)
+            cycleTimerRuntimeBaseMilliseconds = nil
+            cycleTimerRuntimeStartedAt = nil
             latestCycleTimeStatus = nil
             sendCycleTimeHeadIfReachable()
         } catch WatchCycleTimeOutboxError.pendingLimitReached(maximumCount: _) {
@@ -115,7 +130,7 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
     }
 
     func cycleElapsed(at date: Date = .now) -> Double {
-        cycleTimeOutbox.elapsedSeconds(at: date)
+        Double(cycleTimerElapsedMilliseconds(at: date)) / 1_000
     }
 
     func cycleTimerCanUse(homeProfileID: UUID) -> Bool {
@@ -215,6 +230,13 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
         queueLimitReached = outbox.count >= CounterCommandOutbox.maximumPendingCommandCount
         cycleTimeQueueLimitReached = cycleTimeOutbox.count >= WatchCycleTimeOutbox.maximumPendingCommandCount
         cycleTimerRunning = cycleTimeOutbox.isRunning
+        if cycleTimeOutbox.isRunning {
+            cycleTimerRuntimeBaseMilliseconds = cycleTimeOutbox.elapsedMilliseconds(at: .now)
+            cycleTimerRuntimeStartedAt = cycleClock.now
+        } else {
+            cycleTimerRuntimeBaseMilliseconds = nil
+            cycleTimerRuntimeStartedAt = nil
+        }
     }
 
     private func sendHeadIfReachable() {
@@ -257,14 +279,31 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
         )
     }
 
-    private func persistCycleTimeOutbox(_ updated: WatchCycleTimeOutbox) {
-        guard !storageUnavailable, let cycleTimeFileStore else { return }
+    @discardableResult
+    private func persistCycleTimeOutbox(_ updated: WatchCycleTimeOutbox) -> Bool {
+        guard !storageUnavailable, let cycleTimeFileStore else { return false }
         do {
             try cycleTimeFileStore.save(updated)
             commitCycleTimeOutbox(updated)
+            return true
         } catch {
             storageUnavailable = true
+            return false
         }
+    }
+
+    private func cycleTimerElapsedMilliseconds(at date: Date = .now) -> Int64 {
+        guard let cycleTimerRuntimeStartedAt,
+              let cycleTimerRuntimeBaseMilliseconds else {
+            return cycleTimeOutbox.elapsedMilliseconds(at: date)
+        }
+        let elapsed = cycleTimerRuntimeStartedAt.duration(to: cycleClock.now).components
+        let maximum = Int64(WatchCycleTimeCommand.maximumDurationSeconds) * 1_000
+        let seconds = max(0, elapsed.seconds)
+        guard seconds < maximum / 1_000 else { return maximum }
+        let runtimeMilliseconds = seconds * 1_000
+            + Int64(elapsed.attoseconds / 1_000_000_000_000_000)
+        return min(maximum, cycleTimerRuntimeBaseMilliseconds + max(0, runtimeMilliseconds))
     }
 
     private func commitCycleTimeOutbox(_ updated: WatchCycleTimeOutbox) {

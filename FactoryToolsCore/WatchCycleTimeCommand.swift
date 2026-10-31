@@ -130,7 +130,7 @@ public struct WatchCycleTimeOutbox: Codable, Equatable {
     public var count: Int { pendingCommands.count }
     public var isRunning: Bool { startedAt != nil }
 
-    public func elapsedSeconds(at date: Date = .now) -> Double {
+    public func elapsedMilliseconds(at date: Date = .now) -> Int64 {
         let runningMilliseconds: Int64
         if let startedAt, date >= startedAt {
             let interval = (date.timeIntervalSince(startedAt) * 1_000).rounded()
@@ -140,8 +140,11 @@ public struct WatchCycleTimeOutbox: Codable, Equatable {
         } else {
             runningMilliseconds = 0
         }
-        let total = min(accumulatedMilliseconds + runningMilliseconds, Self.maximumDurationMilliseconds)
-        return Double(total) / 1_000
+        return min(accumulatedMilliseconds + runningMilliseconds, Self.maximumDurationMilliseconds)
+    }
+
+    public func elapsedSeconds(at date: Date = .now) -> Double {
+        Double(elapsedMilliseconds(at: date)) / 1_000
     }
 
     public mutating func start(homeProfileID: UUID, at date: Date = .now) {
@@ -166,6 +169,15 @@ public struct WatchCycleTimeOutbox: Codable, Equatable {
         if accumulatedMilliseconds == 0 { activeHomeProfileID = nil }
     }
 
+    /// Stops a running timer using a monotonic elapsed-time total computed by the host app.
+    public mutating func pause(totalElapsedMilliseconds: Int64) {
+        guard startedAt != nil,
+              (accumulatedMilliseconds...Self.maximumDurationMilliseconds).contains(totalElapsedMilliseconds) else { return }
+        accumulatedMilliseconds = totalElapsedMilliseconds
+        startedAt = nil
+        if accumulatedMilliseconds == 0 { activeHomeProfileID = nil }
+    }
+
     public mutating func resetTimer() {
         accumulatedMilliseconds = 0
         startedAt = nil
@@ -174,8 +186,17 @@ public struct WatchCycleTimeOutbox: Codable, Equatable {
 
     /// Creates a command from the measured timer and clears the timer only after validation.
     public mutating func finish(at date: Date = .now) throws -> WatchCycleTimeCommand? {
-        guard let homeID = activeHomeProfileID else { return nil }
-        let duration = elapsedSeconds(at: date)
+        try finish(totalElapsedMilliseconds: elapsedMilliseconds(at: date), createdAt: date)
+    }
+
+    /// Creates a sample from a monotonic elapsed-time total while retaining the wall-clock sample timestamp.
+    public mutating func finish(
+        totalElapsedMilliseconds: Int64,
+        createdAt date: Date = .now
+    ) throws -> WatchCycleTimeCommand? {
+        guard let homeID = activeHomeProfileID,
+              (accumulatedMilliseconds...Self.maximumDurationMilliseconds).contains(totalElapsedMilliseconds) else { return nil }
+        let duration = Double(totalElapsedMilliseconds) / 1_000
         guard let roundedSeconds = CycleTimeMeasurement.roundedWholeSeconds(from: duration) else { return nil }
         let command = try WatchCycleTimeCommand(
             homeProfileID: homeID,

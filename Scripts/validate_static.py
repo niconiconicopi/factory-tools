@@ -2228,7 +2228,13 @@ def main() -> int:
             and "WatchCycleTimeCommand" in watch_receiver
             and "WatchCommandWireKey.cycleTimeCommand" in watch_receiver
             and "WatchCycleTimeOutboxFileStore" in watch_model
-            and "updated.finish()" in watch_model
+            and "updated.finish(totalElapsedMilliseconds: cycleTimerElapsedMilliseconds())" in watch_model
+            and "updated.pause(totalElapsedMilliseconds: cycleTimerElapsedMilliseconds())" in watch_model
+            and "ContinuousClock()" in watch_model
+            and "cycleTimerRuntimeStartedAt.duration(to: cycleClock.now)" in watch_model
+            and "cycleTimerRuntimeBaseMilliseconds = cycleTimeOutbox.elapsedMilliseconds(at: .now)" in watch_model
+            and "public mutating func pause(totalElapsedMilliseconds: Int64)" in watch_cycle_outbox
+            and "public func elapsedMilliseconds(at date: Date = .now) -> Int64" in watch_cycle_outbox
             and "WatchCycleTimeCommandResponseValidator.accepts(" in watch_model
             and "WatchCycleTimeOutbox.maximumPendingCommandCount" in watch_model
             and '"watch.cycleTime.finish"' in watch_view
@@ -2241,6 +2247,7 @@ def main() -> int:
             and "role: .destructive" in watch_view
             and "testWatchCycleTimeCommandValidatesAndRoundTripsMeasurement" in core_contract_tests
             and "testWatchCycleTimeOutboxPersistsTimerAndIdempotentFIFOCommands" in core_contract_tests
+            and "testWatchCycleTimeOutboxAcceptsMonotonicElapsedTotalsAcrossWallClockChanges" in core_contract_tests
             and "testWatchCycleTimeOutboxFileStoreRejectsOversizedFileWithoutChangingIt" in core_contract_tests
             and "testWatchCycleTimeOutboxStoresItsMaximumValidQueueWithinFileLimit" in core_contract_tests
             and "testWatchCycleTimeOutboxKeepsHomeAndRetainsSubsecondMeasurementUntilSaveable" in core_contract_tests

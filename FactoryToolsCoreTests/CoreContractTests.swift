@@ -318,6 +318,27 @@ final class CoreContractTests: XCTestCase {
         XCTAssertEqual(restored.count, 0)
     }
 
+    func testWatchCycleTimeOutboxAcceptsMonotonicElapsedTotalsAcrossWallClockChanges() throws {
+        let homeID = UUID(uuidString: "00000000-0000-0000-0000-00000000028a")!
+        let start = Date(timeIntervalSince1970: 1_700_000_000)
+        var outbox = WatchCycleTimeOutbox()
+        outbox.start(homeProfileID: homeID, at: start)
+
+        outbox.pause(totalElapsedMilliseconds: 1_234)
+        XCTAssertFalse(outbox.isRunning)
+        XCTAssertEqual(outbox.elapsedMilliseconds(at: start.addingTimeInterval(-3_600)), 1_234)
+
+        outbox.start(homeProfileID: homeID, at: start.addingTimeInterval(10))
+        let command = try XCTUnwrap(outbox.finish(
+            totalElapsedMilliseconds: 2_250,
+            createdAt: start.addingTimeInterval(10)
+        ))
+        XCTAssertEqual(command.homeProfileID, homeID)
+        XCTAssertEqual(command.totalSeconds, 2)
+        XCTAssertFalse(outbox.isRunning)
+        XCTAssertEqual(outbox.elapsedMilliseconds(at: start.addingTimeInterval(-3_600)), 0)
+    }
+
     func testWatchCycleTimeOutboxFileStoreRejectsOversizedFileWithoutChangingIt() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
         defer { try? FileManager.default.removeItem(at: directory) }
