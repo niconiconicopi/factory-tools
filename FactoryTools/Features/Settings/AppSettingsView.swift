@@ -125,85 +125,7 @@ struct AppSettingsView: View {
                         .foregroundStyle(theme.secondaryText)
                     }
                 }
-                Section("settings.peer.title") {
-                    Text("settings.peer.description")
-                        .font(theme.captionFont)
-                        .foregroundStyle(theme.secondaryText)
-                    if FeatureAccessRegistry.allows(.ipadCounterControl, isPro: proPurchases.hasPro) {
-                        if UIDevice.current.userInterfaceIdiom == .pad {
-                            TextField("settings.peer.enterCode", text: $pairingCodeDraft)
-                                .font(theme.bodyFont.monospaced())
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .keyboardType(.asciiCapable)
-                                .privacySensitive()
-                                .redacted(reason: pairingSecretRedaction)
-                            Button("settings.peer.activate", action: requestPairingCodeSave)
-                                .disabled(pairingCodeDraft.isEmpty)
-                            if peerTransport.hasUnassignedLegacyOutboxError {
-                                Text("settings.peer.unassignedCommandsError")
-                                    .font(theme.captionFont)
-                                    .foregroundStyle(theme.secondaryText)
-                            }
-                            if peerTransport.unassignedLegacyCommandCount > 0 {
-                                Text("settings.peer.unassignedCommandsNotice")
-                                    .font(theme.captionFont)
-                                    .foregroundStyle(theme.secondaryText)
-                                LabeledContent("settings.peer.unassignedCommands", value: "\(peerTransport.unassignedLegacyCommandCount)")
-                                Button {
-                                    showingLegacyOutboxConfirmation = true
-                                } label: {
-                                    Label("settings.peer.reassignLegacy", systemImage: "arrowshape.turn.up.right")
-                                }
-                                .disabled(pairingCode == nil)
-                            }
-                            if pairingCode != nil {
-                                Label("settings.peer.paired", systemImage: "checkmark.shield.fill")
-                                    .foregroundStyle(theme.accent)
-                                Button("settings.peer.connect", action: peerTransport.connectAsClient)
-                                NavigationLink("settings.peer.dashboard") { PeerCounterView() }
-                            }
-                        } else {
-                            if let pairingCode {
-                                Text(pairingCode)
-                                    .font(theme.captionFont.monospaced())
-                                    .textSelection(.enabled)
-                                    .foregroundStyle(theme.primaryText)
-                                    .privacySensitive()
-                                    .redacted(reason: pairingSecretRedaction)
-                                ShareLink(item: pairingCode) {
-                                    Label("settings.peer.shareCode", systemImage: "square.and.arrow.up")
-                                }
-                            }
-                            Button("settings.peer.generateCode", action: requestPairingCodeGeneration)
-                            TextField("settings.peer.enterExistingCode", text: $pairingCodeDraft)
-                                .font(theme.bodyFont.monospaced())
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled()
-                                .keyboardType(.asciiCapable)
-                                .privacySensitive()
-                                .redacted(reason: pairingSecretRedaction)
-                            Button("settings.peer.restoreCode", action: requestPairingCodeRestore)
-                                .disabled(pairingCodeDraft.isEmpty)
-                            if pairingCode != nil {
-                                Button("settings.peer.enable", action: startPeerAuthority)
-                            }
-                        }
-                    } else {
-                        Label("pro.companionLocked", systemImage: "lock.fill")
-                            .foregroundStyle(theme.secondaryText)
-                        Button("pro.purchaseAction") {
-                            Task { await proPurchases.purchase() }
-                        }
-                        .disabled(proPurchases.isLoading || !proPurchases.canPurchase)
-                    }
-                    Text(LocalizedStringKey(peerTransport.statusKey))
-                        .font(theme.captionFont)
-                        .foregroundStyle(theme.secondaryText)
-                    if pairingCode != nil {
-                        Button("settings.peer.remove", role: .destructive, action: requestPairingCodeRemoval)
-                    }
-                }
+                peerSettingsSection
                 Section("settings.privacy") {
                     Label("settings.privacy.localStorage", systemImage: "iphone")
                         .foregroundStyle(theme.primaryText)
@@ -632,6 +554,114 @@ struct AppSettingsView: View {
 
     private var pairingSecretRedaction: RedactionReasons {
         shouldRedactPairingSecrets ? .privacy : []
+    }
+
+    private var peerSettingsSection: some View {
+        Section("settings.peer.title") {
+            Text("settings.peer.description")
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+            if FeatureAccessRegistry.allows(.ipadCounterControl, isPro: proPurchases.hasPro) {
+                peerPairingControls
+            } else {
+                peerProLockedContent
+            }
+            Text(LocalizedStringKey(peerTransport.statusKey))
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+            if pairingCode != nil {
+                Button("settings.peer.remove", role: .destructive, action: requestPairingCodeRemoval)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var peerPairingControls: some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            iPadPeerPairingControls
+        } else {
+            mobilePeerPairingControls
+        }
+    }
+
+    private var iPadPeerPairingControls: some View {
+        Group {
+            TextField("settings.peer.enterCode", text: $pairingCodeDraft)
+                .font(theme.bodyFont.monospaced())
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.asciiCapable)
+                .privacySensitive()
+                .redacted(reason: pairingSecretRedaction)
+            Button("settings.peer.activate", action: requestPairingCodeSave)
+                .disabled(pairingCodeDraft.isEmpty)
+            if peerTransport.hasUnassignedLegacyOutboxError {
+                Text("settings.peer.unassignedCommandsError")
+                    .font(theme.captionFont)
+                    .foregroundStyle(theme.secondaryText)
+            }
+            if peerTransport.unassignedLegacyCommandCount > 0 {
+                Text("settings.peer.unassignedCommandsNotice")
+                    .font(theme.captionFont)
+                    .foregroundStyle(theme.secondaryText)
+                LabeledContent(
+                    "settings.peer.unassignedCommands",
+                    value: String(peerTransport.unassignedLegacyCommandCount)
+                )
+                Button {
+                    showingLegacyOutboxConfirmation = true
+                } label: {
+                    Label("settings.peer.reassignLegacy", systemImage: "arrowshape.turn.up.right")
+                }
+                .disabled(pairingCode == nil)
+            }
+            if pairingCode != nil {
+                Label("settings.peer.paired", systemImage: "checkmark.shield.fill")
+                    .foregroundStyle(theme.accent)
+                Button("settings.peer.connect", action: peerTransport.connectAsClient)
+                NavigationLink("settings.peer.dashboard") { PeerCounterView() }
+            }
+        }
+    }
+
+    private var mobilePeerPairingControls: some View {
+        Group {
+            if let pairingCode {
+                Text(pairingCode)
+                    .font(theme.captionFont.monospaced())
+                    .textSelection(.enabled)
+                    .foregroundStyle(theme.primaryText)
+                    .privacySensitive()
+                    .redacted(reason: pairingSecretRedaction)
+                ShareLink(item: pairingCode) {
+                    Label("settings.peer.shareCode", systemImage: "square.and.arrow.up")
+                }
+            }
+            Button("settings.peer.generateCode", action: requestPairingCodeGeneration)
+            TextField("settings.peer.enterExistingCode", text: $pairingCodeDraft)
+                .font(theme.bodyFont.monospaced())
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.asciiCapable)
+                .privacySensitive()
+                .redacted(reason: pairingSecretRedaction)
+            Button("settings.peer.restoreCode", action: requestPairingCodeRestore)
+                .disabled(pairingCodeDraft.isEmpty)
+            if pairingCode != nil {
+                Button("settings.peer.enable", action: startPeerAuthority)
+            }
+        }
+    }
+
+    private var peerProLockedContent: some View {
+        Group {
+            Label("pro.companionLocked", systemImage: "lock.fill")
+                .foregroundStyle(theme.secondaryText)
+            Button("pro.purchaseAction") {
+                Task { await proPurchases.purchase() }
+            }
+            .disabled(proPurchases.isLoading || !proPurchases.canPurchase)
+        }
     }
 
     private var privacyPolicyURL: URL? {
