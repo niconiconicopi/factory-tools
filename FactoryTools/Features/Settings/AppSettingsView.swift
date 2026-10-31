@@ -63,68 +63,7 @@ struct AppSettingsView: View {
                         Text("theme.industrialDark.name")
                     }
                 }
-                Section("pro.title") {
-                    if proPurchases.hasPro {
-                        Label("pro.unlocked", systemImage: "checkmark.seal.fill")
-                            .foregroundStyle(theme.accent)
-                        Text("pro.unlockedDescription")
-                            .font(theme.captionFont)
-                            .foregroundStyle(theme.secondaryText)
-                    } else {
-                        Text("pro.description")
-                            .font(theme.captionFont)
-                            .foregroundStyle(theme.secondaryText)
-                        if let product = proPurchases.product, ToolRegistry.hasProAssignments {
-                            Button {
-                                Task { await proPurchases.purchase() }
-                            } label: {
-                                HStack {
-                                    Label("pro.purchase", systemImage: "cart")
-                                    Spacer()
-                                    Text(product.displayPrice)
-                                }
-                            }
-                            .disabled(proPurchases.isLoading || !proPurchases.canPurchase)
-                        } else {
-                            if proPurchases.isConfigured {
-                                if proPurchases.isLoading {
-                                    Text("pro.loading")
-                                        .font(theme.captionFont)
-                                        .foregroundStyle(theme.secondaryText)
-                                }
-                                Button("pro.retry") {
-                                    Task { await proPurchases.refresh() }
-                                }
-                                .disabled(proPurchases.isLoading)
-                            } else {
-                                Text("pro.setupPending")
-                                    .font(theme.captionFont)
-                                    .foregroundStyle(theme.secondaryText)
-                            }
-                        }
-                        if proPurchases.isConfigured {
-                            Button("pro.restore") {
-                                Task { await proPurchases.restorePurchases() }
-                            }
-                            .disabled(proPurchases.isLoading)
-                        }
-                        if let statusMessageKey = proPurchases.statusMessageKey {
-                            Text(LocalizedStringKey(statusMessageKey))
-                                .font(theme.captionFont)
-                                .foregroundStyle(theme.secondaryText)
-                        }
-                    }
-                    if let product = proPurchases.product, ToolRegistry.hasProAssignments {
-                        Label(
-                            LocalizedStringKey(product.isFamilyShareable
-                                ? "pro.familySharing.available"
-                                : "pro.familySharing.unavailable"),
-                            systemImage: product.isFamilyShareable ? "person.2.fill" : "person.fill"
-                        )
-                        .font(theme.captionFont)
-                        .foregroundStyle(theme.secondaryText)
-                    }
-                }
+                proSettingsSection
                 peerSettingsSection
                 privacySettingsSection
                 supportSettingsSection
@@ -380,6 +319,78 @@ struct AppSettingsView: View {
         Text("settings.support.notConfigured")
             .font(theme.captionFont)
             .foregroundStyle(theme.secondaryText)
+    }
+
+    private var proSettingsSection: some View {
+        Section("pro.title") {
+            if proPurchases.hasPro {
+                Label("pro.unlocked", systemImage: "checkmark.seal.fill")
+                    .foregroundStyle(theme.accent)
+                Text("pro.unlockedDescription")
+                    .font(theme.captionFont)
+                    .foregroundStyle(theme.secondaryText)
+            } else {
+                Text("pro.description")
+                    .font(theme.captionFont)
+                    .foregroundStyle(theme.secondaryText)
+                proPurchaseControls
+            }
+            familySharingStatus
+        }
+    }
+
+    @ViewBuilder
+    private var proPurchaseControls: some View {
+        if let product = proPurchases.product, ToolRegistry.hasProAssignments {
+            Button {
+                Task { await proPurchases.purchase() }
+            } label: {
+                HStack {
+                    Label("pro.purchase", systemImage: "cart")
+                    Spacer()
+                    Text(product.displayPrice)
+                }
+            }
+            .disabled(proPurchases.isLoading || !proPurchases.canPurchase)
+        } else if proPurchases.isConfigured {
+            if proPurchases.isLoading {
+                Text("pro.loading")
+                    .font(theme.captionFont)
+                    .foregroundStyle(theme.secondaryText)
+            }
+            Button("pro.retry") {
+                Task { await proPurchases.refresh() }
+            }
+            .disabled(proPurchases.isLoading)
+        } else {
+            Text("pro.setupPending")
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+        }
+        if proPurchases.isConfigured {
+            Button("pro.restore") {
+                Task { await proPurchases.restorePurchases() }
+            }
+            .disabled(proPurchases.isLoading)
+        }
+        if let statusMessageKey = proPurchases.statusMessageKey {
+            Text(LocalizedStringKey(statusMessageKey))
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+        }
+    }
+
+    @ViewBuilder
+    private var familySharingStatus: some View {
+        if let product = proPurchases.product, ToolRegistry.hasProAssignments {
+            let labelKey = product.isFamilyShareable
+                ? "pro.familySharing.available"
+                : "pro.familySharing.unavailable"
+            let symbol = product.isFamilyShareable ? "person.2.fill" : "person.fill"
+            Label(LocalizedStringKey(labelKey), systemImage: symbol)
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+        }
     }
 
     private var privacySettingsSection: some View {
