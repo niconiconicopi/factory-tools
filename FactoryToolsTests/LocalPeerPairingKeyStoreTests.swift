@@ -48,13 +48,16 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         let listener = try NWListener(using: listenerParameters)
         let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS.Rejection")
         let listenerReady = DispatchSemaphore(value: 0)
-        let clientFinished = DispatchSemaphore(value: 0)
+        let handshakeRejected = DispatchSemaphore(value: 0)
         var clientDidBecomeReady = false
 
         listener.stateUpdateHandler = { state in
             if case .ready = state { listenerReady.signal() }
         }
         listener.newConnectionHandler = { connection in
+            connection.stateUpdateHandler = { state in
+                if case .failed = state { handshakeRejected.signal() }
+            }
             connection.start(queue: callbackQueue)
         }
         listener.start(queue: callbackQueue)
@@ -70,9 +73,6 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
             switch state {
             case .ready:
                 clientDidBecomeReady = true
-                clientFinished.signal()
-            case .failed:
-                clientFinished.signal()
             default:
                 break
             }
@@ -80,7 +80,7 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         client.start(queue: callbackQueue)
         defer { client.cancel() }
 
-        XCTAssertEqual(clientFinished.wait(timeout: .now() + 10), .success)
+        XCTAssertEqual(handshakeRejected.wait(timeout: .now() + 10), .success)
         let connected = callbackQueue.sync { clientDidBecomeReady }
         XCTAssertFalse(connected, "a TLS-PSK peer with a different pairing key must not become ready")
     }
