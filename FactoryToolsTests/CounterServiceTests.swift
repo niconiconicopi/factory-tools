@@ -3829,7 +3829,8 @@ final class CounterServiceTests: XCTestCase {
         let session = ProductionSession(name: "Production run", currentCount: 9, targetCount: 600, nextEventSequence: 1)
         let card = ToolCard(homeProfileID: home.id, toolID: .productionCounter, sortOrder: 0, productionSessionID: session.id)
         let event = CountEvent(sessionID: session.id, delta: 9, sequence: 0)
-        [home, settings].forEach(context.insert)
+        context.insert(home)
+        context.insert(settings)
         context.insert(session)
         context.insert(card)
         context.insert(event)
@@ -3857,7 +3858,9 @@ final class CounterServiceTests: XCTestCase {
         let ambiguousFirstCard = ToolCard(homeProfileID: firstHome.id, toolID: .productionCounter, sortOrder: 0, productionSessionID: ambiguousSession.id)
         let ambiguousSecondCard = ToolCard(homeProfileID: secondHome.id, toolID: .productionCounter, sortOrder: 0, productionSessionID: ambiguousSession.id)
         let mismatchedCard = ToolCard(homeProfileID: firstHome.id, toolID: .defectCounter, sortOrder: 1, productionSessionID: wrongToolSession.id)
-        [firstHome, secondHome, settings].forEach(context.insert)
+        context.insert(firstHome)
+        context.insert(secondHome)
+        context.insert(settings)
         [ambiguousSession, wrongToolSession].forEach(context.insert)
         [ambiguousFirstCard, ambiguousSecondCard, mismatchedCard].forEach(context.insert)
         try context.save()
@@ -3911,7 +3914,10 @@ final class CounterServiceTests: XCTestCase {
                 productionSessionID: sessionID
             )
             let settings = AppSettings(id: settingsID, selectedHomeProfileID: UUID())
-            [home, session, card, settings].forEach(context.insert)
+            context.insert(home)
+            context.insert(session)
+            context.insert(card)
+            context.insert(settings)
             try context.save()
         }
 
@@ -4678,7 +4684,7 @@ final class CounterServiceTests: XCTestCase {
 
         XCTAssertEqual(orderedCards.map(\.toolID), AssemblyPreset.toolIDs.map(\.rawValue))
         XCTAssertEqual(orderedCards.map(\.sortOrder), Array(0..<AssemblyPreset.toolIDs.count))
-        XCTAssertEqual(sessions.map(\.toolID).sorted(), [ToolID.productionCounter.rawValue, ToolID.defectCounter.rawValue].sorted())
+        XCTAssertEqual(sessions.compactMap(\.toolID).sorted(), [ToolID.productionCounter.rawValue, ToolID.defectCounter.rawValue].sorted())
         XCTAssertNotNil(orderedCards[0].productionSessionID)
         XCTAssertNotNil(orderedCards[3].productionSessionID)
         XCTAssertNotEqual(orderedCards[0].productionSessionID, orderedCards[3].productionSessionID)
@@ -5282,12 +5288,18 @@ final class ToolRegistryTests: XCTestCase {
 
         for (key, english, japanese) in guidance {
             XCTAssertEqual(
-                String(localized: LocalizedStringResource(key, locale: AppLanguage.english.locale)),
+                String(localized: LocalizedStringResource(
+                    String.LocalizationValue(stringLiteral: key),
+                    locale: AppLanguage.english.locale
+                )),
                 english,
                 "Unexpected English guidance for \(key)"
             )
             XCTAssertEqual(
-                String(localized: LocalizedStringResource(key, locale: AppLanguage.japanese.locale)),
+                String(localized: LocalizedStringResource(
+                    String.LocalizationValue(stringLiteral: key),
+                    locale: AppLanguage.japanese.locale
+                )),
                 japanese,
                 "Unexpected Japanese guidance for \(key)"
             )
@@ -5882,20 +5894,15 @@ final class ToolRegistryTests: XCTestCase {
         XCTAssertEqual(csv, OEEHistoryCSV.make(homeID: homeID, runs: [first, second]))
         XCTAssertEqual(csv, OEEHistoryCSV.make(homeID: homeID, records: [second, otherHomeRun, first].map(OEECSVRecord.init)))
 
-        let overflowingRecord = OEECSVRecord(
-            id: UUID(),
+        let overflowingRecord = OEECSVRecord(OEERun(
             homeProfileID: homeID,
             plannedProductionMinutes: 1,
             downtimeMinutes: 0,
             idealCycleTimeSeconds: 1,
             goodUnits: Int.max,
             defectiveUnits: 1,
-            createdAt: Date(timeIntervalSince1970: 2_000),
-            availability: 1,
-            performance: 1,
-            quality: 1,
-            overall: 1
-        )
+            createdAt: Date(timeIntervalSince1970: 2_000)
+        ))
         XCTAssertEqual(
             OEEHistoryCSV.make(homeID: homeID, records: [overflowingRecord]).components(separatedBy: "\r\n").filter { !$0.isEmpty }.count,
             1,
