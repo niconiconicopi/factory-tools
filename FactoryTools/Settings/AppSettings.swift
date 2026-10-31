@@ -303,8 +303,8 @@ struct FactoryToolsBackupImportResult: Equatable {
 
 @MainActor
 struct FactoryToolsBackupService {
-    static let maximumBackupSizeInBytes = 64 * 1024 * 1024
-    static let maximumBackupRecordCount = 500_000
+    nonisolated static let maximumBackupSizeInBytes = 64 * 1024 * 1024
+    nonisolated static let maximumBackupRecordCount = 500_000
 
     let modelContext: ModelContext
 
