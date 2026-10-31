@@ -48,14 +48,12 @@ struct HomeToolService {
         guard homes.contains(where: { $0.id == homeID }) else { throw HomeToolServiceError.homeNotFound }
 
         var sessions: [ProductionSession] = []
-        var existingSessionIDs = Set<UUID>()
         var homeCards: [ToolCard] = []
         var addedCards: [ToolCard] = []
         do {
             var sessionDescriptor = FetchDescriptor<ProductionSession>()
             sessionDescriptor.includePendingChanges = true
             sessions = try modelContext.fetch(sessionDescriptor)
-            existingSessionIDs = Set(sessions.map(\.id))
             var cardDescriptor = FetchDescriptor<ToolCard>()
             cardDescriptor.includePendingChanges = true
             let allCards = try modelContext.fetch(cardDescriptor)
@@ -86,10 +84,6 @@ struct HomeToolService {
             LocalPeerCounterTransport.shared.publishCatalog()
             return addedCards
         } catch {
-            for card in addedCards { modelContext.delete(card) }
-            for session in sessions where !existingSessionIDs.contains(session.id) {
-                modelContext.delete(session)
-            }
             modelContext.rollback()
             throw error
         }

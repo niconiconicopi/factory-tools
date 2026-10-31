@@ -413,7 +413,7 @@ struct FactoryToolsBackupService {
               invalidHomeIDsInSessions.isEmpty,
               orphanEventSessionIDs.isEmpty,
               orphanReceiptSessionIDs.isEmpty else {
-            print("Backup relationship diagnostic: homes=\(homeIDs.count), sessions=\(backup.sessions.count), events=\(backup.events.count), settings=\(backup.settings.count), invalidSessionHomes=\(invalidHomeIDsInSessions.count), orphanEvents=\(orphanEventSessionIDs.count), orphanReceipts=\(orphanReceiptSessionIDs.count), invalidSelectedHomes=\(invalidSelectedHomeIDs.count)")
+            print("Backup relationship diagnostic: homes=\(homeIDs.map(\.uuidString)), sessions=\(backup.sessions.map(\.id.uuidString)), events=\(backup.events.map(\.sessionID.uuidString)), receipts=\(backup.commandReceipts.map(\.sessionID.uuidString)), settings=\(backup.settings.compactMap(\.selectedHomeProfileID).map(\.uuidString)), invalidSessionHomes=\(invalidHomeIDsInSessions.map(\.uuidString)), orphanEvents=\(orphanEventSessionIDs.map(\.uuidString)), orphanReceipts=\(orphanReceiptSessionIDs.map(\.uuidString)), invalidSelectedHomes=\(invalidSelectedHomeIDs.map(\.uuidString))")
             throw FactoryToolsBackupError.invalidRelationship
         }
         guard backup.commandReceipts.allSatisfy({ !eventIDs.contains($0.id) }) else {
@@ -819,6 +819,20 @@ struct FactoryToolsBackupImportService {
                 createdAt: value.createdAt
             )
         }
+        let importedSettings: [AppSettings]
+        if existingSettings.isEmpty {
+            let sourceSettings = backup.settings.sorted { $0.id.uuidString < $1.id.uuidString }.first
+            importedSettings = [AppSettings(
+                language: sourceSettings?.language ?? AppLanguage.system.rawValue,
+                themeID: sourceSettings?.themeID ?? ThemeID.industrialDark.rawValue,
+                selectedHomeProfileID: try mappedOptionalID(
+                    sourceSettings?.selectedHomeProfileID ?? orderedSourceHomes.first?.id,
+                    using: homeIDMap
+                )
+            )]
+        } else {
+            importedSettings = []
+        }
 
         do {
             if !isPro, let firstImportedHome = importedHomes.first,
@@ -832,16 +846,10 @@ struct FactoryToolsBackupImportService {
             importedCommandReceipts.forEach(modelContext.insert)
             importedSamples.forEach(modelContext.insert)
             importedOEERuns.forEach(modelContext.insert)
+            importedSettings.forEach(modelContext.insert)
             HomeProfileOrdering.assignSortOrders(isPro ? homeOrder + importedHomes : importedHomes + homeOrder)
             try modelContext.save()
         } catch {
-            for importedRecord in importedHomes { modelContext.delete(importedRecord) }
-            for importedRecord in importedSessions { modelContext.delete(importedRecord) }
-            for importedRecord in importedCards { modelContext.delete(importedRecord) }
-            for importedRecord in importedEvents { modelContext.delete(importedRecord) }
-            for importedRecord in importedCommandReceipts { modelContext.delete(importedRecord) }
-            for importedRecord in importedSamples { modelContext.delete(importedRecord) }
-            for importedRecord in importedOEERuns { modelContext.delete(importedRecord) }
             modelContext.rollback()
             for existingHome in existingHomes {
                 existingHome.sortOrder = previousHomeSortOrders[existingHome.id] ?? existingHome.sortOrder

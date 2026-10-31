@@ -53,7 +53,6 @@ struct OEERunService {
             try modelContext.save()
             return run
         } catch {
-            modelContext.delete(run)
             modelContext.rollback()
             throw error
         }

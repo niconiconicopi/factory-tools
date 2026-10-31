@@ -40,7 +40,6 @@ struct CycleTimeSampleService {
             try modelContext.save()
             return sample
         } catch {
-            modelContext.delete(sample)
             modelContext.rollback()
             throw error
         }
