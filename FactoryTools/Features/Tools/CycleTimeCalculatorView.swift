@@ -268,13 +268,14 @@ struct CycleTimeCalculatorView: View {
 
     @ViewBuilder
     private func sampleRow(_ sample: CycleTimeSample) -> some View {
+        let sampleDate = sample.createdAt.formatted(
+            .dateTime.year().month().day().hour().minute().locale(locale)
+        )
         Button {
             load(sample)
         } label: {
             VStack(alignment: .leading, spacing: 4) {
-                Text(sample.createdAt.formatted(
-                    .dateTime.year().month().day().hour().minute().locale(locale)
-                ))
+                Text(sampleDate)
                 .font(theme.captionFont)
                 .foregroundStyle(theme.secondaryText)
                 HStack(spacing: 4) {
@@ -305,9 +306,7 @@ struct CycleTimeCalculatorView: View {
             } label: {
                 Label("common.remove", systemImage: "trash")
             }
-            .accessibilityLabel(Text("cycleTime.removeSampleNamed \(sample.createdAt.formatted(
-                .dateTime.year().month().day().hour().minute().locale(locale)
-            )))"))
+            .accessibilityLabel(Text("cycleTime.removeSampleNamed \(sampleDate)"))
         }
     }
 

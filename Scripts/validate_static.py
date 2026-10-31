@@ -3201,8 +3201,10 @@ def main() -> int:
     cycle_time_csv = (ROOT / "FactoryTools" / "Tools" / "CycleTimeHistoryCSV.swift").read_text(encoding="utf-8")
     cycle_time_history_math = (ROOT / "FactoryTools" / "Tools" / "CycleTimeHistoryMath.swift").read_text(encoding="utf-8")
     cycle_time_view = (ROOT / "FactoryTools" / "Features" / "Tools" / "CycleTimeCalculatorView.swift").read_text(encoding="utf-8")
-    require('cycleTime.removeSampleNamed \\(sample.createdAt.formatted(' in cycle_time_view
-            and 'oee.removeRunNamed \\(run.createdAt.formatted(' in oee_view
+    require('let sampleDate = sample.createdAt.formatted(' in cycle_time_view
+            and 'cycleTime.removeSampleNamed \\(sampleDate)' in cycle_time_view
+            and 'let runDate = run.createdAt.formatted(' in oee_view
+            and 'oee.removeRunNamed \\(runDate)' in oee_view
             and "home.renameNamed %@" in strings
             and "cycleTime.removeSampleNamed %@" in strings
             and "oee.removeRunNamed %@" in strings,

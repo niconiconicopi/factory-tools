@@ -61,9 +61,10 @@ struct UnitConverterView: View {
                 Section("unitConverter.resultSection") {
                     if let convertedValue {
                         LabeledContent("unitConverter.result") {
-                            Text("\(convertedValue.formatted(
+                            let formattedValue = convertedValue.formatted(
                                 .number.precision(.fractionLength(0...8)).locale(locale)
-                            )) \(targetUnit.symbol)")
+                            )
+                            Text("\(formattedValue) \(targetUnit.symbol)")
                                 .font(theme.homeTitleFont)
                                 .foregroundStyle(theme.accent)
                         }

@@ -170,13 +170,14 @@ struct OEECalculatorView: View {
                 if !orderedRuns.isEmpty && !visibleRuns.isEmpty {
                     Section("oee.savedRuns") {
                         ForEach(visibleRuns) { run in
+                            let runDate = run.createdAt.formatted(
+                                .dateTime.year().month().day().hour().minute().locale(locale)
+                            )
                             Button {
                                 load(run)
                             } label: {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(run.createdAt.formatted(
-                                        .dateTime.year().month().day().hour().minute().locale(locale)
-                                    ))
+                                    Text(runDate)
                                     .font(theme.captionFont)
                                     .foregroundStyle(theme.secondaryText)
                                     if let result = run.calculation {
@@ -203,9 +204,7 @@ struct OEECalculatorView: View {
                                 } label: {
                                     Label("common.remove", systemImage: "trash")
                                 }
-                                .accessibilityLabel(Text("oee.removeRunNamed \(run.createdAt.formatted(
-                                    .dateTime.year().month().day().hour().minute().locale(locale)
-                                )))"))
+                                .accessibilityLabel(Text("oee.removeRunNamed \(runDate)"))
                             }
                         }
                     }
