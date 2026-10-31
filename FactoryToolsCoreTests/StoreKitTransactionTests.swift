@@ -6,6 +6,7 @@ import FactoryToolsCore
 
 @MainActor
 final class StoreKitTransactionTests: XCTestCase {
+    @available(macOS 14.0, *)
     func testLocalNonConsumablePurchaseCreatesVerifiedEntitlement() async throws {
         let configurationURL = try XCTUnwrap(
             Bundle(for: Self.self).url(forResource: "FactoryToolsPro", withExtension: "storekit")
