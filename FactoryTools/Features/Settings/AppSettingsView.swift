@@ -137,7 +137,7 @@ struct AppSettingsView: View {
                                 .autocorrectionDisabled()
                                 .keyboardType(.asciiCapable)
                                 .privacySensitive()
-                                .redacted(reason: shouldRedactPairingSecrets ? .privacy : [])
+                                .redacted(reason: pairingSecretRedaction)
                             Button("settings.peer.activate", action: requestPairingCodeSave)
                                 .disabled(pairingCodeDraft.isEmpty)
                             if peerTransport.hasUnassignedLegacyOutboxError {
@@ -168,7 +168,7 @@ struct AppSettingsView: View {
                                     .textSelection(.enabled)
                                     .foregroundStyle(theme.primaryText)
                                     .privacySensitive()
-                                    .redacted(reason: shouldRedactPairingSecrets ? .privacy : [])
+                                    .redacted(reason: pairingSecretRedaction)
                                 ShareLink(item: pairingCode) {
                                     Label("settings.peer.shareCode", systemImage: "square.and.arrow.up")
                                 }
@@ -180,7 +180,7 @@ struct AppSettingsView: View {
                                 .autocorrectionDisabled()
                                 .keyboardType(.asciiCapable)
                                 .privacySensitive()
-                                .redacted(reason: shouldRedactPairingSecrets ? .privacy : [])
+                                .redacted(reason: pairingSecretRedaction)
                             Button("settings.peer.restoreCode", action: requestPairingCodeRestore)
                                 .disabled(pairingCodeDraft.isEmpty)
                             if pairingCode != nil {
@@ -622,6 +622,10 @@ struct AppSettingsView: View {
             sceneIsActive: scenePhase == .active,
             isScreenCaptured: isSceneCaptured
         )
+    }
+
+    private var pairingSecretRedaction: RedactionReasons {
+        shouldRedactPairingSecrets ? .privacy : []
     }
 
     private var privacyPolicyURL: URL? {

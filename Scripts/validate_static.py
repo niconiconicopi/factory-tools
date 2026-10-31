@@ -1693,7 +1693,8 @@ def main() -> int:
             and "func testPairingCodeReplacementOrRemovalNeedsConfirmationWhenCodeExists()" in peer_outbox_tests,
             "pairing-code replacement and removal must warn about the retained queue and be confirmed before action")
     require(peer_settings_ui.count(".privacySensitive()") >= 3
-            and peer_settings_ui.count(".redacted(reason: shouldRedactPairingSecrets ? .privacy : [])") >= 3
+            and peer_settings_ui.count(".redacted(reason: pairingSecretRedaction)") >= 3
+            and "private var pairingSecretRedaction: RedactionReasons" in settings_view
             and "Text(pairingCode)" in peer_settings_ui
             and 'TextField("settings.peer.enterCode", text: $pairingCodeDraft)' in peer_settings_ui
             and 'TextField("settings.peer.enterExistingCode", text: $pairingCodeDraft)' in peer_settings_ui
