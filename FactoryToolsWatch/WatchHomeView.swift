@@ -159,6 +159,7 @@ struct WatchHomeView: View {
                     }
                     .refreshable { model.refreshCatalog() }
                 }
+            }
             .navigationTitle("watch.title")
             .toolbarColorScheme(.dark)
             .background(WatchTheme.background)
@@ -166,7 +167,6 @@ struct WatchHomeView: View {
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { model.refreshCatalog() }
             }
-        }
         .environment(\.locale, displayLocale)
         .tint(WatchTheme.accent)
         .preferredColorScheme(.dark)
