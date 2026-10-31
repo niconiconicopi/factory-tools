@@ -108,11 +108,6 @@ struct AppBootstrapService {
         var hasChanges = false
         var homeToInsert: HomeProfile?
         var settingsToInsert: AppSettings?
-        let originalSelectedHomeIDs = Dictionary(uniqueKeysWithValues: settings.map { ($0.id, $0.selectedHomeProfileID) })
-        let originalSessionAssignments = Dictionary(uniqueKeysWithValues: sessions.map {
-            ($0.id, (homeProfileID: $0.homeProfileID, toolID: $0.toolID))
-        })
-
         if homes.isEmpty {
             let home = HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)
             homeToInsert = home
@@ -173,16 +168,6 @@ struct AppBootstrapService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            if let homeToInsert { modelContext.delete(homeToInsert) }
-            if let settingsToInsert { modelContext.delete(settingsToInsert) }
-            for setting in settings {
-                setting.selectedHomeProfileID = originalSelectedHomeIDs[setting.id] ?? nil
-            }
-            for session in sessions {
-                guard let original = originalSessionAssignments[session.id] else { continue }
-                session.homeProfileID = original.homeProfileID
-                session.toolID = original.toolID
-            }
             throw error
         }
     }

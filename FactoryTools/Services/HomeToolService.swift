@@ -48,20 +48,16 @@ struct HomeToolService {
         guard homes.contains(where: { $0.id == homeID }) else { throw HomeToolServiceError.homeNotFound }
 
         var sessions: [ProductionSession] = []
-        var existingSessionIDs = Set<UUID>()
         var homeCards: [ToolCard] = []
-        var previousSortOrders: [UUID: Int] = [:]
         var addedCards: [ToolCard] = []
         do {
             var sessionDescriptor = FetchDescriptor<ProductionSession>()
             sessionDescriptor.includePendingChanges = true
             sessions = try modelContext.fetch(sessionDescriptor)
-            existingSessionIDs = Set(sessions.map(\.id))
             var cardDescriptor = FetchDescriptor<ToolCard>()
             cardDescriptor.includePendingChanges = true
             let allCards = try modelContext.fetch(cardDescriptor)
             homeCards = HomeCardOrdering.ordered(allCards.filter { $0.homeProfileID == homeID })
-            previousSortOrders = Dictionary(uniqueKeysWithValues: homeCards.map { ($0.id, $0.sortOrder) })
             let existingToolIDs = Set(homeCards.compactMap { ToolID(rawValue: $0.toolID) })
             let toolsToAdd = skippingExisting
                 ? accessibleTools.filter { !existingToolIDs.contains($0.id) }
@@ -89,15 +85,6 @@ struct HomeToolService {
             return addedCards
         } catch {
             modelContext.rollback()
-            for card in addedCards { modelContext.delete(card) }
-            for session in sessions where !existingSessionIDs.contains(session.id) {
-                modelContext.delete(session)
-            }
-            for card in homeCards {
-                if let previousSortOrder = previousSortOrders[card.id] {
-                    card.sortOrder = previousSortOrder
-                }
-            }
             throw error
         }
     }
@@ -231,10 +218,8 @@ struct HomeProfileService {
         }
 
         let orderedHomes = HomeProfileOrdering.ordered(homes)
-        let previousSortOrders = Dictionary(uniqueKeysWithValues: homes.map { ($0.id, $0.sortOrder) })
         HomeProfileOrdering.assignSortOrders(orderedHomes)
         let home = HomeProfile(name: name, usesDefaultName: false, sortOrder: orderedHomes.count)
-        let previousSelection = primarySettings.selectedHomeProfileID
         modelContext.insert(home)
         primarySettings.selectedHomeProfileID = home.id
         do {
@@ -244,13 +229,6 @@ struct HomeProfileService {
             return home
         } catch {
             modelContext.rollback()
-            for existingHome in homes {
-                if let previousSortOrder = previousSortOrders[existingHome.id] {
-                    existingHome.sortOrder = previousSortOrder
-                }
-            }
-            primarySettings.selectedHomeProfileID = previousSelection
-            modelContext.delete(home)
             throw error
         }
     }
@@ -351,8 +329,6 @@ struct HomeProfileService {
         let samples = try modelContext.fetch(FetchDescriptor<CycleTimeSample>()).filter { $0.homeProfileID == homeID }
         let oeeRuns = try modelContext.fetch(FetchDescriptor<OEERun>()).filter { $0.homeProfileID == homeID }
         let settings = try modelContext.fetch(FetchDescriptor<AppSettings>())
-        let previouslySelectedHomeIDs = Dictionary(uniqueKeysWithValues: settings.map { ($0.id, $0.selectedHomeProfileID) })
-        let previousSortOrders = Dictionary(uniqueKeysWithValues: homes.map { ($0.id, $0.sortOrder) })
 
         events.forEach(modelContext.delete)
         commandReceipts.forEach(modelContext.delete)
@@ -374,21 +350,6 @@ struct HomeProfileService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
-            for event in events { modelContext.insert(event) }
-            for receipt in commandReceipts { modelContext.insert(receipt) }
-            for card in cards { modelContext.insert(card) }
-            for session in sessions { modelContext.insert(session) }
-            for sample in samples { modelContext.insert(sample) }
-            for run in oeeRuns { modelContext.insert(run) }
-            modelContext.insert(home)
-            for setting in settings {
-                setting.selectedHomeProfileID = previouslySelectedHomeIDs[setting.id] ?? nil
-            }
-            for remainingHome in remainingHomes {
-                if let previousSortOrder = previousSortOrders[remainingHome.id] {
-                    remainingHome.sortOrder = previousSortOrder
-                }
-            }
             throw error
         }
     }

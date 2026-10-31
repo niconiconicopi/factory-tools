@@ -2081,7 +2081,7 @@ final class CounterServiceTests: XCTestCase {
 
         secondCard.showsOnWatch = false
         try context.save()
-        XCTAssertTrue(try processor.catalog().sessions.isEmpty)
+        XCTAssertTrue(try processor.catalog(isPro: true).sessions.isEmpty)
         XCTAssertEqual(
             try processor.process(CounterCommand(sessionID: secondSession.id, operation: .increment), isPro: true).acknowledgement.status,
             .rejected
@@ -5290,9 +5290,15 @@ final class ToolRegistryTests: XCTestCase {
             )),
             "Assemblyを削除"
         )
-        let localizedDefaultName = String(localized: "home.defaultName", locale: AppLanguage.japanese.locale)
+        let localizedDefaultName = String(localized: LocalizedStringResource(
+            "home.defaultName",
+            locale: AppLanguage.japanese.locale
+        ))
         XCTAssertEqual(
-            String(localized: "home.deleteNamed \(localizedDefaultName)", locale: AppLanguage.japanese.locale),
+            String(localized: LocalizedStringResource(
+                String.LocalizationValue("home.deleteNamed \(localizedDefaultName)"),
+                locale: AppLanguage.japanese.locale
+            )),
             "通常生産を削除"
         )
     }

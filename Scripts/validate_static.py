@@ -1204,8 +1204,7 @@ def main() -> int:
             and bootstrap_fetch_positions == sorted(bootstrap_fetch_positions)
             and bootstrap_insert_position > max(bootstrap_fetch_positions)
             and "if let settingsToInsert { modelContext.insert(settingsToInsert) }" in bootstrap_service_body
-            and "if let settingsToInsert { modelContext.delete(settingsToInsert) }" in bootstrap_service_body
-            and "originalSessionAssignments" in bootstrap_service_body,
+            and "modelContext.rollback()" in bootstrap_service_body,
             "bootstrap must complete all fallible reads before inserting seed records and restore state after failed saves")
     require(".task { seedInitialDataIfNeeded() }" in bootstrap,
             "bootstrap must repair missing initial data after the root view appears")
@@ -2636,8 +2635,7 @@ def main() -> int:
     ):
         require(evidence in add_tools_body + card_builder_body,
                 f"home-tool add transaction must include {description} so failures roll back pending changes")
-    require("for card in addedCards { modelContext.delete(card) }" in add_tools_body
-            and "for session in sessions where !existingSessionIDs.contains(session.id)" in add_tools_body
+    require("modelContext.rollback()" in add_tools_body
             and "func applyAssemblyPreset" in home_tool_service
             and "func applyPackagingPreset" in home_tool_service,
             "home preset card and session creation must roll back together and use the home-tool service")
@@ -2831,8 +2829,7 @@ def main() -> int:
             and "value.usesDefaultName ? defaultHomeName : value.name" in app_settings_service
             and 'defaultHomeName: localized("home.defaultName")' in settings_view
             and "HomeProfileOrdering.assignSortOrders(isPro ? homeOrder + importedHomes : importedHomes + homeOrder)" in app_settings_service
-            and "modelContext.delete(importedRecord)" in app_settings_service
-            and "previousHomeSortOrders" in app_settings_service
+            and "modelContext.rollback()" in app_settings_service
             and "var destination = UUID()" in app_settings_service,
             "backup import must validate references, remap each copy, and remove only new records after failed saves")
     require("if (3...4).contains(schemaVersion)" in app_settings_service
@@ -2960,8 +2957,7 @@ def main() -> int:
             and "guard homes.count > 1 else { throw HomeProfileServiceError.lastHome }" in home_tool_service
             and "sessionIDs.contains($0.sessionID)" in home_tool_service
             and "modelContext.delete(home)" in home_tool_service
-            and "for event in events { modelContext.insert(event) }" in home_tool_service
-            and "modelContext.insert(home)" in home_tool_service
+            and "modelContext.rollback()" in home_tool_service
             and {"home.delete", "home.deleteConfirmation.title", "home.deleteConfirmation.message"}.issubset(strings),
             "home deletion must confirm data loss, retain one home, clean home-scoped data, and roll back failures")
     card_view = (ROOT / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")

@@ -699,8 +699,6 @@ struct FactoryToolsBackupImportService {
         let sampleIDMap = remappedIDs(backup.cycleTimeSamples.map(\.id), occupied: Set(existingSamples.map(\.id)))
         let oeeRunIDMap = remappedIDs(backup.oeeRuns.map(\.id), occupied: Set(existingOEERuns.map(\.id)))
         let homeOrder = HomeProfileOrdering.ordered(existingHomes)
-        let previousHomeSortOrders = Dictionary(uniqueKeysWithValues: existingHomes.map { ($0.id, $0.sortOrder) })
-        let previousSelectedHomeID = AppSettingsOrdering.primary(in: existingSettings)?.selectedHomeProfileID
         var inferredSessionHomes: [UUID: UUID] = [:]
         var inferredSessionTools: [UUID: String] = [:]
         for card in backup.cards {
@@ -831,19 +829,6 @@ struct FactoryToolsBackupImportService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            for importedRecord in importedHomes { modelContext.delete(importedRecord) }
-            for importedRecord in importedSessions { modelContext.delete(importedRecord) }
-            for importedRecord in importedCards { modelContext.delete(importedRecord) }
-            for importedRecord in importedEvents { modelContext.delete(importedRecord) }
-            for importedRecord in importedCommandReceipts { modelContext.delete(importedRecord) }
-            for importedRecord in importedSamples { modelContext.delete(importedRecord) }
-            for importedRecord in importedOEERuns { modelContext.delete(importedRecord) }
-            for existingHome in existingHomes {
-                existingHome.sortOrder = previousHomeSortOrders[existingHome.id] ?? existingHome.sortOrder
-            }
-            if let primarySettings = AppSettingsOrdering.primary(in: existingSettings) {
-                primarySettings.selectedHomeProfileID = previousSelectedHomeID
-            }
             throw error
         }
 

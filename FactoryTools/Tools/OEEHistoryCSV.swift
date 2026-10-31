@@ -64,12 +64,17 @@ enum OEEHistoryCSV {
                     String(run.goodUnits),
                     String(run.defectiveUnits),
                     String(totalUnits),
-                    String(availability),
-                    String(performance),
-                    String(quality),
-                    String(overall)
+                    csvNumber(availability),
+                    csvNumber(performance),
+                    csvNumber(quality),
+                    csvNumber(overall)
                 ].joined(separator: ",")
             }
         return ([header] + rows).joined(separator: "\r\n") + "\r\n"
+    }
+
+    private static func csvNumber(_ value: Double) -> String {
+        let formatted = String(format: "%.6f", locale: Locale(identifier: "en_US_POSIX"), value)
+        return formatted.replacingOccurrences(of: #"\.?0+$"#, with: "", options: .regularExpression)
     }
 }
