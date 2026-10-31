@@ -226,60 +226,7 @@ struct AppSettingsView: View {
                         unconfiguredSupportMessage
                     }
                 }
-                Section("settings.backup") {
-                    Button(action: prepareBackup) {
-                        Label("settings.backup.prepare", systemImage: "externaldrive")
-                    }
-                    .alert("settings.backup.error", isPresented: $showingBackupError) {
-                        Button("common.done", role: .cancel) {}
-                    } message: {
-                        Text(LocalizedStringKey(backupErrorMessageKey))
-                    }
-                    Text("settings.backup.description")
-                        .font(theme.captionFont)
-                        .foregroundStyle(theme.secondaryText)
-                    Button {
-                        showingImportPicker = true
-                    } label: {
-                        Label("settings.backup.chooseImport", systemImage: "square.and.arrow.down")
-                    }
-                    .fileImporter(
-                        isPresented: $showingImportPicker,
-                        allowedContentTypes: [.json],
-                        allowsMultipleSelection: false,
-                        onCompletion: handleBackupFileSelection
-                    )
-                    .confirmationDialog(
-                        "settings.backup.importPreview.title",
-                        isPresented: $showingImportPreview,
-                        titleVisibility: .visible
-                    ) {
-                        Button(
-                            proPurchases.hasPro ? "settings.backup.addCopy" : "settings.backup.restoreFreeCopy",
-                            action: addBackupCopy
-                        )
-                        Button("common.cancel", role: .cancel) { importedBackup = nil }
-                    } message: {
-                        if let importedBackup {
-                            Text(importPreviewMessage(for: importedBackup))
-                        }
-                    }
-                    .alert("settings.backup.error", isPresented: $showingBackupError) {
-                        Button("common.done", role: .cancel) {}
-                    } message: {
-                        Text(LocalizedStringKey(backupErrorMessageKey))
-                    }
-                    if let lastImportResult {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Label("settings.backup.importComplete", systemImage: "checkmark.circle.fill")
-                                .font(theme.captionFont)
-                                .foregroundStyle(theme.accent)
-                            Text(importResultSummary(lastImportResult))
-                                .font(theme.captionFont)
-                                .foregroundStyle(theme.secondaryText)
-                        }
-                    }
-                }
+                backupSettingsSection
             }
             .scrollContentBackground(.hidden)
             .background(theme.background)
@@ -531,6 +478,63 @@ struct AppSettingsView: View {
         Text("settings.support.notConfigured")
             .font(theme.captionFont)
             .foregroundStyle(theme.secondaryText)
+    }
+
+    private var backupSettingsSection: some View {
+        Section("settings.backup") {
+            Button(action: prepareBackup) {
+                Label("settings.backup.prepare", systemImage: "externaldrive")
+            }
+            .alert("settings.backup.error", isPresented: $showingBackupError) {
+                Button("common.done", role: .cancel) {}
+            } message: {
+                Text(LocalizedStringKey(backupErrorMessageKey))
+            }
+            Text("settings.backup.description")
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+            Button {
+                showingImportPicker = true
+            } label: {
+                Label("settings.backup.chooseImport", systemImage: "square.and.arrow.down")
+            }
+            .fileImporter(
+                isPresented: $showingImportPicker,
+                allowedContentTypes: [.json],
+                allowsMultipleSelection: false,
+                onCompletion: handleBackupFileSelection
+            )
+            .confirmationDialog(
+                "settings.backup.importPreview.title",
+                isPresented: $showingImportPreview,
+                titleVisibility: .visible
+            ) {
+                Button(
+                    proPurchases.hasPro ? "settings.backup.addCopy" : "settings.backup.restoreFreeCopy",
+                    action: addBackupCopy
+                )
+                Button("common.cancel", role: .cancel) { importedBackup = nil }
+            } message: {
+                if let importedBackup {
+                    Text(importPreviewMessage(for: importedBackup))
+                }
+            }
+            .alert("settings.backup.error", isPresented: $showingBackupError) {
+                Button("common.done", role: .cancel) {}
+            } message: {
+                Text(LocalizedStringKey(backupErrorMessageKey))
+            }
+            if let lastImportResult {
+                VStack(alignment: .leading, spacing: 4) {
+                    Label("settings.backup.importComplete", systemImage: "checkmark.circle.fill")
+                        .font(theme.captionFont)
+                        .foregroundStyle(theme.accent)
+                    Text(importResultSummary(lastImportResult))
+                        .font(theme.captionFont)
+                        .foregroundStyle(theme.secondaryText)
+                }
+            }
+        }
     }
 
     private func handleBackupFileSelection(_ result: Result<[URL], Error>) {
