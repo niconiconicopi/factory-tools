@@ -170,7 +170,9 @@ class PublicSiteDraftTests(unittest.TestCase):
         privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
         support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
         privacy = privacy.replace("### このページのホスティング", "### ホスティング")
+        privacy = privacy.replace("訪問者のIPアドレスを記録します", "訪問者データを記録します")
         privacy = privacy.replace("### Website hosting", "### Hosting")
+        privacy = privacy.replace("logs visitor IP addresses", "logs connection data")
         privacy = privacy.replace("[Publisher's legal name / 発行者の正式名称]", "Factory Tools Publisher")
         privacy = privacy.replace("[YYYY-MM-DD]", "2026-10-31")
         privacy = privacy.replace("[Public contact email or contact page / 公開連絡先メールアドレスまたは問い合わせページ]", "privacy@example.org")
@@ -183,7 +185,9 @@ class PublicSiteDraftTests(unittest.TestCase):
         issues = generate_public_site.publication_copy_issues(privacy, support)
 
         self.assertIn("Japanese privacy copy must describe website hosting separately from app data", issues)
+        self.assertIn("Japanese privacy copy must disclose GitHub Pages visitor IP logging", issues)
         self.assertIn("English privacy copy must describe website hosting separately from app data", issues)
+        self.assertIn("English privacy copy must disclose GitHub Pages visitor IP logging", issues)
 
 
 if __name__ == "__main__":

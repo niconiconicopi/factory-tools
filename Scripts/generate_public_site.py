@@ -206,8 +206,12 @@ def publication_copy_issues(privacy: str, support: str) -> list[str]:
 
     if "### このページのホスティング" not in privacy:
         issues.append("Japanese privacy copy must describe website hosting separately from app data")
+    if "訪問者のIPアドレスを記録します" not in privacy:
+        issues.append("Japanese privacy copy must disclose GitHub Pages visitor IP logging")
     if "### Website hosting" not in privacy:
         issues.append("English privacy copy must describe website hosting separately from app data")
+    if "logs visitor IP addresses" not in privacy:
+        issues.append("English privacy copy must disclose GitHub Pages visitor IP logging")
 
     def value(pattern: str, source: str) -> str | None:
         match = re.search(pattern, source)
