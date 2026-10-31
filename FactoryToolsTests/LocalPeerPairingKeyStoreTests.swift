@@ -40,6 +40,49 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         wait(for: [clientReady], timeout: 10)
     }
 
+    func testLocalPeerTLSParametersRejectMismatchedPairingKey() throws {
+        let listenerKey = Data(repeating: 0x5a, count: 32)
+        let wrongClientKey = Data(repeating: 0xa5, count: 32)
+        let listenerParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: listenerKey))
+        let clientParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: wrongClientKey))
+        let listener = try NWListener(using: listenerParameters)
+        let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS.Rejection")
+        let listenerReady = expectation(description: "TLS-PSK listener becomes ready")
+        let clientRejected = expectation(description: "mismatched pairing key is rejected")
+        let clientConnected = expectation(description: "mismatched pairing key must not connect")
+        clientConnected.isInverted = true
+
+        listener.stateUpdateHandler = { state in
+            if case .ready = state { listenerReady.fulfill() }
+        }
+        listener.newConnectionHandler = { connection in
+            connection.start(queue: callbackQueue)
+        }
+        listener.start(queue: callbackQueue)
+        defer { listener.cancel() }
+
+        wait(for: [listenerReady], timeout: 10)
+        let port = try XCTUnwrap(listener.port)
+        let client = NWConnection(
+            to: .hostPort(host: "127.0.0.1", port: port),
+            using: clientParameters
+        )
+        client.stateUpdateHandler = { state in
+            switch state {
+            case .ready:
+                clientConnected.fulfill()
+            case .failed:
+                clientRejected.fulfill()
+            default:
+                break
+            }
+        }
+        client.start(queue: callbackQueue)
+        defer { client.cancel() }
+
+        wait(for: [clientRejected, clientConnected], timeout: 10)
+    }
+
     func testPairingCodeDecodesThirtyTwoBytes() throws {
         let key = try LocalPeerPairingKeyStore.keyData(from: String(repeating: "a5", count: 32))
 

@@ -1860,6 +1860,7 @@ def main() -> int:
     ), "Only the local peer transport may use Network.framework clients")
     require("import Network" in peer_outbox_tests
             and "testLocalPeerTLSParametersCompleteLoopbackPSKHandshake" in peer_outbox_tests
+            and "testLocalPeerTLSParametersRejectMismatchedPairingKey" in peer_outbox_tests
             and "LocalPeerTLSParameters.make(pairingKey: pairingKey)" in peer_outbox_tests
             and 'host: "127.0.0.1"' in peer_outbox_tests,
             "the local peer transport's production TLS-PSK parameters must pass a loopback handshake test")
