@@ -70,3 +70,19 @@ jobs:
           -destination 'generic/platform=watchOS Simulator'
           -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
           CODE_SIGNING_ALLOWED=NO
+
+      - name: Archive generic iPhone and iPad app without signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive_path="$RUNNER_TEMP/FactoryTools.xcarchive"
+          xcodebuild archive \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$archive_path" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
+            CODE_SIGNING_ALLOWED=NO
+          test -d "$archive_path/Products/Applications/FactoryTools.app"
+          test -d "$archive_path/Products/Applications/FactoryTools.app/Watch/FactoryToolsWatch.app"
