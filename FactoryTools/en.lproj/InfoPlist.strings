@@ -1,0 +1,3 @@
+CFBundleDisplayName = "Factory Tools";
+CFBundleName = "Factory Tools";
+NSLocalNetworkUsageDescription = "Connect an iPad to this iPhone to control production counters on your local network.";

@@ -1,0 +1,72 @@
+name: Apple native checks
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+    inputs:
+      enable_private_macos_runner:
+        description: Confirm FACTORYTOOLS_PRIVATE_MACOS_CI is enabled only after a no-overage billing guard is verified.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    # Public repositories use standard macOS runners at no charge. For private repositories,
+    # require a manual run and an explicit confirmation that overage is blocked.
+    if: github.event.repository.visibility == 'public' || (github.event_name == 'workflow_dispatch' && inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Show Apple toolchain
+        run: xcodebuild -version
+
+      - name: Run source-level checks
+        run: |
+          python3 -B -m unittest discover -s Scripts -p 'test_*.py'
+          python3 Scripts/validate_static.py
+          python3 Scripts/audit_source_hygiene.py
+          python3 Scripts/generate_public_site.py --check
+
+      - name: Test iPhone and app-hosted regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((device["udid"] for devices in data["devices"].values() for device in devices if device["isAvailable"] and device["name"].startswith("iPhone")), ""))')"
+          if [[ -z "$simulator_id" ]]; then
+            echo "No available iPhone Simulator device was found." >&2
+            exit 1
+          fi
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Test shared Core contracts
+        run: >-
+          xcodebuild test
+          -project FactoryTools.xcodeproj
+          -scheme FactoryToolsCore
+          -destination 'platform=macOS'
+          -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Build Watch Simulator target
+        run: >-
+          xcodebuild build
+          -project FactoryTools.xcodeproj
+          -scheme FactoryToolsWatch
+          -destination 'generic/platform=watchOS Simulator'
+          -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
+          CODE_SIGNING_ALLOWED=NO

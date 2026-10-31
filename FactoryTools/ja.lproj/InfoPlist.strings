@@ -1,0 +1,3 @@
+CFBundleDisplayName = "Factory Tools";
+CFBundleName = "Factory Tools";
+NSLocalNetworkUsageDescription = "同じローカルネットワーク上のiPadから、このiPhoneの生産カウンターを操作します。";

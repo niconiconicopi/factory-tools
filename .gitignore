@@ -1,0 +1,33 @@
+# Keep the unrelated workspace project out of a future Factory Tools repository.
+/Audio教材_Phase1/
+
+# Xcode user state and generated build output.
+**/DerivedData/
+**/build/
+**/.build/
+**/xcuserdata/
+**/*.xcuserstate
+*.xcarchive/
+*.xcresult/
+*.app/
+*.appex/
+*.ipa
+*.dSYM/
+.DS_Store
+
+# Signing credentials and provisioning material must never enter source control.
+*.p8
+*.p12
+*.mobileprovision
+*.provisionprofile
+AuthKey_*.p8
+
+# Local environment and Python cache files.
+.env
+.env.*
+**/__pycache__/
+*.py[cod]
+
+# A completed publisher page candidate may contain real personal contact data.
+# Review it and deliberately add it to the publishing repository when ready.
+/FactoryTools/SitePublicationCandidate/

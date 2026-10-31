@@ -1,0 +1,313 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+	B00000000000000000000001 /* FactoryToolsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000001 /* FactoryToolsApp.swift */; };
+	B00000000000000000000002 /* AppBootstrapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000002 /* AppBootstrapView.swift */; };
+	B00000000000000000000003 /* HomeProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000003 /* HomeProfile.swift */; };
+	B00000000000000000000004 /* ToolCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000004 /* ToolCard.swift */; };
+	B00000000000000000000005 /* ProductionSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000005 /* ProductionSession.swift */; };
+	B00000000000000000000006 /* CountEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000006 /* CountEvent.swift */; };
+	B00000000000000000000007 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000007 /* AppSettings.swift */; };
+	B00000000000000000000011 /* AssemblyPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000011 /* AssemblyPreset.swift */; };
+	B00000000000000000000012 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000012 /* AppTheme.swift */; };
+	B00000000000000000000013 /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000013 /* ThemeManager.swift */; };
+	B00000000000000000000014 /* CounterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000014 /* CounterService.swift */; };
+	B00000000000000000000015 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000015 /* HomeView.swift */; };
+	B00000000000000000000016 /* HomeToolCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000016 /* HomeToolCardView.swift */; };
+	B00000000000000000000017 /* ToolPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000017 /* ToolPickerView.swift */; };
+	B00000000000000000000018 /* CounterSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000018 /* CounterSettingsView.swift */; };
+	B00000000000000000000019 /* AppSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000019 /* AppSettingsView.swift */; };
+	B00000000000000000000020 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000020 /* Localizable.xcstrings */; };
+	B00000000000000000000021 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000021 /* Assets.xcassets */; };
+	B00000000000000000000022 /* CounterServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000022 /* CounterServiceTests.swift */; };
+	B00000000000000000000023 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000023 /* XCTest.framework */; };
+	B00000000000000000000024 /* HomeToolService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000026 /* HomeToolService.swift */; };
+	B00000000000000000000025 /* ThemeID.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000027 /* ThemeID.swift */; };
+	B00000000000000000000026 /* CycleTimeCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000028 /* CycleTimeCalculatorView.swift */; };
+	B00000000000000000000027 /* TaktTimeCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000029 /* TaktTimeCalculatorView.swift */; };
+	B00000000000000000000028 /* BoxCalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000030 /* BoxCalculatorView.swift */; };
+	B00000000000000000000030 /* UnitConverterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000032 /* UnitConverterView.swift */; };
+	B00000000000000000000031 /* CycleTimeSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000033 /* CycleTimeSample.swift */; };
+	B00000000000000000000032 /* CycleTimeSampleService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000034 /* CycleTimeSampleService.swift */; };
+	B00000000000000000000034 /* CreateHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000036 /* CreateHomeView.swift */; };
+	B00000000000000000000035 /* ManageHomesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000037 /* ManageHomesView.swift */; };
+	B00000000000000000000036 /* RenameHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000038 /* RenameHomeView.swift */; };
+	B00000000000000000000037 /* OEECalculatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000039 /* OEECalculatorView.swift */; };
+	B00000000000000000000038 /* OEERun.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000040 /* OEERun.swift */; };
+	B00000000000000000000039 /* OEERunService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000041 /* OEERunService.swift */; };
+	B00000000000000000000040 /* OEEHistoryMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000042 /* OEEHistoryMath.swift */; };
+	B00000000000000000000041 /* OEEHistoryCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000043 /* OEEHistoryCSV.swift */; };
+	B00000000000000000000042 /* CycleTimeHistoryCSV.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000044 /* CycleTimeHistoryCSV.swift */; };
+	B00000000000000000000043 /* CycleTimeHistoryMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000045 /* CycleTimeHistoryMath.swift */; };
+	B00000000000000000000044 /* HistoryDateWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000046 /* HistoryDateWindow.swift */; };
+	B00000000000000000000045 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000047 /* InfoPlist.strings */; };
+	B00000000000000000000047 /* CounterCommandReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000051 /* CounterCommandReceipt.swift */; };
+	B00000000000000000000051 /* BoxPackingMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000055; };
+	B00000000000000000000052 /* ProductionProgressMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000056; };
+	B00000000000000000000053 /* PerUnitTimeMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000057; };
+	B00000000000000000000054 /* UnitConversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000058; };
+	B00000000000000000000056 /* FactoryToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000060; };
+	B00000000000000000000057 /* FactoryToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000060; };
+	B00000000000000000000058 /* CounterCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000061;};
+	B00000000000000000000059 /* ToolID.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000062;};
+	B00000000000000000000009 /* ToolDefinition.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000009;};
+	B00000000000000000000010 /* ToolRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000010;};
+	B00000000000000000000050 /* LocalizedNumberParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000054;};
+B00000000000000000000060 /* CoreContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000063 /* CoreContractTests.swift */; };
+B00000000000000000000061 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000023 /* XCTest.framework */; };
+B00000000000000000000062 /* FactoryToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000060 /* FactoryToolsCore.framework */; };
+B00000000000000000000063 /* CounterCommandOutbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000065 /* CounterCommandOutbox.swift */; };
+B00000000000000000000064 /* CounterCommandAcknowledgement.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000066 /* CounterCommandAcknowledgement.swift */; };
+B00000000000000000000065 /* WatchCounterCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000067 /* WatchCounterCatalog.swift */; };
+B00000000000000000000066 /* WatchCommandProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000068 /* WatchCommandProcessor.swift */; };
+B00000000000000000000067 /* WatchConnectivityReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000069 /* WatchConnectivityReceiver.swift */; };
+B00000000000000000000068 /* FactoryToolsWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000070 /* FactoryToolsWatchApp.swift */; };
+B00000000000000000000069 /* WatchCounterModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000071 /* WatchCounterModel.swift */; };
+B00000000000000000000070 /* WatchHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000072 /* WatchHomeView.swift */; };
+B00000000000000000000071 /* WatchTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000073 /* WatchTheme.swift */; };
+B00000000000000000000072 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000074 /* Localizable.xcstrings */; };
+B00000000000000000000084 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000084 /* Assets.xcassets */; };
+	B00000000000000000000085 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000085 /* PrivacyInfo.xcprivacy */; };
+B00000000000000000000073 /* FactoryToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000060 /* FactoryToolsCore.framework */; };
+B00000000000000000000074 /* FactoryToolsWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C00000000000000000000075 /* FactoryToolsWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, );}; };
+B00000000000000000000075 /* CounterPeerMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000076 /* CounterPeerMessage.swift */; };
+B00000000000000000000076 /* CounterPeerFrameCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000077 /* CounterPeerFrameCodec.swift */; };
+B00000000000000000000077 /* LocalPeerPairingKeyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000078 /* LocalPeerPairingKeyStore.swift */; };
+B00000000000000000000078 /* LocalPeerCounterTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000079 /* LocalPeerCounterTransport.swift */; };
+B00000000000000000000079 /* PeerCounterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000080 /* PeerCounterView.swift */; };
+B00000000000000000000080 /* LocalPeerPairingKeyStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000082 /* LocalPeerPairingKeyStoreTests.swift */; };
+B00000000000000000000081 /* LocalPeerCounterOutboxRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000083 /* LocalPeerCounterOutboxRepository.swift */; };
+B00000000000000000000082 /* LocalPeerPairingKeyStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000082 /* LocalPeerPairingKeyStoreTests.swift */; };
+B00000000000000000000086 /* ProPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000086 /* ProPurchaseManager.swift */; };
+	B00000000000000000000087 /* WatchCycleTimeCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000087 /* WatchCycleTimeCommand.swift */; };
+B00000000000000000000088 /* FactoryToolsSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000088 /* FactoryToolsSchema.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+	F00000000000000000000001 /* PBXContainerItemProxy */ = {
+		isa = PBXContainerItemProxy;
+		containerPortal = E00000000000000000000001 /* Project object */;
+		proxyType = 1;
+		remoteGlobalIDString = E00000000000000000000010;
+		remoteInfo = FactoryTools;
+	};
+	F00000000000000000000003 /* Core app proxy */ = {isa = PBXContainerItemProxy; containerPortal = E00000000000000000000001; proxyType = 1; remoteGlobalIDString = E00000000000000000000012; remoteInfo = FactoryToolsCore;};
+	F00000000000000000000004 /* Core tests proxy */ = {isa = PBXContainerItemProxy; containerPortal = E00000000000000000000001; proxyType = 1; remoteGlobalIDString = E00000000000000000000012; remoteInfo = FactoryToolsCore;};
+F00000000000000000000007 /* Core contract tests proxy */ = {isa = PBXContainerItemProxy; containerPortal = E00000000000000000000001; proxyType = 1; remoteGlobalIDString = E00000000000000000000012; remoteInfo = FactoryToolsCore;};
+F00000000000000000000009 /* Watch app proxy */ = {isa = PBXContainerItemProxy; containerPortal = E00000000000000000000001; proxyType = 1; remoteGlobalIDString = E00000000000000000000014; remoteInfo = FactoryToolsWatch;};
+F00000000000000000000011 /* Watch Core proxy */ = {isa = PBXContainerItemProxy; containerPortal = E00000000000000000000001; proxyType = 1; remoteGlobalIDString = E00000000000000000000012; remoteInfo = FactoryToolsCore;};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+	C00000000000000000000001 /* FactoryToolsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/FactoryToolsApp.swift; sourceTree = "<group>"; };
+	C00000000000000000000002 /* AppBootstrapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppBootstrapView.swift; sourceTree = "<group>"; };
+	C00000000000000000000003 /* HomeProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/HomeProfile.swift; sourceTree = "<group>"; };
+	C00000000000000000000004 /* ToolCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ToolCard.swift; sourceTree = "<group>"; };
+	C00000000000000000000005 /* ProductionSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ProductionSession.swift; sourceTree = "<group>"; };
+	C00000000000000000000006 /* CountEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/CountEvent.swift; sourceTree = "<group>"; };
+	C00000000000000000000007 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings/AppSettings.swift; sourceTree = "<group>"; };
+	C00000000000000000000011 /* AssemblyPreset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Presets/AssemblyPreset.swift; sourceTree = "<group>"; };
+	C00000000000000000000012 /* AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Themes/AppTheme.swift; sourceTree = "<group>"; };
+	C00000000000000000000013 /* ThemeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Themes/ThemeManager.swift; sourceTree = "<group>"; };
+	C00000000000000000000014 /* CounterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CounterService.swift; sourceTree = "<group>"; };
+	C00000000000000000000015 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/HomeView.swift; sourceTree = "<group>"; };
+	C00000000000000000000016 /* HomeToolCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/HomeToolCardView.swift; sourceTree = "<group>"; };
+	C00000000000000000000017 /* ToolPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/ToolPickerView.swift; sourceTree = "<group>"; };
+	C00000000000000000000018 /* CounterSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Counter/CounterSettingsView.swift; sourceTree = "<group>"; };
+	C00000000000000000000019 /* AppSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Settings/AppSettingsView.swift; sourceTree = "<group>"; };
+	C00000000000000000000020 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Resources/Localizable.xcstrings; sourceTree = "<group>"; };
+	C00000000000000000000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
+	C00000000000000000000022 /* CounterServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterServiceTests.swift; sourceTree = "<group>"; };
+	C00000000000000000000023 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+	C00000000000000000000024 /* FactoryTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FactoryTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
+	C00000000000000000000025 /* FactoryToolsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FactoryToolsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+	C00000000000000000000026 /* HomeToolService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/HomeToolService.swift; sourceTree = "<group>"; };
+	C00000000000000000000027 /* ThemeID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Themes/ThemeID.swift; sourceTree = "<group>"; };
+	C00000000000000000000028 /* CycleTimeCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Tools/CycleTimeCalculatorView.swift; sourceTree = "<group>"; };
+	C00000000000000000000029 /* TaktTimeCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Tools/TaktTimeCalculatorView.swift; sourceTree = "<group>"; };
+	C00000000000000000000030 /* BoxCalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Tools/BoxCalculatorView.swift; sourceTree = "<group>"; };
+	C00000000000000000000032 /* UnitConverterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Tools/UnitConverterView.swift; sourceTree = "<group>"; };
+	C00000000000000000000033 /* CycleTimeSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/CycleTimeSample.swift; sourceTree = "<group>"; };
+	C00000000000000000000034 /* CycleTimeSampleService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CycleTimeSampleService.swift; sourceTree = "<group>"; };
+	C00000000000000000000036 /* CreateHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/CreateHomeView.swift; sourceTree = "<group>"; };
+	C00000000000000000000037 /* ManageHomesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/ManageHomesView.swift; sourceTree = "<group>"; };
+	C00000000000000000000038 /* RenameHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Home/RenameHomeView.swift; sourceTree = "<group>"; };
+	C00000000000000000000039 /* OEECalculatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Tools/OEECalculatorView.swift; sourceTree = "<group>"; };
+	C00000000000000000000040 /* OEERun.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/OEERun.swift; sourceTree = "<group>"; };
+	C00000000000000000000041 /* OEERunService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/OEERunService.swift; sourceTree = "<group>"; };
+	C00000000000000000000042 /* OEEHistoryMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/OEEHistoryMath.swift; sourceTree = "<group>"; };
+	C00000000000000000000043 /* OEEHistoryCSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/OEEHistoryCSV.swift; sourceTree = "<group>"; };
+	C00000000000000000000044 /* CycleTimeHistoryCSV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/CycleTimeHistoryCSV.swift; sourceTree = "<group>"; };
+	C00000000000000000000045 /* CycleTimeHistoryMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/CycleTimeHistoryMath.swift; sourceTree = "<group>"; };
+	C00000000000000000000048 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+	C00000000000000000000049 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+	C00000000000000000000046 /* HistoryDateWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/HistoryDateWindow.swift; sourceTree = "<group>"; };
+	C00000000000000000000051 /* CounterCommandReceipt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/CounterCommandReceipt.swift; sourceTree = "<group>"; };
+	C00000000000000000000055 /* BoxPackingMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxPackingMath.swift; sourceTree = "<group>"; };
+	C00000000000000000000056 /* ProductionProgressMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductionProgressMath.swift; sourceTree = "<group>"; };
+	C00000000000000000000057 /* PerUnitTimeMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerUnitTimeMath.swift; sourceTree = "<group>"; };
+	C00000000000000000000058 /* UnitConversion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnitConversion.swift; sourceTree = "<group>"; };
+	C00000000000000000000060 /* FactoryToolsCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FactoryToolsCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+	C00000000000000000000061 /* CounterCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterCommand.swift; sourceTree = "<group>";};
+	C00000000000000000000062 /* ToolID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolID.swift; sourceTree = "<group>";};
+	C00000000000000000000009 /* ToolDefinition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/ToolDefinition.swift; sourceTree = "<group>";};
+	C00000000000000000000010 /* ToolRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/ToolRegistry.swift; sourceTree = "<group>";};
+	C00000000000000000000054 /* LocalizedNumberParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tools/LocalizedNumberParser.swift; sourceTree = "<group>";};
+C00000000000000000000063 /* CoreContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreContractTests.swift; sourceTree = "<group>";};
+C00000000000000000000064 /* FactoryToolsCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FactoryToolsCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR;};
+C00000000000000000000065 /* CounterCommandOutbox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterCommandOutbox.swift; sourceTree = "<group>";};
+C00000000000000000000066 /* CounterCommandAcknowledgement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterCommandAcknowledgement.swift; sourceTree = "<group>";};
+C00000000000000000000067 /* WatchCounterCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCounterCatalog.swift; sourceTree = "<group>";};
+C00000000000000000000068 /* WatchCommandProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/WatchCommandProcessor.swift; sourceTree = "<group>";};
+C00000000000000000000069 /* WatchConnectivityReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/WatchConnectivityReceiver.swift; sourceTree = "<group>";};
+C00000000000000000000070 /* FactoryToolsWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FactoryToolsWatchApp.swift; sourceTree = "<group>";};
+C00000000000000000000071 /* WatchCounterModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCounterModel.swift; sourceTree = "<group>";};
+C00000000000000000000072 /* WatchHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchHomeView.swift; sourceTree = "<group>";};
+C00000000000000000000073 /* WatchTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTheme.swift; sourceTree = "<group>";};
+C00000000000000000000074 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Resources/Localizable.xcstrings; sourceTree = "<group>";};
+C00000000000000000000084 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>";};
+C00000000000000000000085 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>";};
+C00000000000000000000086 /* ProPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/ProPurchaseManager.swift; sourceTree = "<group>"; };
+C00000000000000000000087 /* WatchCycleTimeCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchCycleTimeCommand.swift; sourceTree = "<group>"; };
+C00000000000000000000088 /* FactoryToolsSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence/FactoryToolsSchema.swift; sourceTree = "<group>"; };
+C00000000000000000000075 /* FactoryToolsWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FactoryToolsWatch.app; sourceTree = BUILT_PRODUCTS_DIR;};
+C00000000000000000000076 /* CounterPeerMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPeerMessage.swift; sourceTree = "<group>";};
+C00000000000000000000077 /* CounterPeerFrameCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPeerFrameCodec.swift; sourceTree = "<group>";};
+C00000000000000000000078 /* LocalPeerPairingKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/LocalPeerPairingKeyStore.swift; sourceTree = "<group>";};
+C00000000000000000000079 /* LocalPeerCounterTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/LocalPeerCounterTransport.swift; sourceTree = "<group>";};
+C00000000000000000000080 /* PeerCounterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Counter/PeerCounterView.swift; sourceTree = "<group>";};
+C00000000000000000000081 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>";};
+C00000000000000000000082 /* LocalPeerPairingKeyStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPeerPairingKeyStoreTests.swift; sourceTree = "<group>";};
+C00000000000000000000083 /* LocalPeerCounterOutboxRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/LocalPeerCounterOutboxRepository.swift; sourceTree = "<group>";};
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+	D00000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000056 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
+	D00000000000000000000002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000023 /* XCTest.framework in Frameworks */, B00000000000000000000057 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0; };
+	D00000000000000000000003 /* Core Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+D00000000000000000000004 /* Core Tests Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000061 /* XCTest.framework in Frameworks */, B00000000000000000000062 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0;};
+	D00000000000000000000005 /* Watch Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000073 /* FactoryToolsCore.framework in Frameworks */,); runOnlyForDeploymentPostprocessing = 0;};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+	D10000000000000000000001 = {
+		isa = PBXGroup;
+		children = (D10000000000000000000002 /* FactoryTools */, D10000000000000000000003 /* FactoryToolsTests */, D10000000000000000000005 /* FactoryToolsCore */, D10000000000000000000006 /* FactoryToolsCoreTests */, D10000000000000000000007 /* FactoryToolsWatch */, D10000000000000000000004 /* Products */, C00000000000000000000023 /* XCTest.framework */,);
+		sourceTree = "<group>";
+	};
+	D10000000000000000000002 /* FactoryTools */ = {
+		isa = PBXGroup;
+		children = (C00000000000000000000001, C00000000000000000000002, C00000000000000000000003, C00000000000000000000004, C00000000000000000000005, C00000000000000000000006, C00000000000000000000007, C00000000000000000000011, C00000000000000000000012, C00000000000000000000013, C00000000000000000000014, C00000000000000000000015, C00000000000000000000016, C00000000000000000000017, C00000000000000000000018, C00000000000000000000019, C00000000000000000000020, C00000000000000000000021, C00000000000000000000026, C00000000000000000000027, C00000000000000000000028, C00000000000000000000029, C00000000000000000000030, C00000000000000000000032, C00000000000000000000033, C00000000000000000000034, C00000000000000000000036, C00000000000000000000037, C00000000000000000000038, C00000000000000000000039, C00000000000000000000040, C00000000000000000000041, C00000000000000000000042, C00000000000000000000043, C00000000000000000000044, C00000000000000000000045, C00000000000000000000046, C00000000000000000000047, C00000000000000000000051, C00000000000000000000009, C00000000000000000000010, C00000000000000000000054, C00000000000000000000068, C00000000000000000000069, C00000000000000000000078, C00000000000000000000079, C00000000000000000000080, C00000000000000000000081, C00000000000000000000083, C00000000000000000000085, C00000000000000000000086, C00000000000000000000088,);
+		path = FactoryTools;
+		sourceTree = "<group>";
+	};
+D10000000000000000000003 /* FactoryToolsTests */ = {isa = PBXGroup; children = (C00000000000000000000022, C00000000000000000000082,); path = FactoryToolsTests; sourceTree = "<group>"; };
+	D10000000000000000000005 /* FactoryToolsCore */ = {isa = PBXGroup; children = (C00000000000000000000055, C00000000000000000000056, C00000000000000000000057, C00000000000000000000058, C00000000000000000000061, C00000000000000000000062, C00000000000000000000065, C00000000000000000000066, C00000000000000000000067, C00000000000000000000076, C00000000000000000000077, C00000000000000000000087,); path = FactoryToolsCore; sourceTree = "<group>"; };
+	C00000000000000000000047 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (C00000000000000000000048 /* en */, C00000000000000000000049 /* ja */,); name = InfoPlist.strings; sourceTree = "<group>"; };
+	D10000000000000000000006 /* FactoryToolsCoreTests */ = {isa = PBXGroup; children = (C00000000000000000000063,); path = FactoryToolsCoreTests; sourceTree = "<group>"; };
+	D10000000000000000000004 /* Products */ = {isa = PBXGroup; children = (C00000000000000000000024, C00000000000000000000025, C00000000000000000000060, C00000000000000000000064, C00000000000000000000075,); name = Products; sourceTree = "<group>"; };
+D10000000000000000000007 /* FactoryToolsWatch */ = {isa = PBXGroup; children = (C00000000000000000000070, C00000000000000000000071, C00000000000000000000072, C00000000000000000000073, C00000000000000000000074, C00000000000000000000084,); path = FactoryToolsWatch; sourceTree = "<group>";};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+	E00000000000000000000010 /* FactoryTools */ = {
+		isa = PBXNativeTarget;
+		buildConfigurationList = D30000000000000000000001;
+		buildPhases = (D40000000000000000000001, D00000000000000000000001, D40000000000000000000002, D40000000000000000000010,);
+		buildRules = ();
+		dependencies = (F00000000000000000000005, F00000000000000000000010,);
+		name = FactoryTools;
+		productName = FactoryTools;
+		productReference = C00000000000000000000024;
+		productType = "com.apple.product-type.application";
+	};
+	E00000000000000000000011 /* FactoryToolsTests */ = {
+		isa = PBXNativeTarget;
+		buildConfigurationList = D30000000000000000000002;
+		buildPhases = (D40000000000000000000003, D00000000000000000000002, D40000000000000000000004,);
+		buildRules = ();
+		dependencies = (F00000000000000000000002, F00000000000000000000006,);
+		name = FactoryToolsTests;
+		productName = FactoryToolsTests;
+		productReference = C00000000000000000000025;
+		productType = "com.apple.product-type.bundle.unit-test";
+	};
+	E00000000000000000000012 /* FactoryToolsCore */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000004; buildPhases = (D40000000000000000000005, D00000000000000000000003,); buildRules = (); dependencies = (); name = FactoryToolsCore; productName = FactoryToolsCore; productReference = C00000000000000000000060; productType = "com.apple.product-type.framework";};
+E00000000000000000000013 /* FactoryToolsCoreTests */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000005; buildPhases = (D40000000000000000000006, D00000000000000000000004, D40000000000000000000007,); buildRules = (); dependencies = (F00000000000000000000008,); name = FactoryToolsCoreTests; productName = FactoryToolsCoreTests; productReference = C00000000000000000000064; productType = "com.apple.product-type.bundle.unit-test";};
+E00000000000000000000014 /* FactoryToolsWatch */ = {isa = PBXNativeTarget; buildConfigurationList = D30000000000000000000006; buildPhases = (D40000000000000000000008, D00000000000000000000005, D40000000000000000000009,); buildRules = (); dependencies = (F00000000000000000000012,); name = FactoryToolsWatch; productName = FactoryToolsWatch; productReference = C00000000000000000000075; productType = "com.apple.product-type.application.watchapp2";};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+	E00000000000000000000001 /* Project object */ = {
+		isa = PBXProject;
+		attributes = {BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1500; TargetAttributes = {E00000000000000000000010 = {CreatedOnToolsVersion = 15.0; }; E00000000000000000000011 = {CreatedOnToolsVersion = 15.0; TestTargetID = E00000000000000000000010; }; E00000000000000000000013 = {CreatedOnToolsVersion = 15.0; }; E00000000000000000000014 = {CreatedOnToolsVersion = 15.0; };};};
+		buildConfigurationList = D30000000000000000000003;
+		compatibilityVersion = "Xcode 15.0";
+		developmentRegion = ja;
+		hasScannedForEncodings = 0;
+		knownRegions = (ja, en, Base,);
+		mainGroup = D10000000000000000000001;
+		productRefGroup = D10000000000000000000004;
+		projectDirPath = "";
+		projectRoot = "";
+		targets = (E00000000000000000000010, E00000000000000000000011, E00000000000000000000012, E00000000000000000000013, E00000000000000000000014,);
+	};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+	D40000000000000000000002 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000020, B00000000000000000000021, B00000000000000000000045, B00000000000000000000085,); runOnlyForDeploymentPostprocessing = 0; };
+	D40000000000000000000004 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+D40000000000000000000001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000001, B00000000000000000000002, B00000000000000000000003, B00000000000000000000004, B00000000000000000000005, B00000000000000000000006, B00000000000000000000007, B00000000000000000000011, B00000000000000000000012, B00000000000000000000013, B00000000000000000000014, B00000000000000000000015, B00000000000000000000016, B00000000000000000000017, B00000000000000000000018, B00000000000000000000019, B00000000000000000000024, B00000000000000000000025, B00000000000000000000026, B00000000000000000000027, B00000000000000000000028, B00000000000000000000030, B00000000000000000000031, B00000000000000000000032, B00000000000000000000034, B00000000000000000000035, B00000000000000000000036, B00000000000000000000037, B00000000000000000000038, B00000000000000000000039, B00000000000000000000040, B00000000000000000000041, B00000000000000000000042, B00000000000000000000043, B00000000000000000000044, B00000000000000000000047, B00000000000000000000009, B00000000000000000000010, B00000000000000000000050, B00000000000000000000066, B00000000000000000000067, B00000000000000000000077, B00000000000000000000078, B00000000000000000000079, B00000000000000000000081, B00000000000000000000086, B00000000000000000000088,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000003 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000022, B00000000000000000000080, B00000000000000000000082,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000051, B00000000000000000000052, B00000000000000000000053, B00000000000000000000054, B00000000000000000000058, B00000000000000000000059, B00000000000000000000063, B00000000000000000000064, B00000000000000000000065, B00000000000000000000075, B00000000000000000000076, B00000000000000000000087,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000060,); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+D40000000000000000000008 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000068, B00000000000000000000069, B00000000000000000000070, B00000000000000000000071,); runOnlyForDeploymentPostprocessing = 0;};
+D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084,); runOnlyForDeploymentPostprocessing = 0;};
+D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 16; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+	F00000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = E00000000000000000000010; targetProxy = F00000000000000000000001; };
+	F00000000000000000000005 /* Core app dependency */ = {isa = PBXTargetDependency; target = E00000000000000000000012; targetProxy = F00000000000000000000003;};
+	F00000000000000000000006 /* Core tests dependency */ = {isa = PBXTargetDependency; target = E00000000000000000000012; targetProxy = F00000000000000000000004;};
+F00000000000000000000008 /* Core contract tests dependency */ = {isa = PBXTargetDependency; target = E00000000000000000000012; targetProxy = F00000000000000000000007;};
+F00000000000000000000010 /* Watch app dependency */ = {isa = PBXTargetDependency; target = E00000000000000000000014; targetProxy = F00000000000000000000009;};
+F00000000000000000000012 /* Watch Core dependency */ = {isa = PBXTargetDependency; target = E00000000000000000000012; targetProxy = F00000000000000000000011;};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+D50000000000000000000001 /* App Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; ENABLE_TESTABILITY = YES; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = FactoryTools/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID)"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2";}; name = Debug; };
+D50000000000000000000002 /* App Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = FactoryTools/Info.plist; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID)"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = "1,2";}; name = Release; };
+	D50000000000000000000003 /* Tests Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FactoryTools.app/FactoryTools";}; name = Debug; };
+	D50000000000000000000004 /* Tests Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).tests"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 1; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/FactoryTools.app/FactoryTools";}; name = Release; };
+D50000000000000000000005 /* Project Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = 1; FACTORYTOOLS_APP_BUNDLE_ID = com.example.FactoryTools; FACTORYTOOLS_PRIVACY_POLICY_URL = ""; FACTORYTOOLS_PRO_PRODUCT_ID = factorytools.pro.lifetime; FACTORYTOOLS_SUPPORT_URL = ""; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MARKETING_VERSION = 1.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0;}; name = Debug; };
+D50000000000000000000006 /* Project Release */ = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = 1; FACTORYTOOLS_APP_BUNDLE_ID = com.example.FactoryTools; FACTORYTOOLS_PRIVACY_POLICY_URL = ""; FACTORYTOOLS_PRO_PRODUCT_ID = factorytools.pro.lifetime; FACTORYTOOLS_SUPPORT_URL = ""; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MARKETING_VERSION = 1.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0;}; name = Release; };
+D50000000000000000000007 /* Core Debug */ = {isa = XCBuildConfiguration; buildSettings = {ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES; CODE_SIGNING_ALLOWED = NO; DEFINES_MODULE = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MACOSX_DEPLOYMENT_TARGET = 13.0; WATCHOS_DEPLOYMENT_TARGET = 10.0; MACH_O_TYPE = staticlib; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).core"; PRODUCT_MODULE_NAME = FactoryToolsCore; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = auto; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx watchos watchsimulator"; SWIFT_VERSION = 5.0;}; name = Debug;};
+D50000000000000000000008 /* Core Release */ = {isa = XCBuildConfiguration; buildSettings = {ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES; CODE_SIGNING_ALLOWED = NO; DEFINES_MODULE = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; MACOSX_DEPLOYMENT_TARGET = 13.0; WATCHOS_DEPLOYMENT_TARGET = 10.0; MACH_O_TYPE = staticlib; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).core"; PRODUCT_MODULE_NAME = FactoryToolsCore; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = auto; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx watchos watchsimulator"; SWIFT_VERSION = 5.0;}; name = Release;};
+D50000000000000000000009 /* Core Tests Debug */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 13.0; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).coretests"; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SUPPORTED_PLATFORMS = macosx; SWIFT_VERSION = 5.0;}; name = Debug;};
+D50000000000000000000010 /* Core Tests Release */ = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 13.0; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).coretests"; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SUPPORTED_PLATFORMS = macosx; SWIFT_VERSION = 5.0;}; name = Release;};
+D50000000000000000000011 /* Watch Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "Factory Tools"; INFOPLIST_KEY_CFBundleName = "Factory Tools"; INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO; INFOPLIST_KEY_WKApplication = YES; INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "$(FACTORYTOOLS_APP_BUNDLE_ID)"; INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).watchkitapp"; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = watchos; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "watchos watchsimulator"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 4; WATCHOS_DEPLOYMENT_TARGET = 10.0;}; name = Debug;};
+D50000000000000000000012 /* Watch Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = "Factory Tools"; INFOPLIST_KEY_CFBundleName = "Factory Tools"; INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO; INFOPLIST_KEY_WKApplication = YES; INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "$(FACTORYTOOLS_APP_BUNDLE_ID)"; INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO; PRODUCT_BUNDLE_IDENTIFIER = "$(FACTORYTOOLS_APP_BUNDLE_ID).watchkitapp"; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = watchos; SKIP_INSTALL = YES; SUPPORTED_PLATFORMS = "watchos watchsimulator"; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 5.0; TARGETED_DEVICE_FAMILY = 4; WATCHOS_DEPLOYMENT_TARGET = 10.0;}; name = Release;};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+	D30000000000000000000001 /* Build configuration list for PBXNativeTarget "FactoryTools" */ = {isa = XCConfigurationList; buildConfigurations = (D50000000000000000000001, D50000000000000000000002,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+	D30000000000000000000002 /* Build configuration list for PBXNativeTarget "FactoryToolsTests" */ = {isa = XCConfigurationList; buildConfigurations = (D50000000000000000000003, D50000000000000000000004,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+	D30000000000000000000003 /* Build configuration list for PBXProject "FactoryTools" */ = {isa = XCConfigurationList; buildConfigurations = (D50000000000000000000005, D50000000000000000000006,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+	D30000000000000000000004 /* Build configuration list for PBXNativeTarget "FactoryToolsCore" */ = {isa = XCConfigurationList; buildConfigurations = (D50000000000000000000007, D50000000000000000000008,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+D30000000000000000000005 /* Build configuration list for PBXNativeTarget "FactoryToolsCoreTests" */ = {isa = XCConfigurationList; buildConfigurations = (D50000000000000000000009, D50000000000000000000010,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+D30000000000000000000006 /* Build configuration list for PBXNativeTarget "FactoryToolsWatch" */ = {isa = XCConfigurationList; buildConfigurations = (D50000000000000000000011, D50000000000000000000012,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+/* End XCConfigurationList section */
+	};
+	rootObject = E00000000000000000000001 /* Project object */;
+}
