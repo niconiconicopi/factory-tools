@@ -15,33 +15,34 @@ struct WatchHomeView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if model.storageUnavailable {
-                    ContentUnavailableView {
-                        Label("watch.storageUnavailable", systemImage: "externaldrive.badge.exclamationmark")
-                    } description: {
-                        Text("watch.storageUnavailable.message")
-                    } actions: {
-                        Button {
-                            model.retryStorage()
-                        } label: {
-                            Label("watch.refresh", systemImage: "arrow.clockwise")
-                        }
+            if model.storageUnavailable {
+                ContentUnavailableView {
+                    Label("watch.storageUnavailable", systemImage: "externaldrive.badge.exclamationmark")
+                } description: {
+                    Text("watch.storageUnavailable.message")
+                } actions: {
+                    Button {
+                        model.retryStorage()
+                    } label: {
+                        Label("watch.refresh", systemImage: "arrow.clockwise")
                     }
-                } else if model.sessions.isEmpty && model.cycleTimeHome == nil && model.progressCards.isEmpty {
-                    ContentUnavailableView("watch.noCounters", systemImage: "counterclockwise") {
-                        Button {
-                            model.refreshCatalog()
-                        } label: {
-                            Label("watch.refresh", systemImage: "arrow.clockwise")
-                        }
-                    } description: {
-                        Text(model.queueLimitReached
-                            ? "watch.queueFull.message"
-                            : (model.latestStatus?.messageKey ?? "watch.noCounters.message"))
+                }
+            } else if model.sessions.isEmpty && model.cycleTimeHome == nil && model.progressCards.isEmpty {
+                ContentUnavailableView {
+                    Label("watch.noCounters", systemImage: "counterclockwise")
+                } description: {
+                    Text(model.queueLimitReached
+                        ? "watch.queueFull.message"
+                        : (model.latestStatus?.messageKey ?? "watch.noCounters.message"))
+                } actions: {
+                    Button {
+                        model.refreshCatalog()
+                    } label: {
+                        Label("watch.refresh", systemImage: "arrow.clockwise")
                     }
-                } else {
-                    List {
+                }
+            } else {
+                List {
                         Section {
                             HStack(spacing: 6) {
                                 Circle()
@@ -73,8 +74,10 @@ struct WatchHomeView: View {
                                         .font(.caption2)
                                         .foregroundStyle(WatchTheme.warning)
                                     Spacer()
-                                    Button("watch.refresh", systemImage: "arrow.clockwise") {
+                                    Button {
                                         model.refreshCatalog()
+                                    } label: {
+                                        Label("watch.refresh", systemImage: "arrow.clockwise")
                                     }
                                     .labelStyle(.iconOnly)
                                 }
@@ -156,7 +159,6 @@ struct WatchHomeView: View {
                     }
                     .refreshable { model.refreshCatalog() }
                 }
-            }
             .navigationTitle("watch.title")
             .toolbarColorScheme(.dark)
             .background(WatchTheme.background)
@@ -413,12 +415,8 @@ private struct WatchCounterDetailView: View {
             .navigationTitle(watchHomeNameText(session.homeName, isDefault: session.homeNameIsDefault))
             .navigationBarTitleDisplayMode(.inline)
         } else {
-            ContentUnavailableView("watch.sessionUnavailable", systemImage: "exclamationmark.triangle") {
-                Button {
-                    model.refreshCatalog()
-                } label: {
-                    Label("watch.refresh", systemImage: "arrow.clockwise")
-                }
+            ContentUnavailableView {
+                Label("watch.sessionUnavailable", systemImage: "exclamationmark.triangle")
             } description: {
                 if model.queueLimitReached {
                     Text("watch.queueFull.message")
@@ -426,6 +424,12 @@ private struct WatchCounterDetailView: View {
                     Text(status.messageKey)
                 } else {
                     Text("watch.noCounters.message")
+                }
+            } actions: {
+                Button {
+                    model.refreshCatalog()
+                } label: {
+                    Label("watch.refresh", systemImage: "arrow.clockwise")
                 }
             }
         }

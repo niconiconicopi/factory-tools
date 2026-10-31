@@ -2306,11 +2306,11 @@ def main() -> int:
     require('Label("watch.storageUnavailable"' in watch_view
             and 'Text("watch.storageUnavailable.message")' in watch_view
             and 'Label("watch.queueFull.message"' in watch_view
-            and 'Button("watch.refresh"' in watch_view
+            and 'Label("watch.refresh", systemImage: "arrow.clockwise")' in watch_view
             and "model.retryStorage()" in watch_view,
             "Watch storage failures must provide a localized, non-destructive retry action")
-    require('ContentUnavailableView("watch.sessionUnavailable"' in watch_view
-            and 'Button("watch.refresh"' in watch_view
+    require('Label("watch.sessionUnavailable", systemImage: "exclamationmark.triangle")' in watch_view
+            and 'Label("watch.refresh", systemImage: "arrow.clockwise")' in watch_view
             and "Text(status.messageKey)" in watch_view
             and 'Label("watch.status.rejected"' in watch_view
             and "@Environment(\\.scenePhase)" in watch_view
