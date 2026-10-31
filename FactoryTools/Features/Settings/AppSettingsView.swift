@@ -126,30 +126,8 @@ struct AppSettingsView: View {
                     }
                 }
                 peerSettingsSection
-                Section("settings.privacy") {
-                    Label("settings.privacy.localStorage", systemImage: "iphone")
-                        .foregroundStyle(theme.primaryText)
-                    Text("settings.privacy.localStorageDescription")
-                        .font(theme.captionFont)
-                        .foregroundStyle(theme.secondaryText)
-                    Text("settings.privacy.sharingDescription")
-                        .font(theme.captionFont)
-                        .foregroundStyle(theme.secondaryText)
-                    NavigationLink {
-                        PrivacyDetailsView(policyURL: privacyPolicyURL)
-                    } label: {
-                        Label("settings.privacy.details", systemImage: "hand.raised")
-                    }
-                }
-                Section("settings.support") {
-                    if let supportURL {
-                        Link(destination: supportURL) {
-                            Label("settings.support.contact", systemImage: "questionmark.circle")
-                        }
-                    } else {
-                        unconfiguredSupportMessage
-                    }
-                }
+                privacySettingsSection
+                supportSettingsSection
                 backupSettingsSection
             }
             .scrollContentBackground(.hidden)
@@ -402,6 +380,36 @@ struct AppSettingsView: View {
         Text("settings.support.notConfigured")
             .font(theme.captionFont)
             .foregroundStyle(theme.secondaryText)
+    }
+
+    private var privacySettingsSection: some View {
+        Section("settings.privacy") {
+            Label("settings.privacy.localStorage", systemImage: "iphone")
+                .foregroundStyle(theme.primaryText)
+            Text("settings.privacy.localStorageDescription")
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+            Text("settings.privacy.sharingDescription")
+                .font(theme.captionFont)
+                .foregroundStyle(theme.secondaryText)
+            NavigationLink {
+                PrivacyDetailsView(policyURL: privacyPolicyURL)
+            } label: {
+                Label("settings.privacy.details", systemImage: "hand.raised")
+            }
+        }
+    }
+
+    private var supportSettingsSection: some View {
+        Section("settings.support") {
+            if let supportURL {
+                Link(destination: supportURL) {
+                    Label("settings.support.contact", systemImage: "questionmark.circle")
+                }
+            } else {
+                unconfiguredSupportMessage
+            }
+        }
     }
 
     private var backupSettingsSection: some View {
