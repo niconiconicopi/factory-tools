@@ -102,7 +102,10 @@ struct HomeToolService {
                 let created = ProductionSession(
                     homeProfileID: homeID,
                     toolID: sessionToolID.rawValue,
-                    name: String(localized: LocalizedStringResource(sessionPolicy.defaultSessionNameKey, locale: locale)),
+                    name: String(localized: LocalizedStringResource(
+                        String.LocalizationValue(stringLiteral: sessionPolicy.defaultSessionNameKey),
+                        locale: locale
+                    )),
                     targetCount: sessionPolicy.defaultTargetCount
                 )
                 modelContext.insert(created)

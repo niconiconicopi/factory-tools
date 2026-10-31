@@ -546,8 +546,8 @@ final class LocalPeerCounterTransport: ObservableObject {
         sec_protocol_options_append_tls_ciphersuite(tls.securityProtocolOptions, cipherSuite)
         sec_protocol_options_add_pre_shared_key(
             tls.securityProtocolOptions,
-            keyDispatchData,
-            identityDispatchData
+            keyDispatchData as __DispatchData,
+            identityDispatchData as __DispatchData
         )
         let parameters = NWParameters(tls: tls, tcp: NWProtocolTCP.Options())
         parameters.includePeerToPeer = true

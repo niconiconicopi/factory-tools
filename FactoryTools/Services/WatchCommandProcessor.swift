@@ -68,9 +68,9 @@ struct WatchCommandProcessor {
                     sessionID: session.id,
                     homeProfileID: home.id,
                     homeName: home.name,
-                    homeNameIsDefault: home.usesDefaultName ? true : nil,
                     currentCount: session.currentCount,
-                    targetCount: session.targetCount
+                    targetCount: session.targetCount,
+                    homeNameIsDefault: home.usesDefaultName ? true : nil
                 ))
                 continue
             }
@@ -83,13 +83,13 @@ struct WatchCommandProcessor {
                 sessionID: session.id,
                 homeProfileID: home.id,
                 homeName: home.name,
-                homeNameIsDefault: home.usesDefaultName ? true : nil,
                 toolID: toolID,
                 sessionName: session.name,
                 currentCount: session.currentCount,
                 targetCount: session.targetCount,
                 latestUndoableEventID: latestUndoableEventID,
-                defaultSessionNameToolID: defaultSessionNameToolID(session, toolID: toolID)
+                defaultSessionNameToolID: defaultSessionNameToolID(session, toolID: toolID),
+                homeNameIsDefault: home.usesDefaultName ? true : nil
             ))
         }
         let cycleTimeHome: WatchCycleTimeHomeSnapshot?
@@ -252,13 +252,13 @@ struct WatchCommandProcessor {
             sessionID: session.id,
             homeProfileID: home.id,
             homeName: home.name,
-            homeNameIsDefault: home.usesDefaultName ? true : nil,
             toolID: toolID,
             sessionName: session.name,
             currentCount: session.currentCount,
             targetCount: session.targetCount,
             latestUndoableEventID: latestUndoableEventID,
-            defaultSessionNameToolID: defaultSessionNameToolID(session, toolID: toolID)
+            defaultSessionNameToolID: defaultSessionNameToolID(session, toolID: toolID),
+            homeNameIsDefault: home.usesDefaultName ? true : nil
         )
     }
 
@@ -267,7 +267,7 @@ struct WatchCommandProcessor {
               let sessionPolicy = definition.sessionPolicy else { return nil }
         let knownDefaultNames = ["ja", "en"].map { languageCode in
             String(localized: LocalizedStringResource(
-                sessionPolicy.defaultSessionNameKey,
+                String.LocalizationValue(stringLiteral: sessionPolicy.defaultSessionNameKey),
                 locale: Locale(identifier: languageCode)
             ))
         }

@@ -3046,7 +3046,8 @@ def main() -> int:
             and ".oee" in assembly_preset.split("struct PackagingPreset", 1)[1]
             and {"home.preset.packaging", "home.preset.packagingDescription"}.issubset(strings),
             "Packaging line starter preset must include OEE and use stable tool IDs and localized picker copy")
-    require('String(localized: LocalizedStringResource(sessionPolicy.defaultSessionNameKey, locale: locale))' in home_tool_service
+    require('String.LocalizationValue(stringLiteral: sessionPolicy.defaultSessionNameKey)' in home_tool_service
+            and 'locale: locale' in home_tool_service
             and '"counter.defaultSessionName"' in (ROOT / "FactoryTools" / "Tools" / "ToolDefinition.swift").read_text(encoding="utf-8"),
             "persisted session names must use the app-selected localization lookup locale")
     require(".filter { $0.homeProfileID == homeID && $0.toolID == toolID.rawValue }" in home_tool_service

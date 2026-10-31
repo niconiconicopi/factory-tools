@@ -611,7 +611,10 @@ struct AppSettingsView: View {
     }
 
     private func localized(_ key: String) -> String {
-        String(localized: LocalizedStringResource(key, locale: locale))
+        String(localized: LocalizedStringResource(
+            String.LocalizationValue(stringLiteral: key),
+            locale: locale
+        ))
     }
 
     private var shouldRedactPairingSecrets: Bool {

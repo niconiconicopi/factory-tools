@@ -38,8 +38,16 @@ enum ToolRegistry {
             let options: String.CompareOptions = [.caseInsensitive, .diacriticInsensitive]
             let searchLocales = [locale, Locale(identifier: "ja"), Locale(identifier: "en")]
             let matchesLocalizedName = searchLocales.contains { searchLocale in
-                let localizedTitle = String(localized: LocalizedStringResource(tool.titleKey), locale: searchLocale)
-                let localizedCategory = String(localized: LocalizedStringResource(tool.category.titleKey), locale: searchLocale)
+                let localizedTitle = String(
+                    localized: LocalizedStringResource(String.LocalizationValue(stringLiteral: tool.titleKey)),
+                    locale: searchLocale
+                )
+                let localizedCategory = String(
+                    localized: LocalizedStringResource(
+                        String.LocalizationValue(stringLiteral: tool.category.titleKey)
+                    ),
+                    locale: searchLocale
+                )
                 return localizedTitle.range(of: normalizedQuery, options: options, locale: searchLocale) != nil
                     || localizedCategory.range(of: normalizedQuery, options: options, locale: searchLocale) != nil
             }
