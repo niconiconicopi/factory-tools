@@ -47,13 +47,12 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         let clientParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: wrongClientKey))
         let listener = try NWListener(using: listenerParameters)
         let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS.Rejection")
-        let listenerReady = expectation(description: "TLS-PSK listener becomes ready")
-        let clientRejected = expectation(description: "mismatched pairing key is rejected")
-        let clientConnected = expectation(description: "mismatched pairing key must not connect")
-        clientConnected.isInverted = true
+        let listenerReady = DispatchSemaphore(value: 0)
+        let clientFinished = DispatchSemaphore(value: 0)
+        var clientDidBecomeReady = false
 
         listener.stateUpdateHandler = { state in
-            if case .ready = state { listenerReady.fulfill() }
+            if case .ready = state { listenerReady.signal() }
         }
         listener.newConnectionHandler = { connection in
             connection.start(queue: callbackQueue)
@@ -61,7 +60,7 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         listener.start(queue: callbackQueue)
         defer { listener.cancel() }
 
-        wait(for: [listenerReady], timeout: 10)
+        XCTAssertEqual(listenerReady.wait(timeout: .now() + 10), .success)
         let port = try XCTUnwrap(listener.port)
         let client = NWConnection(
             to: .hostPort(host: "127.0.0.1", port: port),
@@ -70,9 +69,10 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         client.stateUpdateHandler = { state in
             switch state {
             case .ready:
-                clientConnected.fulfill()
+                clientDidBecomeReady = true
+                clientFinished.signal()
             case .failed:
-                clientRejected.fulfill()
+                clientFinished.signal()
             default:
                 break
             }
@@ -80,7 +80,9 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         client.start(queue: callbackQueue)
         defer { client.cancel() }
 
-        wait(for: [clientRejected, clientConnected], timeout: 10)
+        XCTAssertEqual(clientFinished.wait(timeout: .now() + 10), .success)
+        let connected = callbackQueue.sync { clientDidBecomeReady }
+        XCTAssertFalse(connected, "a TLS-PSK peer with a different pairing key must not become ready")
     }
 
     func testPairingCodeDecodesThirtyTwoBytes() throws {
