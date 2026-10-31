@@ -4,7 +4,7 @@
 
 ## できること / しないこと
 
-- GitHub ActionsのmacOS runnerでiPhone/Coreテスト、Watchビルド、iOS archiveを実行します。
+- GitHub ActionsのmacOS runnerでiPhone/iPad Simulatorテスト、共有Coreテスト、Watchビルド、iOS archiveを実行します。
 - App Store Connect APIキーでXcodeの自動署名・プロビジョニングを行い、完成した署名付きビルドをApp Store Connectへアップロードします。
 - ワークフローの確認欄は初期状態でオフです。オンにした手動実行だけがアップロードします。
 - アップロード後のApple側処理やApp Store審査への提出は自動で行いません。

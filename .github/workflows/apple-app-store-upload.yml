@@ -128,6 +128,27 @@ jobs:
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID"
 
+      - name: Run current iPad regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((device["udid"] for devices in data["devices"].values() for device in devices if device["isAvailable"] and device["name"].startswith("iPad")), ""))')"
+          if [[ -z "$simulator_id" ]]; then
+            echo "No available iPad Simulator device was found." >&2
+            exit 1
+          fi
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \
+            FACTORYTOOLS_PRIVACY_POLICY_URL="$FACTORYTOOLS_PRIVACY_POLICY_URL" \
+            FACTORYTOOLS_SUPPORT_URL="$FACTORYTOOLS_SUPPORT_URL" \
+            FACTORYTOOLS_PRO_PRODUCT_ID="$FACTORYTOOLS_PRO_PRODUCT_ID"
+
       - name: Build Watch Simulator target
         run: >-
           xcodebuild build

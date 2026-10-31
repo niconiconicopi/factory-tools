@@ -63,6 +63,7 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("missing public or manually confirmed private-run job condition", errors)
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing checkout credential persistence disabled", errors)
+        self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn("workflow must not access repository secrets", errors)
 
 
@@ -98,6 +99,7 @@ jobs:
 
         self.assertIn("missing confirmation default is false", errors)
         self.assertIn("missing read-only repository permission", errors)
+        self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn("distribution upload workflow must not run on push, pull request, or schedule", errors)
         self.assertIn("workflow must not enable shell tracing or print App Store Connect key material", errors)
 
