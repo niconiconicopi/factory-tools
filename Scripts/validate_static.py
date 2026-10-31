@@ -1160,8 +1160,8 @@ def main() -> int:
         re.MULTILINE | re.DOTALL,
     )
     test_frameworks = set(re.findall(r"/\* ([^*]+) in Frameworks \*/", test_framework_phase.group(1))) if test_framework_phase else set()
-    require(test_frameworks == {"XCTest.framework", "FactoryToolsCore.framework"},
-            f"test target frameworks must include XCTest and local Core only, found {sorted(test_frameworks)}")
+    require(test_frameworks == {"XCTest.framework", "FactoryToolsCore.framework", "StoreKitTest.framework"},
+            f"app-hosted tests must include XCTest, local Core, and Apple StoreKit Test, found {sorted(test_frameworks)}")
     core_test_framework_phase = re.search(
         r"^\s*D00000000000000000000004 /\* Core Tests Frameworks \*/ = \{.*?files = \((.*?)\);",
         pbx,
@@ -2032,8 +2032,15 @@ def main() -> int:
     observe_transactions_position = purchase_manager.find("private func observeTransactions()")
     product_filter_position = purchase_manager.find("guard transaction.productID == productID else { continue }")
     transaction_finish_position = purchase_manager.find("await transaction.finish()", observe_transactions_position)
-    require(storekit_sources == [purchase_manager_path]
+    purchase_test_path = ROOT / "FactoryToolsTests" / "StoreKitPurchaseIntegrationTests.swift"
+    purchase_test_source = purchase_test_path.read_text(encoding="utf-8") if purchase_test_path.is_file() else ""
+    require(set(storekit_sources) == {purchase_manager_path, purchase_test_path}
             and "import StoreKit" in purchase_manager
+            and "import StoreKitTest" in purchase_test_source
+            and "SKTestSession(contentsOf: configurationURL)" in purchase_test_source
+            and "session.buyProduct(identifier: \"factorytools.pro.lifetime\")" in purchase_test_source
+            and "XCTAssertTrue(purchaseManager.hasPro" in purchase_test_source
+            and (ROOT / "FactoryToolsTests" / "FactoryToolsPro.storekit").is_file()
             and "Transaction.currentEntitlements" in purchase_manager
             and "Transaction.updates" in purchase_manager
             and 0 <= observe_transactions_position < product_filter_position < transaction_finish_position
@@ -4442,6 +4449,8 @@ def main() -> int:
             }, "FactoryTools app target must bundle its localized resources and privacy manifest")
     require(resource_membership("D40000000000000000000007") == set(),
             "standalone Core tests must not bundle app resources or localization catalogs")
+    require(resource_membership("D40000000000000000000004") == {"FactoryToolsPro.storekit"},
+            "app-hosted purchase tests must bundle the local StoreKit product configuration")
     require(resource_membership("D40000000000000000000009") == {"Localizable.xcstrings", "Assets.xcassets"},
             "FactoryToolsWatch must bundle its own Japanese/English String Catalog and watchOS AppIcon asset catalog")
     privacy_manifest_path = ROOT / "FactoryTools" / "PrivacyInfo.xcprivacy"
