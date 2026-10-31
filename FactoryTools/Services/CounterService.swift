@@ -126,6 +126,7 @@ struct CounterService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
+            modelContext.delete(receipt)
             session.targetCount = previousTarget
             throw error
         }
@@ -178,6 +179,7 @@ struct CounterService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
+            modelContext.delete(event)
             session.currentCount -= appliedDelta
             session.nextEventSequence = previousSequence
             throw error
@@ -200,6 +202,7 @@ struct CounterService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
+            modelContext.delete(receipt)
             throw error
         }
         return .noChange

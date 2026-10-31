@@ -355,6 +355,10 @@ final class CounterServiceTests: XCTestCase {
             createdAt: Date(timeIntervalSince1970: 1_500)
         )
         XCTAssertEqual(try counter.apply(noChangeCommand, to: session), .noChange)
+        XCTAssertEqual(
+            try sourceContext.fetch(FetchDescriptor<CounterCommandReceipt>()).map(\.sessionID),
+            [session.id]
+        )
 
         let export = try FactoryToolsBackupService(modelContext: sourceContext).makeJSON()
         let backup = try FactoryToolsBackupService.decodeAndValidate(export)
@@ -529,7 +533,7 @@ final class CounterServiceTests: XCTestCase {
         XCTAssertEqual(importedSession.targetCount, 25)
         XCTAssertEqual(importedEvents.map(\.delta), [1, -1])
         XCTAssertEqual(importedEvents.map(\.kind), [.increment, .undo])
-        XCTAssertEqual(importedEvents.map(\.occurredAt), sourceEvents.map(\.occurredAt))
+        XCTAssertEqual(importedEvents.map(\.occurredAt), backup.events.map(\.occurredAt))
         XCTAssertEqual(importedEvents.map(\.payloadSignature), sourceEvents.map(\.payloadSignature))
         XCTAssertEqual(importedEvents.last?.reversesEventID, importedEvents.first?.id)
         let importedReceipt = try XCTUnwrap(allCommandReceipts.first { $0.sessionID == importedSession.id })

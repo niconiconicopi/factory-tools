@@ -413,7 +413,6 @@ struct FactoryToolsBackupService {
               invalidHomeIDsInSessions.isEmpty,
               orphanEventSessionIDs.isEmpty,
               orphanReceiptSessionIDs.isEmpty else {
-            print("Backup relationship diagnostic: homes=\(homeIDs.map(\.uuidString)), sessions=\(backup.sessions.map(\.id.uuidString)), events=\(backup.events.map(\.sessionID.uuidString)), receipts=\(backup.commandReceipts.map(\.sessionID.uuidString)), settings=\(backup.settings.compactMap(\.selectedHomeProfileID).map(\.uuidString)), invalidSessionHomes=\(invalidHomeIDsInSessions.map(\.uuidString)), orphanEvents=\(orphanEventSessionIDs.map(\.uuidString)), orphanReceipts=\(orphanReceiptSessionIDs.map(\.uuidString)), invalidSelectedHomes=\(invalidSelectedHomeIDs.map(\.uuidString))")
             throw FactoryToolsBackupError.invalidRelationship
         }
         guard backup.commandReceipts.allSatisfy({ !eventIDs.contains($0.id) }) else {
@@ -851,6 +850,14 @@ struct FactoryToolsBackupImportService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
+            importedHomes.forEach(modelContext.delete)
+            importedSessions.forEach(modelContext.delete)
+            importedCards.forEach(modelContext.delete)
+            importedEvents.forEach(modelContext.delete)
+            importedCommandReceipts.forEach(modelContext.delete)
+            importedSamples.forEach(modelContext.delete)
+            importedOEERuns.forEach(modelContext.delete)
+            importedSettings.forEach(modelContext.delete)
             for existingHome in existingHomes {
                 existingHome.sortOrder = previousHomeSortOrders[existingHome.id] ?? existingHome.sortOrder
             }
