@@ -5019,7 +5019,8 @@ final class CounterServiceTests: XCTestCase {
             CounterCommandReceipt.self
         ])
         guard !allowsSave else {
-            return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+            let configuration = ModelConfiguration(UUID().uuidString, schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            return try ModelContainer(for: schema, configurations: [configuration])
         }
 
         let directory = FileManager.default.temporaryDirectory
@@ -5027,9 +5028,10 @@ final class CounterServiceTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
-        let writable = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, cloudKitDatabase: .none)
+        let configurationName = UUID().uuidString
+        let writable = ModelConfiguration(configurationName, schema: schema, url: storeURL, cloudKitDatabase: .none)
         _ = try ModelContainer(for: schema, configurations: [writable])
-        let readOnly = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
+        let readOnly = ModelConfiguration(configurationName, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
         return try ModelContainer(for: schema, configurations: [readOnly])
     }
 }
@@ -6813,7 +6815,8 @@ final class ToolRegistryTests: XCTestCase {
             OEERun.self
         ])
         guard !allowsSave else {
-            return try ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+            let configuration = ModelConfiguration(UUID().uuidString, schema: schema, isStoredInMemoryOnly: true, cloudKitDatabase: .none)
+            return try ModelContainer(for: schema, configurations: [configuration])
         }
 
         let directory = FileManager.default.temporaryDirectory
@@ -6821,9 +6824,10 @@ final class ToolRegistryTests: XCTestCase {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
-        let writable = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, cloudKitDatabase: .none)
+        let configurationName = UUID().uuidString
+        let writable = ModelConfiguration(configurationName, schema: schema, url: storeURL, cloudKitDatabase: .none)
         _ = try ModelContainer(for: schema, configurations: [writable])
-        let readOnly = ModelConfiguration(UUID().uuidString, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
+        let readOnly = ModelConfiguration(configurationName, schema: schema, url: storeURL, allowsSave: false, cloudKitDatabase: .none)
         return try ModelContainer(for: schema, configurations: [readOnly])
     }
 }

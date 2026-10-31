@@ -830,6 +830,7 @@ struct FactoryToolsBackupImportService {
             HomeProfileOrdering.assignSortOrders(isPro ? homeOrder + importedHomes : importedHomes + homeOrder)
             try modelContext.save()
         } catch {
+            modelContext.rollback()
             for importedRecord in importedHomes { modelContext.delete(importedRecord) }
             for importedRecord in importedSessions { modelContext.delete(importedRecord) }
             for importedRecord in importedCards { modelContext.delete(importedRecord) }

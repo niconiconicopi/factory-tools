@@ -88,6 +88,7 @@ struct HomeToolService {
             LocalPeerCounterTransport.shared.publishCatalog()
             return addedCards
         } catch {
+            modelContext.rollback()
             for card in addedCards { modelContext.delete(card) }
             for session in sessions where !existingSessionIDs.contains(session.id) {
                 modelContext.delete(session)
@@ -202,6 +203,7 @@ struct HomeCardService {
             WatchConnectivityReceiver.shared.publishCatalog()
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
+            modelContext.rollback()
             throw error
         }
     }
@@ -241,6 +243,7 @@ struct HomeProfileService {
             LocalPeerCounterTransport.shared.publishCatalog()
             return home
         } catch {
+            modelContext.rollback()
             for existingHome in homes {
                 if let previousSortOrder = previousSortOrders[existingHome.id] {
                     existingHome.sortOrder = previousSortOrder
@@ -370,6 +373,7 @@ struct HomeProfileService {
             WatchConnectivityReceiver.shared.publishCatalog()
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
+            modelContext.rollback()
             for event in events { modelContext.insert(event) }
             for receipt in commandReceipts { modelContext.insert(receipt) }
             for card in cards { modelContext.insert(card) }
