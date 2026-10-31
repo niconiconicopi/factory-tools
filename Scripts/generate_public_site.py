@@ -204,6 +204,11 @@ def publication_copy_issues(privacy: str, support: str) -> list[str]:
     if issues:
         return issues
 
+    if "### このページのホスティング" not in privacy:
+        issues.append("Japanese privacy copy must describe website hosting separately from app data")
+    if "### Website hosting" not in privacy:
+        issues.append("English privacy copy must describe website hosting separately from app data")
+
     def value(pattern: str, source: str) -> str | None:
         match = re.search(pattern, source)
         return match.group(1).strip() if match else None

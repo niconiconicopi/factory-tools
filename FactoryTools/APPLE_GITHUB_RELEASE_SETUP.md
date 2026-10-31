@@ -59,6 +59,8 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 公開リポジトリでは、GitHub Freeの範囲でGitHub Pagesを使えます。リポジトリの **Settings → Pages → Build and deployment → Source** で **GitHub Actions** を選ぶと、静的ページ用の準備ができます。[GitHub Pagesの利用条件と設定](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
+GitHub Pagesを選んだ場合の候補URLは、プライバシーが `https://niconiconicopi.github.io/factory-tools/privacy.html`、サポートが `https://niconiconicopi.github.io/factory-tools/support.html` です。確認時点では両ページをまだ公開していないため、現在はアクセスすると404になります。発行者がGitHub Pagesを選ぶ場合にだけ、公開コピーとアプリ設定でこのURLを使います。
+
 ワークフロー **Publish privacy and support pages** は手動実行だけで、公開確認欄の初期値はオフです。確認をオンにした場合も、mainブランチからのみ動き、発行者名・連絡先・日付などが揃って公開コピー検証に通るまでデプロイされません。通常のpushでは公開しません。GitHub Pagesには訪問者IPアドレスをセキュリティ目的で記録する運用があるため、ホスティング側の取り扱いと必要な告知を公開者が確認してください。[GitHub Pagesの利用制限](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)、[GitHub Pagesのアクセス記録](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
 ## 残るApple側の確認

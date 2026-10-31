@@ -38,6 +38,10 @@ Factory Toolsは利用者の情報を開発者へ収集する機能を設けて�
 
 このポリシーを変更するときは、改訂版を同じ公開ページに掲載し、発効日を更新します。プライバシーに関する問い合わせは上記の連絡先へお送りください。
 
+### このページのホスティング
+
+このポリシーまたはサポートページをGitHub Pagesで公開する場合、GitHubはサービスのセキュリティのため訪問者のIPアドレスを記録します。詳しくは[GitHubのプライバシーに関する説明](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)をご確認ください。これはFactory Toolsアプリが端末内で扱うデータとは別の、ページ閲覧に関するホスティング側の処理です。別のホストを使用する場合は、そのホストの実際のログ処理に合わせてこの説明を更新してください。
+
 ## English
 
 ### Scope
@@ -72,6 +76,10 @@ Factory Tools has no feature that collects a user's information for the develope
 
 If this policy changes, the updated version will be posted at the same public page with a revised effective date. Contact us using the details above with privacy questions.
 
+### Website hosting
+
+If this privacy or support page is published with GitHub Pages, GitHub logs visitor IP addresses for service security. See [GitHub's privacy information](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages). This is hosting-side processing associated with viewing the website, separate from data the Factory Tools app handles on your devices. If another host is used, update this notice to match that host's actual logging practices.
+
 ## Before publication
 
 - Replace every bracketed field with the publisher's actual public details.
@@ -80,4 +88,5 @@ If this policy changes, the updated version will be posted at the same public pa
 - Confirm the App Store purchase and payment wording against the final StoreKit configuration and Apple's current App Privacy guidance.
 - Review Apple-managed backups separately from Factory Tools sync: [iCloud Backup contents](https://support.apple.com/ja-jp/108770) and [Apple Watch backups](https://support.apple.com/ja-jp/108358).
 - Make this policy publicly accessible at a stable HTTPS URL, localize or provide the Japanese and English versions, link it from inside the app, and enter the URL in App Store Connect.
+- Review this page's hosting notice against the actual host. GitHub Pages logs visitor IP addresses for security; a different host may have different access logs, terms, and notices.
 - Obtain the publisher's legal/privacy review for the jurisdictions where the app will be offered.

@@ -142,6 +142,8 @@ class PublicSiteDraftTests(unittest.TestCase):
         self.assertNotIn("Draft page", pages["privacy.html"])
         self.assertIn("support@example.org", pages["support.html"])
         self.assertIn("https://example.org/privacy.html", pages["support.html"])
+        self.assertIn("GitHub Pagesで公開する場合", pages["privacy.html"])
+        self.assertIn("GitHub logs visitor IP addresses for service security.", pages["privacy.html"])
         self.assertIn('href="mailto:support@example.org"', pages["support.html"])
         self.assertIn('href="https://example.org/privacy.html"', pages["support.html"])
         self.assertIn("candidate without the draft banner", pages["README.md"])
@@ -163,6 +165,25 @@ class PublicSiteDraftTests(unittest.TestCase):
         self.assertTrue(any("privacy contact" in issue for issue in issues))
         self.assertTrue(any("support email" in issue for issue in issues))
         self.assertTrue(any("same privacy-policy URL" in issue for issue in issues))
+
+    def test_publication_copy_requires_bilingual_hosting_disclosure(self) -> None:
+        privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
+        support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
+        privacy = privacy.replace("### このページのホスティング", "### ホスティング")
+        privacy = privacy.replace("### Website hosting", "### Hosting")
+        privacy = privacy.replace("[Publisher's legal name / 発行者の正式名称]", "Factory Tools Publisher")
+        privacy = privacy.replace("[YYYY-MM-DD]", "2026-10-31")
+        privacy = privacy.replace("[Public contact email or contact page / 公開連絡先メールアドレスまたは問い合わせページ]", "privacy@example.org")
+        support = support.replace("[開発者名]", "Factory Tools Publisher")
+        support = support.replace("[Developer name]", "Factory Tools Publisher")
+        support = support.replace("[サポート用メールアドレス]", "support@example.org")
+        support = support.replace("[Monitored support email address]", "support@example.org")
+        support = support.replace("[公開済みプライバシーポリシーURL]", "https://example.org/privacy.html")
+        support = support.replace("[Published privacy policy URL]", "https://example.org/privacy.html")
+        issues = generate_public_site.publication_copy_issues(privacy, support)
+
+        self.assertIn("Japanese privacy copy must describe website hosting separately from app data", issues)
+        self.assertIn("English privacy copy must describe website hosting separately from app data", issues)
 
 
 if __name__ == "__main__":
