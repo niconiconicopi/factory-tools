@@ -303,7 +303,7 @@ final class CoreContractTests: XCTestCase {
         outbox.start(homeProfileID: homeID, at: start.addingTimeInterval(10))
         let command = try XCTUnwrap(outbox.finish(at: start.addingTimeInterval(10.85)))
         XCTAssertEqual(command.totalSeconds, 2)
-        XCTAssertNil(outbox.finish(at: start.addingTimeInterval(12)))
+        XCTAssertNil(try outbox.finish(at: start.addingTimeInterval(12)))
         XCTAssertTrue(try outbox.enqueue(command))
         XCTAssertFalse(try outbox.enqueue(command))
 
