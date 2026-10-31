@@ -150,8 +150,10 @@ struct AppSettingsView: View {
                                     .font(theme.captionFont)
                                     .foregroundStyle(theme.secondaryText)
                                 LabeledContent("settings.peer.unassignedCommands", value: "\(peerTransport.unassignedLegacyCommandCount)")
-                                Button("settings.peer.reassignLegacy", systemImage: "arrowshape.turn.up.right") {
+                                Button {
                                     showingLegacyOutboxConfirmation = true
+                                } label: {
+                                    Label("settings.peer.reassignLegacy", systemImage: "arrowshape.turn.up.right")
                                 }
                                 .disabled(pairingCode == nil)
                             }
