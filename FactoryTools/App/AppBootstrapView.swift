@@ -172,8 +172,6 @@ struct AppBootstrapService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            if let homeToInsert { modelContext.delete(homeToInsert) }
-            if let settingsToInsert { modelContext.delete(settingsToInsert) }
             for setting in settings {
                 setting.selectedHomeProfileID = originalSelectedHomeIDs[setting.id] ?? nil
             }

@@ -850,14 +850,6 @@ struct FactoryToolsBackupImportService {
             try modelContext.save()
         } catch {
             modelContext.rollback()
-            importedHomes.forEach(modelContext.delete)
-            importedSessions.forEach(modelContext.delete)
-            importedCards.forEach(modelContext.delete)
-            importedEvents.forEach(modelContext.delete)
-            importedCommandReceipts.forEach(modelContext.delete)
-            importedSamples.forEach(modelContext.delete)
-            importedOEERuns.forEach(modelContext.delete)
-            importedSettings.forEach(modelContext.delete)
             for existingHome in existingHomes {
                 existingHome.sortOrder = previousHomeSortOrders[existingHome.id] ?? existingHome.sortOrder
             }

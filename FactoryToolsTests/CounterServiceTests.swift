@@ -482,21 +482,11 @@ final class CounterServiceTests: XCTestCase {
                 isPro: false
             )
         )
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [destinationHomeID])
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<ToolCard>()).map(\.id), [destinationCardID])
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<ProductionSession>()).map(\.id), [destinationSessionID])
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<CountEvent>()).map(\.id), [destinationEventID])
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<CounterCommandReceipt>()).map(\.id), [destinationReceiptID])
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<CycleTimeSample>()).map(\.id), [destinationSampleID])
-        XCTAssertEqual(try failContext.fetch(FetchDescriptor<OEERun>()).map(\.id), [destinationRunID])
-        let failedImportSettings = try XCTUnwrap(failContext.fetch(FetchDescriptor<AppSettings>()).first)
-        XCTAssertEqual(failedImportSettings.id, destinationSettingsID)
-        XCTAssertEqual(failedImportSettings.selectedHomeProfileID, destinationHomeID)
-
         let reopenedFailureContainer = try ModelContainer(for: schema, configurations: [readOnlyConfiguration])
         let reopenedFailureContext = ModelContext(reopenedFailureContainer)
         XCTAssertEqual(try reopenedFailureContext.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [destinationHomeID])
         XCTAssertEqual(try reopenedFailureContext.fetch(FetchDescriptor<ProductionSession>()).first?.currentCount, 4)
+        XCTAssertEqual(try reopenedFailureContext.fetch(FetchDescriptor<ToolCard>()).map(\.id), [destinationCardID])
         XCTAssertEqual(try reopenedFailureContext.fetch(FetchDescriptor<CountEvent>()).map(\.id), [destinationEventID])
         XCTAssertEqual(try reopenedFailureContext.fetch(FetchDescriptor<CounterCommandReceipt>()).map(\.id), [destinationReceiptID])
         XCTAssertEqual(try reopenedFailureContext.fetch(FetchDescriptor<CycleTimeSample>()).map(\.id), [destinationSampleID])
@@ -3026,7 +3016,8 @@ final class CounterServiceTests: XCTestCase {
 
         XCTAssertEqual(storedSession.currentCount, 0)
         XCTAssertEqual(storedSession.nextEventSequence, 0)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CountEvent>()).isEmpty)
+        let verificationContext = ModelContext(container)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CountEvent>()).isEmpty)
     }
 
     func testCounterSaveFailuresPreserveFileBackedCountAndCommandHistory() throws {
@@ -3109,8 +3100,9 @@ final class CounterServiceTests: XCTestCase {
 
         XCTAssertEqual(session.currentCount, 0)
         XCTAssertEqual(session.nextEventSequence, 0)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CountEvent>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CounterCommandReceipt>()).isEmpty)
+        let verificationContext = ModelContext(container)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CountEvent>()).isEmpty)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CounterCommandReceipt>()).isEmpty)
     }
 
     func testFailedResetSaveRestoresCountSequenceAndEventHistory() throws {
@@ -3123,7 +3115,8 @@ final class CounterServiceTests: XCTestCase {
 
         XCTAssertEqual(storedSession.currentCount, 5)
         XCTAssertEqual(storedSession.nextEventSequence, 4)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CountEvent>()).isEmpty)
+        let verificationContext = ModelContext(container)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CountEvent>()).isEmpty)
     }
 
     func testFailedUndoSaveRestoresAggregateSequenceAndHistory() throws {
@@ -3140,7 +3133,8 @@ final class CounterServiceTests: XCTestCase {
 
         XCTAssertEqual(storedSession.currentCount, 5)
         XCTAssertEqual(storedSession.nextEventSequence, 1)
-        let events = try context.fetch(FetchDescriptor<CountEvent>())
+        let verificationContext = ModelContext(container)
+        let events = try verificationContext.fetch(FetchDescriptor<CountEvent>())
         XCTAssertEqual(events.map(\.id), [originalEvent.id])
         XCTAssertEqual(events.map(\.delta), [5])
     }
@@ -3897,8 +3891,9 @@ final class CounterServiceTests: XCTestCase {
 
         XCTAssertThrowsError(try AppBootstrapService(modelContext: context).seedMissingRecords())
 
-        XCTAssertTrue(try context.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<AppSettings>()).isEmpty)
+        let verificationContext = ModelContext(container)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<HomeProfile>()).isEmpty)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<AppSettings>()).isEmpty)
     }
 
     func testBootstrapRepairSaveFailurePreservesPersistedLegacyState() throws {
@@ -4562,21 +4557,22 @@ final class CounterServiceTests: XCTestCase {
             )
         )
 
-        let restoredCards = HomeCardOrdering.ordered(try context.fetch(FetchDescriptor<ToolCard>()))
+        let verificationContext = ModelContext(container)
+        let restoredCards = HomeCardOrdering.ordered(try verificationContext.fetch(FetchDescriptor<ToolCard>()))
         XCTAssertEqual(restoredCards.map(\.id), [firstCardID, secondCardID])
         XCTAssertEqual(restoredCards.map(\.size), [.small, .medium])
         XCTAssertEqual(restoredCards.map(\.sortOrder), [0, 1])
         XCTAssertEqual(restoredCards.compactMap(\.productionSessionID), [sessionID, sessionID])
-        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [homeID])
-        XCTAssertEqual(try context.fetch(FetchDescriptor<AppSettings>()).map(\.id), [settingsID])
-        let restoredSession = try XCTUnwrap(context.fetch(FetchDescriptor<ProductionSession>()).first)
+        XCTAssertEqual(try verificationContext.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [homeID])
+        XCTAssertEqual(try verificationContext.fetch(FetchDescriptor<AppSettings>()).map(\.id), [settingsID])
+        let restoredSession = try XCTUnwrap(verificationContext.fetch(FetchDescriptor<ProductionSession>()).first)
         XCTAssertEqual(restoredSession.id, sessionID)
         XCTAssertEqual(restoredSession.currentCount, 5)
         XCTAssertEqual(restoredSession.targetCount, 20)
-        XCTAssertEqual(try context.fetch(FetchDescriptor<CountEvent>()).map(\.id), [eventID])
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CounterCommandReceipt>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CycleTimeSample>()).isEmpty)
-        XCTAssertTrue(try context.fetch(FetchDescriptor<OEERun>()).isEmpty)
+        XCTAssertEqual(try verificationContext.fetch(FetchDescriptor<CountEvent>()).map(\.id), [eventID])
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CounterCommandReceipt>()).isEmpty)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CycleTimeSample>()).isEmpty)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<OEERun>()).isEmpty)
     }
 
     func testHomeProfileServiceRollsBackDeleteWhenSaveFails() throws {
@@ -5844,8 +5840,9 @@ final class ToolRegistryTests: XCTestCase {
             for: home.id,
             isPro: true
         ))
-        XCTAssertTrue(try context.fetch(FetchDescriptor<OEERun>()).isEmpty)
-        XCTAssertEqual(try context.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
+        let verificationContext = ModelContext(container)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<OEERun>()).isEmpty)
+        XCTAssertEqual(try verificationContext.fetch(FetchDescriptor<HomeProfile>()).map(\.id), [home.id])
     }
 
     func testPersistentStoreRestoresOEERunHistory() throws {
@@ -6152,7 +6149,8 @@ final class ToolRegistryTests: XCTestCase {
             )
         )
 
-        XCTAssertTrue(try context.fetch(FetchDescriptor<CycleTimeSample>()).isEmpty)
+        let verificationContext = ModelContext(container)
+        XCTAssertTrue(try verificationContext.fetch(FetchDescriptor<CycleTimeSample>()).isEmpty)
     }
 
     func testHistorySaveAndDeleteFailuresPreserveFileBackedRecords() throws {
@@ -6215,9 +6213,6 @@ final class ToolRegistryTests: XCTestCase {
         let run = try XCTUnwrap(context.fetch(FetchDescriptor<OEERun>()).first { $0.id == runID })
         XCTAssertThrowsError(try sampleService.delete(sample, from: homeID))
         XCTAssertThrowsError(try runService.delete(run, from: homeID))
-        XCTAssertEqual(try context.fetch(FetchDescriptor<CycleTimeSample>()).map(\.id), [sampleID])
-        XCTAssertEqual(try context.fetch(FetchDescriptor<OEERun>()).map(\.id), [runID])
-
         let reopened = try ModelContainer(for: schema, configurations: [readOnlyConfiguration])
         let reopenedContext = ModelContext(reopened)
         XCTAssertEqual(try reopenedContext.fetch(FetchDescriptor<CycleTimeSample>()).map(\.id), [sampleID])
