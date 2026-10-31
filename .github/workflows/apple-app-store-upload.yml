@@ -35,7 +35,7 @@ jobs:
         run: echo "No upload was confirmed. No credentials were read and no Apple build or upload was started."
 
   upload:
-    if: inputs.confirm_app_store_connect_upload == true
+    if: inputs.confirm_app_store_connect_upload == true && github.ref == 'refs/heads/main'
     runs-on: macos-26
     timeout-minutes: 60
     env:

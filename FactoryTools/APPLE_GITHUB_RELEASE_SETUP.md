@@ -49,11 +49,17 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 ## 手動アップロード
 
 1. [Release preflight](RELEASE_READINESS_AUDIT.md#release-preflight-evidence)の5つのプロジェクト項目が埋まり、Apple側のアプリ/IAP設定とURL公開が完了していることを確認します。
-2. GitHubの **Actions → Apple App Store upload → Run workflow** を開きます。
+2. GitHubの **Actions → Apple App Store upload → Run workflow** をmainブランチから開きます。
 3. Appleへのアップロードを行うときだけ、`confirm_app_store_connect_upload` をオンにします。対象バージョンと、App Store Connectで未使用のビルド番号を入力します。
 4. 成功したらApp Store Connectのビルド処理完了を待ちます。ワークフローは審査提出をしません。
 
 初期値のまま実行した場合は「アップロードなし」で終了し、秘密情報を読み込まず、Appleへの通信やビルドを開始しません。
+
+## プライバシー／サポートページの公開
+
+公開リポジトリでは、GitHub Freeの範囲でGitHub Pagesを使えます。リポジトリの **Settings → Pages → Build and deployment → Source** で **GitHub Actions** を選ぶと、静的ページ用の準備ができます。[GitHub Pagesの利用条件と設定](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
+
+ワークフロー **Publish privacy and support pages** は手動実行だけで、公開確認欄の初期値はオフです。確認をオンにした場合も、mainブランチからのみ動き、発行者名・連絡先・日付などが揃って公開コピー検証に通るまでデプロイされません。通常のpushでは公開しません。GitHub Pagesには訪問者IPアドレスをセキュリティ目的で記録する運用があるため、ホスティング側の取り扱いと必要な告知を公開者が確認してください。[GitHub Pagesの利用制限](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)、[GitHub Pagesのアクセス記録](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
 ## 残るApple側の確認
 

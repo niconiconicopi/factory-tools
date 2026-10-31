@@ -376,7 +376,7 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "manual dispatch only": "on:\n  workflow_dispatch:",
         "upload confirmation defaults off": "confirm_app_store_connect_upload:\n        description:",
         "confirmation default is false": "confirm_app_store_connect_upload:\n        description: This uploads a signed build to App Store Connect only; it does not submit for App Review.\n        required: true\n        type: boolean\n        default: false",
-        "upload job requires explicit confirmation": "if: inputs.confirm_app_store_connect_upload == true",
+        "upload is limited to confirmed main-branch runs": "if: inputs.confirm_app_store_connect_upload == true && github.ref == 'refs/heads/main'",
         "unconfirmed run is a no-upload path": "if: inputs.confirm_app_store_connect_upload != true",
         "read-only repository permission": "permissions:\n  contents: read",
         "checkout credentials disabled": "persist-credentials: false",
@@ -398,6 +398,27 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         errors.append("workflow must use the dedicated App Store Connect API key secret")
     if re.search(r"\bset\s+-x\b|echo\s+.*APP_STORE_CONNECT_API_KEY_CONTENTS", source):
         errors.append("workflow must not enable shell tracing or print App Store Connect key material")
+    return errors
+
+
+def pages_publication_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the manually confirmed deployment of reviewed legal/support copy."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "publication confirmation defaults off": "confirm_publication:\n        description: Publish the completed, publisher-reviewed legal/support pages to GitHub Pages.\n        required: true\n        type: boolean\n        default: false",
+        "deployment is limited to confirmed main-branch runs": "if: inputs.confirm_publication == true && github.ref == 'refs/heads/main'",
+        "unconfirmed run skips publication": "if: inputs.confirm_publication != true",
+        "read-only repository permission by default": "permissions:\n  contents: read",
+        "checkout credentials disabled": "persist-credentials: false",
+        "reviewed-copy validation required": "--publication-copy-reviewed --check",
+        "GitHub Pages permission is scoped to deployment job": "pages: write\n      id-token: write",
+        "OIDC-backed Pages deployment": "id-token: write",
+        "publish Pages artifact": "uses: actions/upload-pages-artifact@v4",
+        "deploy Pages artifact": "uses: actions/deploy-pages@v4",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
+        errors.append("legal-pages publication workflow must not deploy automatically")
     return errors
 
 
@@ -783,6 +804,13 @@ def main() -> int:
             ERRORS.append(f"Apple App Store upload workflow contract: {workflow_issue}")
     else:
         ERRORS.append("Apple App Store upload workflow is missing")
+    pages_workflow_path = ROOT / ".github" / "workflows" / "publish-legal-pages.yml"
+    if pages_workflow_path.is_file():
+        pages_workflow_source = pages_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in pages_publication_workflow_contract_errors(pages_workflow_source):
+            ERRORS.append(f"Legal-pages publication workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Legal-pages publication workflow is missing")
     scheme = ROOT / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryTools.xcscheme"
     core_scheme = ROOT / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryToolsCore.xcscheme"
     watch_scheme = ROOT / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryToolsWatch.xcscheme"
@@ -4618,7 +4646,7 @@ def main() -> int:
             print(f"FAIL: {error}")
         return 1
 
-    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native and manually confirmed release workflow contracts.")
+    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native plus manually confirmed release and legal-pages workflow contracts.")
     print("PASS: bilingual App Store listing draft fits Apple's name, subtitle, description, and keyword limits.")
     print("PASS: localized Factory Tools Pro in-app purchase metadata fits Apple's display-name and description limits.")
     print("PASS: no Swift packages, third-party billing SDKs, external service endpoints, or distributed counter backends; Apple StoreKit is isolated to the one-time Pro manager; local peer transport is isolated.")

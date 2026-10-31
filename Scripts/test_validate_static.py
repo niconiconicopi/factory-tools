@@ -11,6 +11,7 @@ from validate_static import (
     OpenStepParseError,
     apple_workflow_contract_errors,
     apple_upload_workflow_contract_errors,
+    pages_publication_workflow_contract_errors,
     apply_release_candidate_overrides,
     app_store_metadata_limit_errors,
     bypasses_app_theme_manager,
@@ -98,10 +99,46 @@ jobs:
         errors = apple_upload_workflow_contract_errors(source)
 
         self.assertIn("missing confirmation default is false", errors)
+        self.assertIn("missing upload is limited to confirmed main-branch runs", errors)
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn("distribution upload workflow must not run on push, pull request, or schedule", errors)
         self.assertIn("workflow must not enable shell tracing or print App Store Connect key material", errors)
+
+
+class LegalPagesWorkflowContractTests(unittest.TestCase):
+    def test_current_legal_pages_workflow_is_manual_and_confirmed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "publish-legal-pages.yml").read_text(encoding="utf-8")
+
+        self.assertEqual(pages_publication_workflow_contract_errors(workflow), [])
+
+    def test_legal_pages_workflow_rejects_automatic_or_unconfirmed_deployment(self) -> None:
+        source = """name: Publish Pages
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      confirm_publication:
+        description: Publish the completed, publisher-reviewed legal/support pages to GitHub Pages.
+        required: true
+        type: boolean
+        default: true
+permissions:
+  contents: write
+jobs:
+  publish:
+    if: inputs.confirm_publication == true
+    steps:
+      - uses: actions/deploy-pages@v4
+"""
+
+        errors = pages_publication_workflow_contract_errors(source)
+
+        self.assertIn("missing publication confirmation defaults off", errors)
+        self.assertIn("missing deployment is limited to confirmed main-branch runs", errors)
+        self.assertIn("missing read-only repository permission by default", errors)
+        self.assertIn("legal-pages publication workflow must not deploy automatically", errors)
 
 
 class SwiftRuntimeSafetySourceTests(unittest.TestCase):

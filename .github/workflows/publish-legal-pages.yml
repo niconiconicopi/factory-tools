@@ -1,0 +1,72 @@
+name: Publish privacy and support pages
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_publication:
+        description: Publish the completed, publisher-reviewed legal/support pages to GitHub Pages.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: factory-tools-legal-pages-publication
+  cancel-in-progress: false
+
+jobs:
+  no_publication:
+    if: inputs.confirm_publication != true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Explain skipped publication
+        run: echo "Publication was not confirmed. No pages were generated or deployed."
+
+  publish:
+    if: inputs.confirm_publication == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Generate and validate publisher-reviewed pages
+        run: |
+          python3 Scripts/generate_public_site.py --publication-copy-reviewed
+          python3 Scripts/generate_public_site.py --publication-copy-reviewed --check
+
+      - name: Prepare public website files
+        shell: bash
+        run: |
+          set -euo pipefail
+          site_path="$RUNNER_TEMP/factory-tools-pages"
+          mkdir -p "$site_path"
+          cp FactoryTools/SitePublicationCandidate/index.html "$site_path/index.html"
+          cp FactoryTools/SitePublicationCandidate/privacy.html "$site_path/privacy.html"
+          cp FactoryTools/SitePublicationCandidate/support.html "$site_path/support.html"
+          cp FactoryTools/SitePublicationCandidate/styles.css "$site_path/styles.css"
+          test "$(find "$site_path" -maxdepth 1 -type f | wc -l | tr -d ' ')" = 4
+          test -s "$site_path/index.html"
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/factory-tools-pages
+
+      - name: Publish to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
