@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from capture_watch_screenshots import record_failure_summary
 from validate_static import (
     DuplicateJSONKeyError,
     OpenStepParseError,
@@ -79,6 +80,33 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("xcresulttool get test-results summary --path", ipad_test)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', ipad_test)
         self.assertIn('exit "$test_status"', ipad_test)
+
+
+class WatchScreenshotDiagnosticsTests(unittest.TestCase):
+    def test_process_failure_summary_includes_command_and_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            summary_path = Path(temporary_directory) / "step-summary.md"
+            previous_summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+            os.environ["GITHUB_STEP_SUMMARY"] = str(summary_path)
+            try:
+                error = subprocess.CalledProcessError(
+                    1,
+                    ["xcrun", "simctl", "launch", "watch-simulator"],
+                    output="launch started",
+                    stderr="simulator refused launch",
+                )
+                record_failure_summary(error)
+            finally:
+                if previous_summary_path is None:
+                    os.environ.pop("GITHUB_STEP_SUMMARY", None)
+                else:
+                    os.environ["GITHUB_STEP_SUMMARY"] = previous_summary_path
+
+            summary = summary_path.read_text(encoding="utf-8")
+            self.assertIn("Apple Watch screenshot capture failure", summary)
+            self.assertIn("xcrun simctl launch watch-simulator", summary)
+            self.assertIn("launch started", summary)
+            self.assertIn("simulator refused launch", summary)
 
 
 class AppleUploadWorkflowContractTests(unittest.TestCase):
@@ -188,6 +216,10 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"watch-home-ja.jpg"', capture_script)
         self.assertIn('print("Installing the Release Watch app.", flush=True)', capture_script)
         self.assertIn('print(f"Capturing {output_path.name}.", flush=True)', capture_script)
+        self.assertIn('summary_path = os.environ.get("GITHUB_STEP_SUMMARY")', capture_script)
+        self.assertIn("record_failure_summary(error)", capture_script)
+        self.assertIn("stderr=result.stderr", capture_script)
+        self.assertIn("if error.stderr:", capture_script)
         self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
         self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)

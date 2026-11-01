@@ -7,13 +7,45 @@ import argparse
 import json
 import os
 import re
+import shlex
 import subprocess
+import sys
 import time
 from pathlib import Path
 
 
 def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(arguments, check=True, text=True, capture_output=capture_output)
+    result = subprocess.run(arguments, check=False, text=True, capture_output=True)
+    if not capture_output:
+        if result.stdout:
+            print(result.stdout, end="", flush=True)
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr, flush=True)
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode,
+            arguments,
+            output=result.stdout,
+            stderr=result.stderr,
+        )
+    return result
+
+
+def record_failure_summary(error: Exception) -> None:
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+
+    lines = ["## Apple Watch screenshot capture failure", "", f"{type(error).__name__}: {error}"]
+    if isinstance(error, subprocess.CalledProcessError):
+        lines.extend(["", f"Command: `{shlex.join(error.cmd)}`"])
+        if error.stdout:
+            lines.extend(["", "### Command output", "```text", error.stdout.rstrip(), "```"])
+        if error.stderr:
+            lines.extend(["", "### Command error", "```text", error.stderr.rstrip(), "```"])
+    lines.append("")
+    with Path(summary_path).open("a", encoding="utf-8") as summary:
+        summary.write("\n".join(lines))
 
 
 def simulator_name(device_id: str) -> str:
@@ -120,4 +152,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except Exception as error:
+        record_failure_summary(error)
+        raise
