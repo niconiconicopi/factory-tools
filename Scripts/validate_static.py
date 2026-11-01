@@ -3865,7 +3865,7 @@ def main() -> int:
     )
     require(f"Simulator XCTestが各{hosted_app_test_count}件" in release_setup_guide
             and f"共有Core XCTestが{shared_core_test_count}件" in release_setup_guide
-            and "https://github.com/niconiconicopi/factory-tools/actions/runs/41271780249" in release_setup_guide
+            and "https://github.com/niconiconicopi/factory-tools/actions/runs/41273710950" in release_setup_guide
             and "41244759649" not in release_setup_guide,
             "Japanese Apple release setup guide must point to the latest verified simulator/Core run and current test counts")
     registered_tool_count = registry.count("ToolDefinition(")
