@@ -396,6 +396,17 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         errors.append("distribution upload workflow must not run on push, pull request, or schedule")
     if "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}" not in source:
         errors.append("workflow must use the dedicated App Store Connect API key secret")
+    api_key_step = source.find("      - name: Prepare temporary App Store Connect API key")
+    validation_steps = [
+        source.find("      - name: Run current iPhone and shared Core regression suites"),
+        source.find("      - name: Run current iPad regression suite"),
+        source.find("      - name: Build Watch Simulator target"),
+    ]
+    signed_archive_step = source.find("      - name: Create signed App Store archive with automatic signing")
+    if min([api_key_step, signed_archive_step, *validation_steps]) < 0:
+        errors.append("workflow must delay API key preparation until after simulator tests and the Watch build")
+    elif not max(validation_steps) < api_key_step < signed_archive_step:
+        errors.append("App Store Connect API key must not be loaded before all simulator tests and the Watch build pass")
     if re.search(r"\bset\s+-x\b|echo\s+.*APP_STORE_CONNECT_API_KEY_CONTENTS", source):
         errors.append("workflow must not enable shell tracing or print App Store Connect key material")
     return errors

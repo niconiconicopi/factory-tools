@@ -75,6 +75,23 @@ class AppleUploadWorkflowContractTests(unittest.TestCase):
 
         self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
 
+    def test_upload_workflow_rejects_api_key_before_simulator_gates(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+        step_start = workflow.index("      - name: Prepare temporary App Store Connect API key")
+        step_end = workflow.index("      - name: Create signed App Store archive", step_start)
+        api_key_step = workflow[step_start:step_end]
+        workflow_without_key = workflow[:step_start] + workflow[step_end:]
+        first_test_step = workflow_without_key.index("      - name: Run current iPhone and shared Core regression suites")
+        unsafe_workflow = workflow_without_key[:first_test_step] + api_key_step + workflow_without_key[first_test_step:]
+
+        errors = apple_upload_workflow_contract_errors(unsafe_workflow)
+
+        self.assertIn(
+            "App Store Connect API key must not be loaded before all simulator tests and the Watch build pass",
+            errors,
+        )
+
     def test_upload_workflow_rejects_automatic_distribution_or_secret_echo(self) -> None:
         source = """name: Upload
 on:
@@ -102,6 +119,10 @@ jobs:
         self.assertIn("missing upload is limited to confirmed main-branch runs", errors)
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing iPad Simulator regression suite", errors)
+        self.assertIn(
+            "workflow must delay API key preparation until after simulator tests and the Watch build",
+            errors,
+        )
         self.assertIn("distribution upload workflow must not run on push, pull request, or schedule", errors)
         self.assertIn("workflow must not enable shell tracing or print App Store Connect key material", errors)
 

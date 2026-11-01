@@ -82,23 +82,6 @@ jobs:
           curl --fail --silent --show-error --location --max-time 30 "$FACTORYTOOLS_PRIVACY_POLICY_URL" -o /dev/null
           curl --fail --silent --show-error --location --max-time 30 "$FACTORYTOOLS_SUPPORT_URL" -o /dev/null
 
-      - name: Prepare temporary App Store Connect API key
-        shell: bash
-        env:
-          APP_STORE_CONNECT_API_KEY_CONTENTS: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}
-        run: |
-          set -euo pipefail
-          umask 077
-          key_path="$RUNNER_TEMP/FactoryToolsAuthKey.p8"
-          if [[ -z "$APP_STORE_CONNECT_API_KEY_CONTENTS" ]]; then
-            printf '%s\n' 'The App Store Connect API key secret is missing.' >&2
-            exit 1
-          fi
-          printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENTS" > "$key_path"
-          openssl pkey -in "$key_path" -noout
-          echo "FACTORYTOOLS_ASC_API_KEY_PATH=$key_path" >> "$GITHUB_ENV"
-          unset APP_STORE_CONNECT_API_KEY_CONTENTS
-
       - name: Run current iPhone and shared Core regression suites
         shell: bash
         run: |
@@ -159,6 +142,23 @@ jobs:
           CODE_SIGNING_ALLOWED=NO
           DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
           FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID"
+
+      - name: Prepare temporary App Store Connect API key
+        shell: bash
+        env:
+          APP_STORE_CONNECT_API_KEY_CONTENTS: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key_path="$RUNNER_TEMP/FactoryToolsAuthKey.p8"
+          if [[ -z "$APP_STORE_CONNECT_API_KEY_CONTENTS" ]]; then
+            printf '%s\n' 'The App Store Connect API key secret is missing.' >&2
+            exit 1
+          fi
+          printf '%s' "$APP_STORE_CONNECT_API_KEY_CONTENTS" > "$key_path"
+          openssl pkey -in "$key_path" -noout
+          echo "FACTORYTOOLS_ASC_API_KEY_PATH=$key_path" >> "$GITHUB_ENV"
+          unset APP_STORE_CONNECT_API_KEY_CONTENTS
 
       - name: Create signed App Store archive with automatic signing
         shell: bash
