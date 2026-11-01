@@ -127,6 +127,29 @@ jobs:
         self.assertIn("workflow must not enable shell tracing or print App Store Connect key material", errors)
 
 
+class SimulatorScreenshotWorkflowTests(unittest.TestCase):
+    def test_ci_captures_bilingual_release_simulator_screenshots_without_persisting_demo_data(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        app_source = (root / "FactoryTools" / "App" / "FactoryToolsApp.swift").read_text(encoding="utf-8")
+        capture_script = (root / "Scripts" / "capture_simulator_screenshots.py").read_text(encoding="utf-8")
+        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        asset_plan = (root / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
+
+        self.assertIn("#if targetEnvironment(simulator)", app_source)
+        self.assertIn('arguments.contains("--factorytools-screenshot-demo")', app_source)
+        self.assertIn("isStoredInMemoryOnly: screenshotLanguage != nil", app_source)
+        self.assertIn("ProductionSession(", app_source)
+        self.assertIn('"--factorytools-screenshot-japanese"', app_source)
+        self.assertIn('"sips", "-s", "format", "jpeg"', capture_script)
+        self.assertIn('"iphone-home-en.jpg"', capture_script)
+        self.assertIn('"iphone-home-ja.jpg"', capture_script)
+        self.assertIn("-configuration Release", workflow)
+        self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
+        self.assertIn("uses: actions/upload-artifact@v4", workflow)
+        self.assertIn("retention-days: 30", workflow)
+        self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
+
+
 class LegalPagesWorkflowContractTests(unittest.TestCase):
     def test_current_legal_pages_workflow_is_manual_and_confirmed(self) -> None:
         root = Path(__file__).resolve().parents[1]

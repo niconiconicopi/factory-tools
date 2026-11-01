@@ -1249,7 +1249,7 @@ def main() -> int:
             and "showingRetryError: $showingRetryError" in app_entry
             and "@State private var container: ModelContainer?" in app_entry
             and "private func retryStoreInitialization()" in app_entry
-            and "container = try Self.makeContainer()" in app_entry
+            and "container = try Self.makeContainer(screenshotLanguage: screenshotDemoLanguage)" in app_entry
             and "showingRetryError = true" in app_entry
             and "showingRetryError = false" in app_entry
             and 'Button("common.retry", action: onRetry)' in app_entry

@@ -1,6 +1,6 @@
 # App Store screenshot and purchase-review asset plan
 
-**Status: capture plan only.** No product screenshots are included yet. Capture every screenshot from the actual release build with synthetic sample records. Do not use generated or reconstructed UI as a substitute for an app capture. Recheck Apple's specifications immediately before upload.
+**Status: capture plan plus automated iPhone home capture workflow.** Native CI is configured to build the Release Simulator app, seed synthetic records in a Simulator-only in-memory store, capture the English and Japanese home screens, convert them to JPEG, and retain them as a 30-day Actions artifact. The workflow has not produced its first artifact yet; no screenshots are committed to the repository. iPhone tool screens, iPad, Watch, and the separate Pro purchase screen are still to be captured. Do not use generated or reconstructed UI as a substitute for an app capture. Recheck Apple's specifications immediately before upload.
 
 Apple's current screenshot rules were reviewed on 2026-10-31. At least one screenshot is required for iPhone with Dynamic Island, one for 13-inch iPad when iPadOS is supported, and one for Apple Watch when a Watch app is included. App Store Connect allows up to 10 screenshots per device size. Screenshots must not have alpha transparency. The Watch screenshot dimensions must be consistent across localizations.
 
@@ -53,6 +53,7 @@ Capture the actual signed iPhone Settings screen with the configured non-consuma
 
 ## Capture and upload checklist
 
+- Retrieve and review the `factory-tools-app-store-iphone-home` artifact from the latest successful Apple native CI run; it contains real Release Simulator captures of the iPhone home in English and Japanese, with synthetic in-memory data.
 - Create synthetic home, counter, history, defect, and calculator data in the release build.
 - Capture iPhone, iPad, and Watch screens at the chosen Apple-listed sizes.
 - For submissions starting April 2027, include iPhone Duo outer- and inner-display screenshots in addition to the currently required Dynamic Island and 13-inch iPad screenshots.
