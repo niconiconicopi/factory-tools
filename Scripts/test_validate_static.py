@@ -253,6 +253,10 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("dimensions != (416, 496)", capture_script)
         self.assertIn('"watch-home-en.jpg"', capture_script)
         self.assertIn('"watch-home-ja.jpg"', capture_script)
+        self.assertLess(
+            capture_script.index('"watch-home-ja.jpg": capture_language'),
+            capture_script.index('captures["watch-home-en.jpg"] = capture_language'),
+        )
         self.assertIn('print("Installing the Release Watch app.", flush=True)', capture_script)
         self.assertIn('print(f"Capturing {output_path.name}.", flush=True)', capture_script)
         self.assertIn("time.sleep(8)", capture_script)
