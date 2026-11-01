@@ -121,8 +121,8 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
 
 
 def restart_simulator(device_id: str) -> None:
-    """Start the second locale from a clean watchOS Simulator session."""
-    print("Restarting Apple Watch Simulator between locales.", flush=True)
+    """Start a locale capture from a clean watchOS Simulator session."""
+    print("Restarting Apple Watch Simulator for a clean locale capture.", flush=True)
     run(["xcrun", "simctl", "shutdown", device_id])
     run(["xcrun", "simctl", "boot", device_id])
     run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
@@ -148,6 +148,9 @@ def main() -> int:
     # Install the Release build explicitly; the preceding Watch build step alone does not install it.
     print("Installing the Release Watch app.", flush=True)
     run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
+    # The Debug-to-Release switch can leave the first locale on a stale WatchKit
+    # session. Start both language captures from the same clean simulator state.
+    restart_simulator(arguments.device_id)
     captures = {
         "watch-home-en.jpg": capture_language(
             arguments.device_id, identifier, arguments.output_dir / "watch-home-en.jpg", japanese=False
