@@ -357,14 +357,15 @@ struct WatchCounterDetailView: View {
     #if targetEnvironment(simulator)
     private func logScreenshotCaptureState() {
         guard model.screenshotDemoSessionID == sessionID, let session else { return }
-        watchScreenshotCaptureLogger.notice(
-            "language=\(model.displayLanguage.rawValue, privacy: .public) " +
-                "count=\(session.currentCount, privacy: .public) " +
-                "target=\(session.targetCount, privacy: .public) " +
-                "luminanceReduced=\(isLuminanceReduced, privacy: .public) " +
-                "privacyRedacted=\(redactionReasons.contains(.privacy), privacy: .public) " +
-                "placeholderRedacted=\(redactionReasons.contains(.placeholder), privacy: .public)"
-        )
+        let captureState = [
+            "language=\(model.displayLanguage.rawValue)",
+            "count=\(session.currentCount)",
+            "target=\(session.targetCount)",
+            "luminanceReduced=\(isLuminanceReduced)",
+            "privacyRedacted=\(redactionReasons.contains(.privacy))",
+            "placeholderRedacted=\(redactionReasons.contains(.placeholder))",
+        ].joined(separator: " ")
+        watchScreenshotCaptureLogger.notice("\(captureState, privacy: .public)")
     }
     #endif
 
