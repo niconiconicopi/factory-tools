@@ -32,6 +32,21 @@ def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.Com
 
 
 def record_failure_summary(error: Exception) -> None:
+    annotation = f"{type(error).__name__}: {error}"
+    if isinstance(error, subprocess.CalledProcessError):
+        command_output = (error.stderr or error.stdout or "").strip()
+        if command_output:
+            annotation += "\n" + command_output[-1_200:]
+    annotation = annotation[:1_800]
+    annotation = (
+        annotation.replace("%", "%25")
+        .replace("\r", "%0D")
+        .replace("\n", "%0A")
+        .replace(":", "%3A")
+        .replace(",", "%2C")
+    )
+    print(f"::error title=Apple Watch screenshot capture failure::{annotation}", flush=True)
+
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not summary_path:
         return

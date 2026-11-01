@@ -1,9 +1,11 @@
+import io
 import os
 import struct
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 from capture_watch_screenshots import record_failure_summary
@@ -93,9 +95,11 @@ class WatchScreenshotDiagnosticsTests(unittest.TestCase):
                     1,
                     ["xcrun", "simctl", "launch", "watch-simulator"],
                     output="launch started",
-                    stderr="simulator refused launch",
+                    stderr="simulator refused launch: unavailable",
                 )
-                record_failure_summary(error)
+                annotation = io.StringIO()
+                with redirect_stdout(annotation):
+                    record_failure_summary(error)
             finally:
                 if previous_summary_path is None:
                     os.environ.pop("GITHUB_STEP_SUMMARY", None)
@@ -106,7 +110,9 @@ class WatchScreenshotDiagnosticsTests(unittest.TestCase):
             self.assertIn("Apple Watch screenshot capture failure", summary)
             self.assertIn("xcrun simctl launch watch-simulator", summary)
             self.assertIn("launch started", summary)
-            self.assertIn("simulator refused launch", summary)
+            self.assertIn("simulator refused launch: unavailable", summary)
+            self.assertIn("::error title=Apple Watch screenshot capture failure::", annotation.getvalue())
+            self.assertIn("simulator refused launch%3A unavailable", annotation.getvalue())
 
 
 class AppleUploadWorkflowContractTests(unittest.TestCase):
