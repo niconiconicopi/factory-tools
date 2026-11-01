@@ -13,9 +13,26 @@ import sys
 import time
 from pathlib import Path
 
+COMMAND_TIMEOUT_SECONDS = 300
+MAX_SCREENSHOT_ATTEMPTS = 3
+WATCH_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_watch_screenshot.swift")
+
 
 def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-    result = subprocess.run(arguments, check=False, text=True, capture_output=True)
+    print(f"Running Watch capture command: {shlex.join(arguments)}", flush=True)
+    try:
+        result = subprocess.run(
+            arguments,
+            check=False,
+            text=True,
+            capture_output=True,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as error:
+        command = shlex.join(arguments)
+        raise RuntimeError(
+            f"Watch capture command timed out after {COMMAND_TIMEOUT_SECONDS} seconds: {command}"
+        ) from error
     if not capture_output:
         if result.stdout:
             print(result.stdout, end="", flush=True)
@@ -100,13 +117,39 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
     launch_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         launch_arguments.append("--factorytools-screenshot-japanese")
-    print(f"Launching {'Japanese' if japanese else 'English'} Watch counter detail.", flush=True)
-    run(["xcrun", "simctl", "launch", "--terminate-running-process", device_id, identifier, *launch_arguments])
-    # Give WatchKit's first scene and numeric content time to settle after each locale relaunch.
-    time.sleep(20)
     temporary_png = output_path.with_suffix(".png")
-    print(f"Capturing {output_path.name}.", flush=True)
-    run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+
+    for attempt in range(1, MAX_SCREENSHOT_ATTEMPTS + 1):
+        print(
+            f"Launching {'Japanese' if japanese else 'English'} Watch counter detail "
+            f"(attempt {attempt}/{MAX_SCREENSHOT_ATTEMPTS}).",
+            flush=True,
+        )
+        run(["xcrun", "simctl", "launch", "--terminate-running-process", device_id, identifier, *launch_arguments])
+        # Give WatchKit's scene/activation changes and numeric content time to settle.
+        time.sleep(20)
+        print(f"Capturing {output_path.name}.", flush=True)
+        run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+        try:
+            verification = run(
+                ["swift", str(WATCH_SCREENSHOT_VERIFIER), str(temporary_png), "286", "300"],
+                capture_output=True,
+            )
+        except subprocess.CalledProcessError as error:
+            recognized = (error.stderr or error.stdout or "").strip()
+            temporary_png.unlink(missing_ok=True)
+            if attempt == MAX_SCREENSHOT_ATTEMPTS:
+                raise RuntimeError(
+                    f"{output_path.name} did not show count and target after "
+                    f"{MAX_SCREENSHOT_ATTEMPTS} captures. {recognized}"
+                ) from error
+            print(f"Counter text was not visible; restarting Watch Simulator. {recognized}", flush=True)
+            restart_simulator(device_id)
+            continue
+
+        print(verification.stdout.strip(), flush=True)
+        break
+
     run([
         "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
         str(temporary_png), "--out", str(output_path),
