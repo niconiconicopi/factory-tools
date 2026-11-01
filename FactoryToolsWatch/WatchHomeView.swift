@@ -339,9 +339,14 @@ private struct WatchCycleTimeDetailView: View {
 
 struct WatchCounterDetailView: View {
     @EnvironmentObject private var model: WatchCounterModel
+    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     let sessionID: UUID
 
     private var session: WatchCounterSessionSnapshot? { model.session(id: sessionID) }
+    private var counterAccent: Color { isLuminanceReduced ? WatchTheme.primaryText : WatchTheme.accent }
+    private var progressTrack: Color {
+        isLuminanceReduced ? WatchTheme.secondaryText.opacity(0.25) : WatchTheme.panel
+    }
 
     var body: some View {
         if let session {
@@ -356,15 +361,15 @@ struct WatchCounterDetailView: View {
                     // supported languages, just like the target below.
                     Text(verbatim: String(session.currentCount))
                         .font(.system(size: 38, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(WatchTheme.accent)
+                        .foregroundStyle(counterAccent)
                         .accessibilityLabel("watch.progress.current")
                     if session.targetCount > 0 {
                         let completion = min(Double(session.currentCount) / Double(session.targetCount), 1)
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
-                                Capsule().fill(WatchTheme.panel)
+                                Capsule().fill(progressTrack)
                                 Capsule()
-                                    .fill(WatchTheme.accent)
+                                    .fill(counterAccent)
                                     .frame(width: geometry.size.width * completion)
                             }
                         }
@@ -413,7 +418,7 @@ struct WatchCounterDetailView: View {
                         } label: {
                             Text("+1").font(.headline)
                         }
-                        .tint(WatchTheme.accent)
+                        .tint(counterAccent)
                     }
                     Button {
                         model.addFive(to: session)
@@ -421,7 +426,7 @@ struct WatchCounterDetailView: View {
                         Text("watch.quickAddFive")
                     }
                     .buttonStyle(.bordered)
-                    .tint(WatchTheme.accent)
+                    .tint(counterAccent)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 3)

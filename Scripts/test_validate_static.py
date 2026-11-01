@@ -238,6 +238,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("targetCount: 300", watch_model)
         self.assertIn("struct WatchCounterDetailView: View", watch_view)
         counter_detail = watch_view.split("struct WatchCounterDetailView: View", 1)[1]
+        self.assertIn("@Environment(\\.isLuminanceReduced) private var isLuminanceReduced", counter_detail)
+        self.assertIn("isLuminanceReduced ? WatchTheme.primaryText : WatchTheme.accent", counter_detail)
+        self.assertIn("isLuminanceReduced ? WatchTheme.secondaryText.opacity(0.25) : WatchTheme.panel", counter_detail)
         self.assertIn("Text(verbatim: String(session.currentCount))", counter_detail)
         self.assertIn("GeometryReader { geometry in", counter_detail)
         self.assertIn("geometry.size.width * completion", counter_detail)
