@@ -97,6 +97,9 @@ def main() -> int:
         "--wifiBars", "3", "--cellularMode", "active", "--cellularBars", "4",
         "--batteryState", "charged", "--batteryLevel", "100",
     ])
+    # xcodebuild build does not install its product; replace the Debug app that
+    # the preceding XCTest step may have left on this Simulator with Release.
+    run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
     captures = {
         "iphone-home-en.jpg": capture_language(
             arguments.device_id, identifier, arguments.output_dir / "iphone-home-en.jpg", japanese=False

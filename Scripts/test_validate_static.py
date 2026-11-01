@@ -143,6 +143,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"sips", "-s", "format", "jpeg"', capture_script)
         self.assertIn('"iphone-home-en.jpg"', capture_script)
         self.assertIn('"iphone-home-ja.jpg"', capture_script)
+        self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
         self.assertIn("-configuration Release", workflow)
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
