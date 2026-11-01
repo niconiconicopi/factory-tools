@@ -347,6 +347,7 @@ private struct WatchCycleTimeDetailView: View {
 
 struct WatchCounterDetailView: View {
     @EnvironmentObject private var model: WatchCounterModel
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     @Environment(\.redactionReasons) private var redactionReasons
     let sessionID: UUID
@@ -357,10 +358,12 @@ struct WatchCounterDetailView: View {
     #if targetEnvironment(simulator)
     private func logScreenshotCaptureState() {
         guard model.screenshotDemoSessionID == sessionID, let session else { return }
+        let colorSchemeName = colorScheme == .dark ? "dark" : "light"
         let captureState = [
             "language=\(model.displayLanguage.rawValue)",
             "count=\(session.currentCount)",
             "target=\(session.targetCount)",
+            "colorScheme=\(colorSchemeName)",
             "luminanceReduced=\(isLuminanceReduced)",
             "privacyRedacted=\(redactionReasons.contains(.privacy))",
             "placeholderRedacted=\(redactionReasons.contains(.placeholder))",

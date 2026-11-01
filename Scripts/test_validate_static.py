@@ -240,7 +240,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"home.defaultName"', (root / "FactoryToolsWatch" / "Resources" / "Localizable.xcstrings").read_text(encoding="utf-8"))
         self.assertIn("currentCount: 286", watch_model)
         self.assertIn("targetCount: 300", watch_model)
-        self.assertIn("static let primaryText = Color.primary", watch_theme)
+        self.assertIn("static let primaryText = Color.white", watch_theme)
         self.assertIn("struct WatchCounterDetailView: View", watch_view)
         counter_detail = watch_view.split("struct WatchCounterDetailView: View", 1)[1]
         self.assertIn("@Environment(\\.isLuminanceReduced) private var isLuminanceReduced", counter_detail)
@@ -251,6 +251,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn(".progressViewStyle(.linear)", counter_detail)
         self.assertIn(".tint(counterAccent)", counter_detail)
         self.assertIn('category: "ScreenshotCapture"', watch_view)
+        self.assertIn("@Environment(\\.colorScheme) private var colorScheme", counter_detail)
         self.assertIn("redactionReasons.contains(.privacy)", watch_view)
         self.assertIn("redactionReasons.contains(.placeholder)", watch_view)
         self.assertNotIn("GeometryReader { geometry in", counter_detail)
