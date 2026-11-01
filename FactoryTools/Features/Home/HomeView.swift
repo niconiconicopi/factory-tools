@@ -229,10 +229,14 @@ struct HomeView: View {
     private func screenshotSheet(for card: ToolCard) -> HomeToolCardSheet? {
         guard let screenshotDemoScenario else { return nil }
         switch screenshotDemoScenario {
-        case .cycleTime where card.toolID == ToolID.cycleTime.rawValue: .cycleTime
-        case .taktTime where card.toolID == ToolID.taktTime.rawValue: .taktTime
-        case .counterHistory where card.toolID == ToolID.productionCounter.rawValue: .history
-        default: nil
+        case .cycleTime where card.toolID == ToolID.cycleTime.rawValue:
+            return .cycleTime
+        case .taktTime where card.toolID == ToolID.taktTime.rawValue:
+            return .taktTime
+        case .counterHistory where card.toolID == ToolID.productionCounter.rawValue:
+            return .history
+        default:
+            return nil
         }
     }
 

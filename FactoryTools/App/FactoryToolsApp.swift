@@ -28,7 +28,7 @@ struct FactoryToolsApp: App {
     init() {
         #if targetEnvironment(simulator)
         let arguments = ProcessInfo.processInfo.arguments
-        let screenshotDemoLanguage = arguments.contains("--factorytools-screenshot-demo")
+        let screenshotDemoLanguage: AppLanguage? = arguments.contains("--factorytools-screenshot-demo")
             ? (arguments.contains("--factorytools-screenshot-japanese") ? .japanese : .english)
             : nil
         let screenshotDemoScenario = screenshotDemoLanguage == nil
