@@ -351,16 +351,30 @@ struct WatchCounterDetailView: View {
                         .font(.headline)
                         .lineLimit(2)
                         .multilineTextAlignment(.center)
-                    Text(session.currentCount, format: .number)
+                    // Keep the count stable across watchOS locale-specific number
+                    // transitions. The production count uses ASCII digits in both
+                    // supported languages, just like the target below.
+                    Text(verbatim: String(session.currentCount))
                         .font(.system(size: 38, weight: .bold, design: .rounded).monospacedDigit())
                         .foregroundStyle(WatchTheme.accent)
-                        .contentTransition(.numericText())
+                        .accessibilityLabel("watch.progress.current")
                     if session.targetCount > 0 {
-                        ProgressView(value: min(Double(session.currentCount), Double(session.targetCount)), total: Double(session.targetCount))
-                            .tint(WatchTheme.accent)
+                        let completion = min(Double(session.currentCount) / Double(session.targetCount), 1)
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(WatchTheme.panel)
+                                Capsule()
+                                    .fill(WatchTheme.accent)
+                                    .frame(width: geometry.size.width * completion)
+                            }
+                        }
+                        .frame(height: 8)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("watch.progress.fraction")
+                        .accessibilityValue(Text(completion.formatted(.percent.precision(.fractionLength(0...1)))))
                         HStack(spacing: 3) {
                             Text("watch.target")
-                            Text(session.targetCount, format: .number)
+                            Text(verbatim: String(session.targetCount))
                         }
                         .font(.caption2)
                         .foregroundStyle(WatchTheme.secondaryText)

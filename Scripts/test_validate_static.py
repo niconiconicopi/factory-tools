@@ -237,6 +237,11 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("currentCount: 286", watch_model)
         self.assertIn("targetCount: 300", watch_model)
         self.assertIn("struct WatchCounterDetailView: View", watch_view)
+        counter_detail = watch_view.split("struct WatchCounterDetailView: View", 1)[1]
+        self.assertIn("Text(verbatim: String(session.currentCount))", counter_detail)
+        self.assertIn("GeometryReader { geometry in", counter_detail)
+        self.assertIn("geometry.size.width * completion", counter_detail)
+        self.assertNotIn("Text(session.currentCount, format: .number)", counter_detail)
         self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
         self.assertIn("dimensions != (416, 496)", capture_script)
         self.assertIn('"watch-home-en.jpg"', capture_script)
