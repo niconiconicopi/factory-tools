@@ -350,6 +350,7 @@ struct WatchCounterDetailView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     @Environment(\.redactionReasons) private var redactionReasons
+    @Environment(\.scenePhase) private var scenePhase
     let sessionID: UUID
 
     private var session: WatchCounterSessionSnapshot? { model.session(id: sessionID) }
@@ -364,6 +365,7 @@ struct WatchCounterDetailView: View {
             "count=\(session.currentCount)",
             "target=\(session.targetCount)",
             "colorScheme=\(colorSchemeName)",
+            "scenePhase=\(String(describing: scenePhase))",
             "luminanceReduced=\(isLuminanceReduced)",
             "privacyRedacted=\(redactionReasons.contains(.privacy))",
             "placeholderRedacted=\(redactionReasons.contains(.placeholder))",
@@ -448,11 +450,13 @@ struct WatchCounterDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 3)
+                .id(model.displayLanguage.rawValue)
             }
 #if targetEnvironment(simulator)
             .onAppear(perform: logScreenshotCaptureState)
             .onChange(of: isLuminanceReduced) { _, _ in logScreenshotCaptureState() }
             .onChange(of: redactionReasons) { _, _ in logScreenshotCaptureState() }
+            .onChange(of: scenePhase) { _, _ in logScreenshotCaptureState() }
 #endif
             .navigationTitle(watchHomeNameText(session.homeName, isDefault: session.homeNameIsDefault))
             .navigationBarTitleDisplayMode(.inline)
