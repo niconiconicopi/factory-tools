@@ -23,6 +23,7 @@ struct HomeToolCardView: View {
     let onMoveEarlier: () -> Void
     let onMoveLater: () -> Void
     let onDelete: () -> Void
+    private let initialSheet: HomeToolCardSheet?
 
     init(
         card: ToolCard,
@@ -31,7 +32,8 @@ struct HomeToolCardView: View {
         canMoveLater: Bool,
         onMoveEarlier: @escaping () -> Void,
         onMoveLater: @escaping () -> Void,
-        onDelete: @escaping () -> Void
+        onDelete: @escaping () -> Void,
+        initialSheet: HomeToolCardSheet? = nil
     ) {
         self.card = card
         self.home = home
@@ -40,6 +42,8 @@ struct HomeToolCardView: View {
         self.onMoveEarlier = onMoveEarlier
         self.onMoveLater = onMoveLater
         self.onDelete = onDelete
+        self.initialSheet = initialSheet
+        _activeSheet = State(initialValue: initialSheet)
         let selectedHomeID = card.homeProfileID
         _sessions = Query(filter: #Predicate<ProductionSession> { $0.homeProfileID == selectedHomeID })
     }
@@ -173,9 +177,9 @@ struct HomeToolCardView: View {
             case .history:
                 if let session { CounterHistoryView(session: session) }
             case .cycleTime:
-                CycleTimeCalculatorView(homeProfileID: card.homeProfileID)
+                CycleTimeCalculatorView(homeProfileID: card.homeProfileID, screenshotDemoValues: initialSheet == .cycleTime)
             case .taktTime:
-                TaktTimeCalculatorView()
+                TaktTimeCalculatorView(screenshotDemoValues: initialSheet == .taktTime)
             case .oee:
                 OEECalculatorView(homeProfileID: card.homeProfileID)
             case .boxCalculator:
@@ -535,7 +539,7 @@ private extension ToolCardSize {
     }
 }
 
-private enum HomeToolCardSheet: String, Identifiable {
+enum HomeToolCardSheet: String, Identifiable {
     case counterSettings
     case customQuickAdd
     case history

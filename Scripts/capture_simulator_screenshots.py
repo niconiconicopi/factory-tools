@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture genuine bilingual iPhone or 13-inch iPad home screens from Release Simulator."""
+"""Capture genuine localized App Store screens from an iPhone or 13-inch iPad Release Simulator."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ import re
 import subprocess
 import time
 from pathlib import Path
+
+SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
 
 
 def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
@@ -59,10 +61,12 @@ def capture_language(
     *,
     japanese: bool,
     platform: str,
+    scenario: str,
 ) -> tuple[int, int]:
     language_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         language_arguments.append("--factorytools-screenshot-japanese")
+    language_arguments.append(f"--factorytools-screenshot-{scenario}")
     run(
         [
             "xcrun", "simctl", "launch", "--terminate-running-process", device_id,
@@ -92,6 +96,12 @@ def main() -> int:
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--platform", choices=("iphone", "ipad"), default="iphone")
+    parser.add_argument(
+        "--scenarios",
+        nargs="+",
+        choices=SCREENSHOT_SCENARIOS,
+        default=["home"],
+    )
     arguments = parser.parse_args()
 
     if not arguments.app.is_dir():
@@ -115,22 +125,20 @@ def main() -> int:
     # xcodebuild build does not install its product; replace the Debug app that
     # the preceding XCTest step may have left on this Simulator with Release.
     run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
-    captures = {
-        f"{arguments.platform}-home-en.jpg": capture_language(
-            arguments.device_id,
-            identifier,
-            arguments.output_dir / f"{arguments.platform}-home-en.jpg",
-            japanese=False,
-            platform=platform_label,
-        ),
-        f"{arguments.platform}-home-ja.jpg": capture_language(
-            arguments.device_id,
-            identifier,
-            arguments.output_dir / f"{arguments.platform}-home-ja.jpg",
-            japanese=True,
-            platform=platform_label,
-        ),
-    }
+    if len(arguments.scenarios) != len(set(arguments.scenarios)):
+        parser.error("Each screenshot scenario may be requested only once.")
+    captures: dict[str, tuple[int, int]] = {}
+    for scenario in arguments.scenarios:
+        for japanese, language in ((False, "en"), (True, "ja")):
+            filename = f"{arguments.platform}-{scenario}-{language}.jpg"
+            captures[filename] = capture_language(
+                arguments.device_id,
+                identifier,
+                arguments.output_dir / filename,
+                japanese=japanese,
+                platform=platform_label,
+                scenario=scenario,
+            )
     metadata = [
         f"Factory Tools App Store {platform_label} screenshot capture",
         f"Simulator: {device}",
@@ -142,7 +150,7 @@ def main() -> int:
     if run_id := os.environ.get("GITHUB_RUN_ID"):
         metadata.append(f"GitHub Actions run: {run_id}")
     (arguments.output_dir / "capture-info.txt").write_text("\n".join(metadata) + "\n", encoding="utf-8")
-    print(f"Captured {len(captures)} bilingual {platform_label} screenshots from {device}.")
+    print(f"Captured {len(captures)} {platform_label} Release Simulator screenshots from {device}.")
     return 0
 
 

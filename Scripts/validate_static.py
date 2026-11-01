@@ -1205,7 +1205,7 @@ def main() -> int:
                 f"{path.relative_to(ROOT)} contains crash-prone Swift escape hatches: {unsafe_operations}")
     app_entry = (ROOT / "FactoryTools" / "App" / "FactoryToolsApp.swift").read_text(encoding="utf-8")
     persistence_schema = (ROOT / "FactoryTools" / "Persistence" / "FactoryToolsSchema.swift").read_text(encoding="utf-8")
-    require("AppBootstrapView()" in app_entry and ".modelContainer(container)" in app_entry,
+    require("AppBootstrapView(" in app_entry and ".modelContainer(container)" in app_entry,
             "the app scene must launch the bootstrap view with its persistent SwiftData container")
     schema_inventory = re.search(r"static var models: \[any PersistentModel\.Type\] \{(.*?)\n    \}", persistence_schema, re.DOTALL)
     require(schema_inventory is not None
@@ -1249,7 +1249,8 @@ def main() -> int:
             and "showingRetryError: $showingRetryError" in app_entry
             and "@State private var container: ModelContainer?" in app_entry
             and "private func retryStoreInitialization()" in app_entry
-            and "container = try Self.makeContainer(screenshotLanguage: screenshotDemoLanguage)" in app_entry
+            and "container = try Self.makeContainer(" in app_entry
+            and "screenshotLanguage: screenshotDemoLanguage" in app_entry
             and "showingRetryError = true" in app_entry
             and "showingRetryError = false" in app_entry
             and 'Button("common.retry", action: onRetry)' in app_entry
@@ -1588,7 +1589,7 @@ def main() -> int:
             and 'Text("cycleTime.timerRoundingNote")' in cycle_time_view,
             "Cycle Time stopwatch must use monotonic elapsed time and disclose its whole-second rounding")
     cycle_sample_service = (ROOT / "FactoryTools" / "Services" / "CycleTimeSampleService.swift").read_text(encoding="utf-8")
-    require('CycleTimeCalculatorView(homeProfileID: card.homeProfileID)' in home_card_view
+    require('CycleTimeCalculatorView(homeProfileID: card.homeProfileID, screenshotDemoValues:' in home_card_view
             and 'toolAction("cycleTime.open", systemImage: "timer", destination: .cycleTime)' in home_card_view
             and "CycleTimeSample.self" in persistence_schema
             and "homeProfileID == selectedHomeID" in cycle_time_view
@@ -1604,7 +1605,7 @@ def main() -> int:
             and "PerUnitTimeMath.secondsPerUnit(" in per_unit_time_math
             and 'Text("taktTime.netTimeNote")' in takt_time_view,
             "Takt Time must use net available seconds per customer demand and explain net time")
-    require('TaktTimeCalculatorView()' in home_card_view
+    require('TaktTimeCalculatorView(screenshotDemoValues:' in home_card_view
             and 'toolAction("taktTime.open", systemImage: "clock", destination: .taktTime)' in home_card_view,
             "Takt Time home cards must open the calculator")
     require("id: .boxCalculator" in registry and "isAvailable: true" in registry.split("id: .boxCalculator", 1)[1].split("),", 1)[0]

@@ -8,6 +8,11 @@ struct TaktTimeCalculatorView: View {
     @State private var netAvailableSecondsText = ""
     @State private var customerDemandText = ""
 
+    init(screenshotDemoValues: Bool = false) {
+        _netAvailableSecondsText = State(initialValue: screenshotDemoValues ? "27000" : "")
+        _customerDemandText = State(initialValue: screenshotDemoValues ? "450" : "")
+    }
+
     private var secondsPerUnit: Double? {
         guard let availableSeconds = LocalizedNumberParser.parseInteger(netAvailableSecondsText, locale: locale),
               let customerDemand = LocalizedNumberParser.parseInteger(customerDemandText, locale: locale) else { return nil }

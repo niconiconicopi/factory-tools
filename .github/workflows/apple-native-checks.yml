@@ -53,7 +53,7 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Capture bilingual iPhone home screenshots from Release Simulator build
+      - name: Capture bilingual iPhone product-page screenshots from Release Simulator build
         shell: bash
         run: |
           set -euo pipefail
@@ -74,12 +74,13 @@ jobs:
           python3 Scripts/capture_simulator_screenshots.py \
             --device-id "$simulator_id" \
             --app "$app_path" \
-            --output-dir "$RUNNER_TEMP/FactoryToolsAppStoreScreenshots"
+            --output-dir "$RUNNER_TEMP/FactoryToolsAppStoreScreenshots" \
+            --scenarios home cycle-time takt-time defect-counter counter-history
 
       - name: Upload bilingual iPhone screenshot artifact
         uses: actions/upload-artifact@v4
         with:
-          name: factory-tools-app-store-iphone-home
+          name: factory-tools-app-store-iphone-product-page
           path: ${{ runner.temp }}/FactoryToolsAppStoreScreenshots/
           if-no-files-found: error
           retention-days: 30

@@ -11,6 +11,11 @@ struct AppBootstrapView: View {
     @Query private var settings: [AppSettings]
     @State private var themeManager = ThemeManager()
     @State private var showingSeedError = false
+    let screenshotDemoScenario: ScreenshotDemoScenario?
+
+    init(screenshotDemoScenario: ScreenshotDemoScenario? = nil) {
+        self.screenshotDemoScenario = screenshotDemoScenario
+    }
 
     private var selectedHome: HomeProfile? {
         let selectedID = AppSettingsOrdering.primary(in: settings)?.selectedHomeProfileID
@@ -20,7 +25,7 @@ struct AppBootstrapView: View {
     var body: some View {
         Group {
             if let home = selectedHome {
-                HomeView(home: home)
+                HomeView(home: home, screenshotDemoScenario: screenshotDemoScenario)
             } else if showingSeedError {
                 ContentUnavailableView {
                     Label("error.saveFailed", systemImage: "externaldrive.badge.exclamationmark")

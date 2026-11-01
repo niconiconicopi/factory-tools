@@ -3,24 +3,50 @@ import SwiftUI
 import UIKit
 import FactoryToolsCore
 
+enum ScreenshotDemoScenario: String, CaseIterable {
+    case home
+    case cycleTime = "cycle-time"
+    case taktTime = "takt-time"
+    case defectCounter = "defect-counter"
+    case counterHistory = "counter-history"
+
+    var launchArgument: String { "--factorytools-screenshot-\(rawValue)" }
+
+    static func requested(in arguments: [String]) -> Self? {
+        allCases.first { arguments.contains($0.launchArgument) }
+    }
+}
+
 @main
 struct FactoryToolsApp: App {
     @StateObject private var proPurchases = ProPurchaseManager.shared
     @State private var container: ModelContainer?
     @State private var showingRetryError = false
     private let screenshotDemoLanguage: AppLanguage?
+    private let screenshotDemoScenario: ScreenshotDemoScenario?
 
     init() {
         #if targetEnvironment(simulator)
-        let screenshotDemoLanguage = Self.screenshotDemoLanguage
+        let arguments = ProcessInfo.processInfo.arguments
+        let screenshotDemoLanguage = arguments.contains("--factorytools-screenshot-demo")
+            ? (arguments.contains("--factorytools-screenshot-japanese") ? .japanese : .english)
+            : nil
+        let screenshotDemoScenario = screenshotDemoLanguage == nil
+            ? nil
+            : (ScreenshotDemoScenario.requested(in: arguments) ?? .home)
         #else
         let screenshotDemoLanguage: AppLanguage? = nil
+        let screenshotDemoScenario: ScreenshotDemoScenario? = nil
         #endif
         self.screenshotDemoLanguage = screenshotDemoLanguage
+        self.screenshotDemoScenario = screenshotDemoScenario
         do {
-            let container = try Self.makeContainer(screenshotLanguage: screenshotDemoLanguage)
+            let container = try Self.makeContainer(
+                screenshotLanguage: screenshotDemoLanguage,
+                screenshotScenario: screenshotDemoScenario
+            )
             _container = State(initialValue: container)
-            if screenshotDemoLanguage == nil {
+            if screenshotDemoScenario == nil {
                 WatchConnectivityReceiver.shared.start(modelContainer: container)
             }
         } catch {
@@ -31,7 +57,7 @@ struct FactoryToolsApp: App {
     var body: some Scene {
         WindowGroup {
             if let container {
-                AppBootstrapView()
+                AppBootstrapView(screenshotDemoScenario: screenshotDemoScenario)
                     .modelContainer(container)
                     .environmentObject(proPurchases)
             } else {
@@ -43,7 +69,10 @@ struct FactoryToolsApp: App {
         }
     }
 
-    private static func makeContainer(screenshotLanguage: AppLanguage? = nil) throws -> ModelContainer {
+    private static func makeContainer(
+        screenshotLanguage: AppLanguage? = nil,
+        screenshotScenario: ScreenshotDemoScenario? = nil
+    ) throws -> ModelContainer {
         let schema = Schema(versionedSchema: FactoryToolsSchemaV1.self)
         let localConfiguration = ModelConfiguration(
             "FactoryTools",
@@ -57,8 +86,12 @@ struct FactoryToolsApp: App {
             configurations: [localConfiguration]
         )
         #if targetEnvironment(simulator)
-        if let screenshotLanguage {
-            try Self.seedScreenshotDemoData(in: container.mainContext, language: screenshotLanguage)
+        if let screenshotLanguage, let screenshotScenario {
+            try Self.seedScreenshotDemoData(
+                in: container.mainContext,
+                language: screenshotLanguage,
+                scenario: screenshotScenario
+            )
         }
         #endif
         return container
@@ -66,8 +99,11 @@ struct FactoryToolsApp: App {
 
     private func retryStoreInitialization() {
         do {
-            container = try Self.makeContainer(screenshotLanguage: screenshotDemoLanguage)
-            if let container, screenshotDemoLanguage == nil {
+            container = try Self.makeContainer(
+                screenshotLanguage: screenshotDemoLanguage,
+                screenshotScenario: screenshotDemoScenario
+            )
+            if let container, screenshotDemoScenario == nil {
                 WatchConnectivityReceiver.shared.start(modelContainer: container)
             }
             showingRetryError = false
@@ -77,46 +113,90 @@ struct FactoryToolsApp: App {
     }
 
     #if targetEnvironment(simulator)
-    private static var screenshotDemoLanguage: AppLanguage? {
-        let arguments = ProcessInfo.processInfo.arguments
-        guard arguments.contains("--factorytools-screenshot-demo") else { return nil }
-        return arguments.contains("--factorytools-screenshot-japanese") ? .japanese : .english
-    }
-
-    private static func seedScreenshotDemoData(in context: ModelContext, language: AppLanguage) throws {
+    private static func seedScreenshotDemoData(
+        in context: ModelContext,
+        language: AppLanguage,
+        scenario: ScreenshotDemoScenario
+    ) throws {
         let home = HomeProfile(name: "Assembly", usesDefaultName: false, sortOrder: 0)
-        let session = ProductionSession(
-            homeProfileID: home.id,
-            toolID: ToolID.productionCounter.rawValue,
-            name: "Line A",
-            currentCount: 286,
-            targetCount: 300,
-            nextEventSequence: 1
-        )
-        let card = ToolCard(
-            homeProfileID: home.id,
-            toolID: .productionCounter,
-            size: .large,
-            sortOrder: 0,
-            productionSessionID: session.id
-        )
-        let event = CountEvent(
-            sessionID: session.id,
-            delta: session.currentCount,
-            sequence: 0,
-            kind: .quickAdd
-        )
         let settings = AppSettings(
             language: language.rawValue,
             themeID: ThemeID.industrialDark.rawValue,
             selectedHomeProfileID: home.id
         )
         context.insert(home)
-        context.insert(session)
-        context.insert(card)
-        context.insert(event)
         context.insert(settings)
+
+        switch scenario {
+        case .home, .counterHistory:
+            let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
+            addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
+            insertEvents(for: production, deltas: [200, 80, 6], context: context)
+        case .cycleTime:
+            context.insert(ToolCard(homeProfileID: home.id, toolID: .cycleTime, size: .large, sortOrder: 0))
+            let referenceDate = Date(timeIntervalSinceNow: -86_400 * 2)
+            context.insert(CycleTimeSample(homeProfileID: home.id, totalSeconds: 110, quantity: 4, createdAt: referenceDate))
+            context.insert(CycleTimeSample(homeProfileID: home.id, totalSeconds: 132, quantity: 4, createdAt: referenceDate.addingTimeInterval(86_400)))
+            context.insert(CycleTimeSample(homeProfileID: home.id, totalSeconds: 120, quantity: 4, createdAt: referenceDate.addingTimeInterval(172_800)))
+        case .taktTime:
+            context.insert(ToolCard(homeProfileID: home.id, toolID: .taktTime, size: .large, sortOrder: 0))
+        case .defectCounter:
+            let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
+            let defects = makeSession(home: home, tool: .defectCounter, count: 8, target: 0, name: "Line A Defects")
+            addCounterCard(production, home: home, sortOrder: 0, size: .medium, context: context)
+            addCounterCard(defects, home: home, sortOrder: 1, size: .medium, context: context)
+            context.insert(ToolCard(homeProfileID: home.id, toolID: .defectRate, size: .medium, sortOrder: 2))
+            insertEvents(for: production, deltas: [200, 80, 6], context: context)
+            insertEvents(for: defects, deltas: [5, 3], context: context)
+        }
         try context.save()
+    }
+
+    private static func makeSession(
+        home: HomeProfile,
+        tool: ToolID,
+        count: Int,
+        target: Int,
+        name: String
+    ) -> ProductionSession {
+        ProductionSession(
+            homeProfileID: home.id,
+            toolID: tool.rawValue,
+            name: name,
+            currentCount: count,
+            targetCount: target,
+            nextEventSequence: count == 0 ? 0 : (tool == .defectCounter ? 2 : 3)
+        )
+    }
+
+    private static func addCounterCard(
+        _ session: ProductionSession,
+        home: HomeProfile,
+        sortOrder: Int,
+        size: ToolCardSize,
+        context: ModelContext
+    ) {
+        let tool = ToolID(rawValue: session.toolID ?? "") ?? .productionCounter
+        context.insert(ToolCard(
+            homeProfileID: home.id,
+            toolID: tool,
+            size: size,
+            sortOrder: sortOrder,
+            productionSessionID: session.id
+        ))
+        context.insert(session)
+    }
+
+    private static func insertEvents(for session: ProductionSession, deltas: [Int], context: ModelContext) {
+        for (sequence, delta) in deltas.enumerated() {
+            context.insert(CountEvent(
+                sessionID: session.id,
+                delta: delta,
+                sequence: sequence,
+                occurredAt: Date(timeIntervalSinceNow: -86_400 * Double(deltas.count - sequence)),
+                kind: sequence == 0 ? .quickAdd : .increment
+            ))
+        }
     }
     #endif
 }

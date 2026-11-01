@@ -24,8 +24,10 @@ struct CycleTimeCalculatorView: View {
 
     let homeProfileID: UUID
 
-    init(homeProfileID: UUID) {
+    init(homeProfileID: UUID, screenshotDemoValues: Bool = false) {
         self.homeProfileID = homeProfileID
+        _totalSecondsText = State(initialValue: screenshotDemoValues ? "120" : "")
+        _quantityText = State(initialValue: screenshotDemoValues ? "4" : "")
         let selectedHomeID = homeProfileID
         _samples = Query(
             filter: #Predicate<CycleTimeSample> { $0.homeProfileID == selectedHomeID },

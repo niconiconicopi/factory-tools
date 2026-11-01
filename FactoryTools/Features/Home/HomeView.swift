@@ -15,9 +15,11 @@ struct HomeView: View {
     @State private var showingSaveError = false
 
     let home: HomeProfile
+    let screenshotDemoScenario: ScreenshotDemoScenario?
 
-    init(home: HomeProfile) {
+    init(home: HomeProfile, screenshotDemoScenario: ScreenshotDemoScenario? = nil) {
         self.home = home
+        self.screenshotDemoScenario = screenshotDemoScenario
         let selectedHomeID = home.id
         _cards = Query(filter: #Predicate<ToolCard> { $0.homeProfileID == selectedHomeID })
     }
@@ -214,12 +216,23 @@ struct HomeView: View {
                 guard index + 1 < homeCards.count else { return }
                 moveCard(homeCards[index + 1].id, before: card.id)
             },
-            onDelete: { delete(card) }
+            onDelete: { delete(card) },
+            initialSheet: screenshotSheet(for: card)
         )
         .draggable(card.id.uuidString)
         .dropDestination(for: String.self) { items, _ in
             guard let value = items.first, let sourceID = UUID(uuidString: value) else { return false }
             return moveCard(sourceID, before: card.id)
+        }
+    }
+
+    private func screenshotSheet(for card: ToolCard) -> HomeToolCardSheet? {
+        guard let screenshotDemoScenario else { return nil }
+        switch screenshotDemoScenario {
+        case .cycleTime where card.toolID == ToolID.cycleTime.rawValue: .cycleTime
+        case .taktTime where card.toolID == ToolID.taktTime.rawValue: .taktTime
+        case .counterHistory where card.toolID == ToolID.productionCounter.rawValue: .history
+        default: nil
         }
     }
 
