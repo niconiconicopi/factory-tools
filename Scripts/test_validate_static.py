@@ -259,7 +259,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         )
         self.assertIn('print("Installing the Release Watch app.", flush=True)', capture_script)
         self.assertIn('print(f"Capturing {output_path.name}.", flush=True)', capture_script)
-        self.assertIn("time.sleep(8)", capture_script)
+        self.assertIn("time.sleep(20)", capture_script)
         self.assertEqual(capture_script.count("restart_simulator(arguments.device_id)"), 1)
         self.assertIn('print("Restarting Apple Watch Simulator for a clean locale capture.", flush=True)', capture_script)
         self.assertIn('summary_path = os.environ.get("GITHUB_STEP_SUMMARY")', capture_script)

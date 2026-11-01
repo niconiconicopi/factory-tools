@@ -102,8 +102,8 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
         launch_arguments.append("--factorytools-screenshot-japanese")
     print(f"Launching {'Japanese' if japanese else 'English'} Watch counter detail.", flush=True)
     run(["xcrun", "simctl", "launch", "--terminate-running-process", device_id, identifier, *launch_arguments])
-    # Give WatchKit and the numeric content transition time to settle after each locale relaunch.
-    time.sleep(8)
+    # Give WatchKit's first scene and numeric content time to settle after each locale relaunch.
+    time.sleep(20)
     temporary_png = output_path.with_suffix(".png")
     print(f"Capturing {output_path.name}.", flush=True)
     run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
