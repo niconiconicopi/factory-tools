@@ -12,10 +12,24 @@ import time
 from pathlib import Path
 
 SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
+COMMAND_TIMEOUT_SECONDS = 300
 
 
 def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(arguments, check=True, text=True, capture_output=capture_output)
+    print(f"Running simulator capture command: {' '.join(arguments)}", flush=True)
+    try:
+        return subprocess.run(
+            arguments,
+            check=True,
+            text=True,
+            capture_output=capture_output,
+            timeout=COMMAND_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired as error:
+        command = " ".join(arguments)
+        raise RuntimeError(
+            f"Simulator capture command timed out after {COMMAND_TIMEOUT_SECONDS} seconds: {command}"
+        ) from error
 
 
 def simulator_name(device_id: str) -> str:
