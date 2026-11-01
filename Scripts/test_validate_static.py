@@ -85,6 +85,11 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
 
 
 class WatchScreenshotDiagnosticsTests(unittest.TestCase):
+    def test_capture_does_not_use_unsupported_watch_status_bar_override(self) -> None:
+        source = (Path(__file__).resolve().parent / "capture_watch_screenshots.py").read_text(encoding="utf-8")
+
+        self.assertNotIn('"status_bar"', source)
+
     def test_process_failure_summary_includes_command_and_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
             summary_path = Path(temporary_directory) / "step-summary.md"

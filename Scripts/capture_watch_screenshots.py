@@ -135,11 +135,7 @@ def main() -> int:
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Booting 46mm Apple Watch Simulator: {device}.", flush=True)
     run(["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"])
-    print("Applying a clean Apple Watch status bar.", flush=True)
-    run([
-        "xcrun", "simctl", "status_bar", arguments.device_id, "override",
-        "--time", "9:41", "--batteryState", "charged", "--batteryLevel", "100",
-    ])
+    # watchOS Simulator does not support simctl status_bar overrides.
     # Install the Release build explicitly; the preceding Watch build step alone does not install it.
     print("Installing the Release Watch app.", flush=True)
     run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
