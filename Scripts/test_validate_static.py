@@ -141,14 +141,18 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("ProductionSession(", app_source)
         self.assertIn('"--factorytools-screenshot-japanese"', app_source)
         self.assertIn('"sips", "-s", "format", "jpeg"', capture_script)
-        self.assertIn('"iphone-home-en.jpg"', capture_script)
-        self.assertIn('"iphone-home-ja.jpg"', capture_script)
+        self.assertIn('f"{arguments.platform}-home-en.jpg"', capture_script)
+        self.assertIn('f"{arguments.platform}-home-ja.jpg"', capture_script)
         self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
+        self.assertIn('"13-inch" not in device', capture_script)
+        self.assertIn('dimensions not in {(2064, 2752), (2048, 2732)}', capture_script)
         self.assertIn("-configuration Release", workflow)
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
+        self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
+        self.assertIn("factory-tools-app-store-ipad-home", workflow)
 
 
 class LegalPagesWorkflowContractTests(unittest.TestCase):
