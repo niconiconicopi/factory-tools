@@ -169,26 +169,30 @@ struct HomeToolCardView: View {
         .background(theme.cardBackground, in: RoundedRectangle(cornerRadius: theme.cornerRadius))
         .overlay(RoundedRectangle(cornerRadius: theme.cornerRadius).stroke(theme.border, lineWidth: theme.borderWidth))
         .sheet(item: $activeSheet) { destination in
-            switch destination {
-            case .counterSettings:
-                if let session { CounterSettingsView(session: session) }
-            case .customQuickAdd:
-                if let session { CounterQuickAddView(session: session) }
-            case .history:
-                if let session { CounterHistoryView(session: session) }
-            case .cycleTime:
-                CycleTimeCalculatorView(homeProfileID: card.homeProfileID, screenshotDemoValues: initialSheet == .cycleTime)
-            case .taktTime:
-                TaktTimeCalculatorView(screenshotDemoValues: initialSheet == .taktTime)
-            case .oee:
-                OEECalculatorView(homeProfileID: card.homeProfileID)
-            case .boxCalculator:
-                BoxCalculatorView()
-            case .unitConverter:
-                UnitConverterView()
-            case .proSettings:
-                AppSettingsView(home: home)
+            Group {
+                switch destination {
+                case .counterSettings:
+                    if let session { CounterSettingsView(session: session) }
+                case .customQuickAdd:
+                    if let session { CounterQuickAddView(session: session) }
+                case .history:
+                    if let session { CounterHistoryView(session: session) }
+                case .cycleTime:
+                    CycleTimeCalculatorView(homeProfileID: card.homeProfileID, screenshotDemoValues: initialSheet == .cycleTime)
+                case .taktTime:
+                    TaktTimeCalculatorView(screenshotDemoValues: initialSheet == .taktTime)
+                case .oee:
+                    OEECalculatorView(homeProfileID: card.homeProfileID)
+                case .boxCalculator:
+                    BoxCalculatorView()
+                case .unitConverter:
+                    UnitConverterView()
+                case .proSettings:
+                    AppSettingsView(home: home)
+                }
             }
+            .presentationDetents(initialSheet == nil ? [.medium, .large] : [.large])
+            .presentationDragIndicator(initialSheet == nil ? .visible : .hidden)
         }
         .alert("error.saveFailed", isPresented: $showingSaveError) {
             Button("common.done", role: .cancel) {}

@@ -185,6 +185,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         app_source = (root / "FactoryTools" / "App" / "FactoryToolsApp.swift").read_text(encoding="utf-8")
         home_view = (root / "FactoryTools" / "Features" / "Home" / "HomeView.swift").read_text(encoding="utf-8")
         capture_script = (root / "Scripts" / "capture_simulator_screenshots.py").read_text(encoding="utf-8")
+        home_card = (root / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")
         workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
         asset_plan = (root / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
 
@@ -197,6 +198,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("case .cycleTime where card.toolID == ToolID.cycleTime.rawValue:", home_view)
         self.assertIn("case .taktTime where card.toolID == ToolID.taktTime.rawValue:", home_view)
         self.assertIn("case .counterHistory where card.toolID == ToolID.productionCounter.rawValue:", home_view)
+        self.assertIn(".presentationDetents(initialSheet == nil ? [.medium, .large] : [.large])", home_card)
+        self.assertIn(".presentationDragIndicator(initialSheet == nil ? .visible : .hidden)", home_card)
         self.assertIn("isStoredInMemoryOnly: screenshotLanguage != nil", app_source)
         self.assertIn("ProductionSession(", app_source)
         self.assertIn('"--factorytools-screenshot-japanese"', app_source)
