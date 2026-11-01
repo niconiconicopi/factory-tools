@@ -120,6 +120,14 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
     return image_dimensions(output_path)
 
 
+def restart_simulator(device_id: str) -> None:
+    """Start the second locale from a clean watchOS Simulator session."""
+    print("Restarting Apple Watch Simulator between locales.", flush=True)
+    run(["xcrun", "simctl", "shutdown", device_id])
+    run(["xcrun", "simctl", "boot", device_id])
+    run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device-id", required=True)
@@ -143,11 +151,12 @@ def main() -> int:
     captures = {
         "watch-home-en.jpg": capture_language(
             arguments.device_id, identifier, arguments.output_dir / "watch-home-en.jpg", japanese=False
-        ),
-        "watch-home-ja.jpg": capture_language(
-            arguments.device_id, identifier, arguments.output_dir / "watch-home-ja.jpg", japanese=True
-        ),
+        )
     }
+    restart_simulator(arguments.device_id)
+    captures["watch-home-ja.jpg"] = capture_language(
+        arguments.device_id, identifier, arguments.output_dir / "watch-home-ja.jpg", japanese=True
+    )
     metadata = [
         "Factory Tools App Store Apple Watch screenshot capture",
         f"Simulator: {device}",
