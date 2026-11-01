@@ -118,12 +118,43 @@ jobs:
             echo "No available iPad Simulator device was found." >&2
             exit 1
           fi
+          result_bundle="$RUNNER_TEMP/FactoryTools-iPad.xcresult"
+          xcode_log="$RUNNER_TEMP/FactoryTools-iPad-xcodebuild.log"
+          test_status=0
+          set +e
           xcodebuild test \
             -project FactoryTools.xcodeproj \
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
-            CODE_SIGNING_ALLOWED=NO
+            -resultBundlePath "$result_bundle" \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$xcode_log"
+          test_status=${PIPESTATUS[0]}
+          set -e
+          if [[ "$test_status" -ne 0 ]]; then
+            {
+              echo "## iPad XCTest failure diagnostics"
+              echo
+              echo "xcodebuild exited with status $test_status on simulator $simulator_id."
+              if [[ -d "$result_bundle" ]]; then
+                echo
+                echo "### xcresult summary"
+                echo '```json'
+                if ! xcrun xcresulttool get test-results summary --path "$result_bundle"; then
+                  echo "xcresulttool could not read the result bundle; see the xcodebuild log excerpt below."
+                fi
+                echo '```'
+              fi
+              echo
+              echo "### Failure-related build output"
+              echo '```text'
+              if ! grep -E -i 'error:|failed|failure|test case.*(failed|errored)' "$xcode_log" | tail -n 80; then
+                tail -n 80 "$xcode_log"
+              fi
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$test_status"
 
       - name: Test shared Core contracts
         run: >-

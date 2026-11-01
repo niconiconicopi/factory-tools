@@ -67,6 +67,19 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn("workflow must not access repository secrets", errors)
 
+    def test_ipad_xctest_failures_write_result_summary_before_failing(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        step_start = workflow.index("      - name: Test iPad and app-hosted regression suite")
+        step_end = workflow.index("      - name: Test shared Core contracts", step_start)
+        ipad_test = workflow[step_start:step_end]
+
+        self.assertIn('-resultBundlePath "$result_bundle"', ipad_test)
+        self.assertIn('test_status=${PIPESTATUS[0]}', ipad_test)
+        self.assertIn("xcresulttool get test-results summary --path", ipad_test)
+        self.assertIn('>> "$GITHUB_STEP_SUMMARY"', ipad_test)
+        self.assertIn('exit "$test_status"', ipad_test)
+
 
 class AppleUploadWorkflowContractTests(unittest.TestCase):
     def test_current_upload_workflow_is_manual_and_confirmed(self) -> None:
