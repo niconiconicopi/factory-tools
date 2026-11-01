@@ -2,6 +2,8 @@
 
 このリポジトリには、Macを手元に置かずに署名付きiPhone/iPad/WatchビルドをApp Store Connectへアップロードする手動ワークフローを用意しています。Apple Developer Program登録、発行者設定、App Store Connect APIキーが揃うまでは実行できません。通常のpushやPull Requestでは配布ビルドもアップロードも始まりません。
 
+ワークフローは、iPhone・iPad Simulatorの回帰テスト、共有Coreテスト、Watch Simulatorビルドがすべて成功した後にだけApp Store Connect APIキーを読み込みます。検証が失敗した場合は秘密鍵をrunnerへ渡しません。
+
 ## できること / しないこと
 
 - GitHub ActionsのmacOS runnerでiPhone/iPad Simulatorテスト、共有Coreテスト、Watchビルド、iOS archiveを実行します。
