@@ -1160,16 +1160,16 @@ def main() -> int:
         re.MULTILINE | re.DOTALL,
     )
     test_frameworks = set(re.findall(r"/\* ([^*]+) in Frameworks \*/", test_framework_phase.group(1))) if test_framework_phase else set()
-    require(test_frameworks == {"XCTest.framework", "FactoryToolsCore.framework"},
-            f"app-hosted tests must include XCTest and local Core, found {sorted(test_frameworks)}")
+    require(test_frameworks == {"XCTest.framework", "FactoryToolsCore.framework", "StoreKitTest.framework"},
+            f"app-hosted tests must include XCTest, local Core, and Apple StoreKit Test, found {sorted(test_frameworks)}")
     core_test_framework_phase = re.search(
         r"^\s*D00000000000000000000004 /\* Core Tests Frameworks \*/ = \{.*?files = \((.*?)\);",
         pbx,
         re.MULTILINE | re.DOTALL,
     )
     core_test_frameworks = set(re.findall(r"/\* ([^*]+) in Frameworks \*/", core_test_framework_phase.group(1))) if core_test_framework_phase else set()
-    require(core_test_frameworks == {"XCTest.framework", "FactoryToolsCore.framework", "StoreKit.framework", "StoreKitTest.framework"},
-            f"standalone Core tests must include XCTest, local Core, and first-party StoreKit test frameworks, found {sorted(core_test_frameworks)}")
+    require(core_test_frameworks == {"XCTest.framework", "FactoryToolsCore.framework"},
+            f"standalone Core test bundle may link XCTest and the local Core framework only, found {sorted(core_test_frameworks)}")
     core_build_settings = target_build_settings(core_target)
     require(len(core_build_settings) == 2 and {name for name, _ in core_build_settings} == {"Debug", "Release"}
             and all(settings.get("DEFINES_MODULE") == "YES" for _, settings in core_build_settings)
@@ -1331,6 +1331,10 @@ def main() -> int:
         }
         require("FactoryToolsTests" in testable_names,
                 "shared FactoryTools scheme must include the XCTest target")
+        require(scheme_root.find("./LaunchAction/StoreKitConfigurationFileReference") is not None
+                and scheme_root.find("./LaunchAction/StoreKitConfigurationFileReference").attrib.get("identifier")
+                    == "C00000000000000000000090",
+                "shared FactoryTools scheme must activate the local Pro StoreKit configuration for Apple testing")
     try:
         core_scheme_root = ET.parse(core_scheme).getroot()
     except (OSError, ET.ParseError) as error:
@@ -2032,16 +2036,15 @@ def main() -> int:
     observe_transactions_position = purchase_manager.find("private func observeTransactions()")
     product_filter_position = purchase_manager.find("guard transaction.productID == productID else { continue }")
     transaction_finish_position = purchase_manager.find("await transaction.finish()", observe_transactions_position)
-    purchase_test_path = ROOT / "FactoryToolsCoreTests" / "StoreKitTransactionTests.swift"
+    purchase_test_path = ROOT / "FactoryToolsTests" / "StoreKitPurchaseIntegrationTests.swift"
     purchase_test_source = purchase_test_path.read_text(encoding="utf-8") if purchase_test_path.is_file() else ""
     require(set(storekit_sources) == {purchase_manager_path, purchase_test_path}
             and "import StoreKit" in purchase_manager
             and "import StoreKitTest" in purchase_test_source
             and "SKTestSession(contentsOf: configurationURL)" in purchase_test_source
             and "session.buyProduct(identifier: \"factorytools.pro.lifetime\")" in purchase_test_source
-            and "Transaction.currentEntitlements" in purchase_test_source
-            and "hasVerifiedEntitlement" in purchase_test_source
-            and (ROOT / "FactoryToolsCoreTests" / "FactoryToolsPro.storekit").is_file()
+            and "XCTAssertTrue(purchaseManager.hasPro" in purchase_test_source
+            and (ROOT / "FactoryToolsTests" / "FactoryToolsPro.storekit").is_file()
             and "Transaction.currentEntitlements" in purchase_manager
             and "Transaction.updates" in purchase_manager
             and 0 <= observe_transactions_position < product_filter_position < transaction_finish_position
@@ -4448,10 +4451,10 @@ def main() -> int:
     require(resource_membership("D40000000000000000000002") == {
                 "Localizable.xcstrings", "Assets.xcassets", "InfoPlist.strings", "PrivacyInfo.xcprivacy"
             }, "FactoryTools app target must bundle its localized resources and privacy manifest")
-    require(resource_membership("D40000000000000000000007") == {"FactoryToolsPro.storekit"},
+    require(resource_membership("D40000000000000000000007") == set(),
             "standalone Core tests must not bundle app resources or localization catalogs")
-    require(resource_membership("D40000000000000000000004") == set(),
-            "app-hosted app tests must not bundle StoreKit test configurations")
+    require(resource_membership("D40000000000000000000004") == {"FactoryToolsPro.storekit"},
+            "app-hosted purchase tests must bundle the local StoreKit product configuration")
     require(resource_membership("D40000000000000000000009") == {"Localizable.xcstrings", "Assets.xcassets"},
             "FactoryToolsWatch must bundle its own Japanese/English String Catalog and watchOS AppIcon asset catalog")
     privacy_manifest_path = ROOT / "FactoryTools" / "PrivacyInfo.xcprivacy"
