@@ -344,10 +344,6 @@ struct WatchCounterDetailView: View {
 
     private var session: WatchCounterSessionSnapshot? { model.session(id: sessionID) }
     private var counterAccent: Color { isLuminanceReduced ? WatchTheme.primaryText : WatchTheme.accent }
-    private var counterValueColor: Color { WatchTheme.primaryText }
-    private var progressTrack: Color {
-        isLuminanceReduced ? WatchTheme.secondaryText.opacity(0.25) : WatchTheme.panel
-    }
 
     var body: some View {
         if let session {
@@ -362,22 +358,16 @@ struct WatchCounterDetailView: View {
                     // supported languages, just like the target below.
                     Text(verbatim: String(session.currentCount))
                         .font(.system(size: 38, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(counterValueColor)
+                        .foregroundStyle(WatchTheme.primaryText)
                         .accessibilityLabel("watch.progress.current")
                     if session.targetCount > 0 {
                         let completion = min(Double(session.currentCount) / Double(session.targetCount), 1)
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                Capsule().fill(progressTrack)
-                                Capsule()
-                                    .fill(counterValueColor)
-                                    .frame(width: geometry.size.width * completion)
-                            }
-                        }
-                        .frame(height: 8)
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("watch.progress.fraction")
-                        .accessibilityValue(Text(completion.formatted(.percent.precision(.fractionLength(0...1)))))
+                        ProgressView(value: completion)
+                            .progressViewStyle(.linear)
+                            .tint(counterAccent)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("watch.progress.fraction")
+                            .accessibilityValue(Text(completion.formatted(.percent.precision(.fractionLength(0...1)))))
                         HStack(spacing: 3) {
                             Text("watch.target")
                             Text(verbatim: String(session.targetCount))
