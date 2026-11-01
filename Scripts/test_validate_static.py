@@ -253,7 +253,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('category: "ScreenshotCapture"', watch_view)
         self.assertIn("@Environment(\\.colorScheme) private var colorScheme", counter_detail)
         self.assertIn("@Environment(\\.scenePhase) private var scenePhase", counter_detail)
-        self.assertIn(".id(model.displayLanguage.rawValue)", counter_detail)
+        self.assertIn(r'.id("\(model.displayLanguage.rawValue)-\(String(describing: scenePhase))")', counter_detail)
         self.assertIn("redactionReasons.contains(.privacy)", watch_view)
         self.assertIn("redactionReasons.contains(.placeholder)", watch_view)
         self.assertNotIn("GeometryReader { geometry in", counter_detail)

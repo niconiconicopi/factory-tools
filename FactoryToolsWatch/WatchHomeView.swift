@@ -450,7 +450,7 @@ struct WatchCounterDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 3)
-                .id(model.displayLanguage.rawValue)
+                .id("\(model.displayLanguage.rawValue)-\(String(describing: scenePhase))")
             }
 #if targetEnvironment(simulator)
             .onAppear(perform: logScreenshotCaptureState)
