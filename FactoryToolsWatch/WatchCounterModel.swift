@@ -19,6 +19,10 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
     @Published private(set) var cycleTimeQueueLimitReached = false
     @Published private(set) var cycleTimerRunning = false
 
+    #if targetEnvironment(simulator)
+    private(set) var screenshotDemoSessionID: UUID?
+    #endif
+
     private var outbox = CounterCommandOutbox()
     private var cycleTimeOutbox = WatchCycleTimeOutbox()
     private let cycleClock = ContinuousClock()
@@ -39,6 +43,33 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
 
     override init() {
         super.init()
+
+        #if targetEnvironment(simulator)
+        if ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-demo") {
+            let homeID = UUID()
+            let sessionID = UUID()
+            screenshotDemoSessionID = sessionID
+            sessions = [
+                WatchCounterSessionSnapshot(
+                    sessionID: sessionID,
+                    homeProfileID: homeID,
+                    homeName: "Production",
+                    toolID: .productionCounter,
+                    sessionName: "Production Counter",
+                    currentCount: 286,
+                    targetCount: 300,
+                    defaultSessionNameToolID: .productionCounter,
+                    homeNameIsDefault: true
+                )
+            ]
+            displayLanguage = ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-japanese")
+                ? .japanese
+                : .english
+            isReachable = false
+            return
+        }
+        #endif
+
         do {
             try reloadOutboxFromDisk()
         } catch {

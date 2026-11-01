@@ -337,7 +337,7 @@ private struct WatchCycleTimeDetailView: View {
     }
 }
 
-private struct WatchCounterDetailView: View {
+struct WatchCounterDetailView: View {
     @EnvironmentObject private var model: WatchCounterModel
     let sessionID: UUID
 

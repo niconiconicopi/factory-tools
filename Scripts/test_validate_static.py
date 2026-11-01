@@ -154,6 +154,29 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
         self.assertIn("factory-tools-app-store-ipad-home", workflow)
 
+    def test_ci_captures_bilingual_release_watch_screenshots_with_simulator_only_data(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        watch_app = (root / "FactoryToolsWatch" / "FactoryToolsWatchApp.swift").read_text(encoding="utf-8")
+        watch_model = (root / "FactoryToolsWatch" / "WatchCounterModel.swift").read_text(encoding="utf-8")
+        watch_view = (root / "FactoryToolsWatch" / "WatchHomeView.swift").read_text(encoding="utf-8")
+        capture_script = (root / "Scripts" / "capture_watch_screenshots.py").read_text(encoding="utf-8")
+        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+
+        self.assertIn("#if targetEnvironment(simulator)", watch_app)
+        self.assertIn("model.screenshotDemoSessionID", watch_app)
+        self.assertIn('ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-demo")', watch_model)
+        self.assertIn('"--factorytools-screenshot-japanese"', watch_model)
+        self.assertIn("currentCount: 286", watch_model)
+        self.assertIn("targetCount: 300", watch_model)
+        self.assertIn("struct WatchCounterDetailView: View", watch_view)
+        self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
+        self.assertIn("dimensions != (416, 496)", capture_script)
+        self.assertIn('"watch-home-en.jpg"', capture_script)
+        self.assertIn('"watch-home-ja.jpg"', capture_script)
+        self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
+        self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
+        self.assertIn("factory-tools-app-store-watch-home", workflow)
+
 
 class LegalPagesWorkflowContractTests(unittest.TestCase):
     def test_current_legal_pages_workflow_is_manual_and_confirmed(self) -> None:
