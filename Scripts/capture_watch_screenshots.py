@@ -151,14 +151,13 @@ def main() -> int:
     # The Debug-to-Release switch can leave the first locale on a stale WatchKit
     # session. Start both language captures from the same clean simulator state.
     restart_simulator(arguments.device_id)
-    # Capture Japanese first to separate locale effects from the Watch Simulator's
-    # repeated-boot order; earlier runs always captured English first.
+    # Capture both locales in one boot so any first/second boot transition cannot
+    # be mistaken for a locale-specific rendering problem.
     captures = {
         "watch-home-ja.jpg": capture_language(
             arguments.device_id, identifier, arguments.output_dir / "watch-home-ja.jpg", japanese=True
         )
     }
-    restart_simulator(arguments.device_id)
     captures["watch-home-en.jpg"] = capture_language(
         arguments.device_id, identifier, arguments.output_dir / "watch-home-en.jpg", japanese=False
     )
