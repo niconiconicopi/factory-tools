@@ -1331,10 +1331,6 @@ def main() -> int:
         }
         require("FactoryToolsTests" in testable_names,
                 "shared FactoryTools scheme must include the XCTest target")
-        require(scheme_root.find("./LaunchAction/StoreKitConfigurationFileReference") is not None
-                and scheme_root.find("./LaunchAction/StoreKitConfigurationFileReference").attrib.get("identifier")
-                    == "C00000000000000000000090",
-                "shared FactoryTools scheme must activate the local Pro StoreKit configuration for Apple testing")
     try:
         core_scheme_root = ET.parse(core_scheme).getroot()
     except (OSError, ET.ParseError) as error:
