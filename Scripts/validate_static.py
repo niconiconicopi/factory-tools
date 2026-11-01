@@ -1120,6 +1120,7 @@ def main() -> int:
         "watch.title", "watch.storageUnavailable", "watch.storageUnavailable.message", "watch.noCounters", "watch.noCounters.message",
         "watch.refresh", "watch.connection.connected", "watch.connection.waiting", "watch.pending",
         "watch.target", "watch.quickAddFive", "watch.sessionUnavailable", "watch.status.applied",
+        "home.defaultName",
         "counter.defaultSessionName", "defect.defaultSessionName",
         "watch.status.alreadyApplied", "watch.status.noChange", "watch.status.staleUndo", "watch.status.rejected",
         "watch.queueFull.message",

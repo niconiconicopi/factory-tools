@@ -13,6 +13,7 @@
     "watch.pending" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Pending" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "保留" } } } },
     "watch.target" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Target" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "目標" } } } },
     "watch.quickAddFive" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Add 5" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "5個追加" } } } },
+    "home.defaultName" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Production" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "通常生産" } } } },
     "counter.defaultSessionName" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Production run" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "生産セッション" } } } },
     "defect.defaultSessionName" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Defect count" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "不良カウント" } } } },
     "watch.sessionUnavailable" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Counter unavailable" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "カウンターを利用できません" } } } },
