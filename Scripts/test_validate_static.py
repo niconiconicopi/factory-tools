@@ -173,7 +173,11 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("dimensions != (416, 496)", capture_script)
         self.assertIn('"watch-home-en.jpg"', capture_script)
         self.assertIn('"watch-home-ja.jpg"', capture_script)
+        self.assertIn('print("Installing the Release Watch app.", flush=True)', capture_script)
+        self.assertIn('print(f"Capturing {output_path.name}.", flush=True)', capture_script)
         self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
+        self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
+        self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
         self.assertIn("factory-tools-app-store-watch-home", workflow)
 

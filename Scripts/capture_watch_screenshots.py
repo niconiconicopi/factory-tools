@@ -53,9 +53,11 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
     launch_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         launch_arguments.append("--factorytools-screenshot-japanese")
+    print(f"Launching {'Japanese' if japanese else 'English'} Watch counter detail.", flush=True)
     run(["xcrun", "simctl", "launch", "--terminate-running-process", device_id, identifier, *launch_arguments])
     time.sleep(4)
     temporary_png = output_path.with_suffix(".png")
+    print(f"Capturing {output_path.name}.", flush=True)
     run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
     run([
         "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
@@ -84,12 +86,15 @@ def main() -> int:
         parser.error(f"A 46mm Apple Watch Simulator is required; found {device}.")
     identifier = bundle_identifier(arguments.app)
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Booting 46mm Apple Watch Simulator: {device}.", flush=True)
     run(["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"])
+    print("Applying a clean Apple Watch status bar.", flush=True)
     run([
         "xcrun", "simctl", "status_bar", arguments.device_id, "override",
         "--time", "9:41", "--batteryState", "charged", "--batteryLevel", "100",
     ])
     # Install the Release build explicitly; the preceding Watch build step alone does not install it.
+    print("Installing the Release Watch app.", flush=True)
     run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
     captures = {
         "watch-home-en.jpg": capture_language(
