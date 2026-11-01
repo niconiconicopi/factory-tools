@@ -1,5 +1,13 @@
 import FactoryToolsCore
 import SwiftUI
+#if targetEnvironment(simulator)
+import OSLog
+
+private let watchScreenshotCaptureLogger = Logger(
+    subsystem: "com.factorytools.watch",
+    category: "ScreenshotCapture"
+)
+#endif
 
 struct WatchHomeView: View {
     @EnvironmentObject private var model: WatchCounterModel
@@ -340,10 +348,25 @@ private struct WatchCycleTimeDetailView: View {
 struct WatchCounterDetailView: View {
     @EnvironmentObject private var model: WatchCounterModel
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+    @Environment(\.redactionReasons) private var redactionReasons
     let sessionID: UUID
 
     private var session: WatchCounterSessionSnapshot? { model.session(id: sessionID) }
     private var counterAccent: Color { isLuminanceReduced ? WatchTheme.primaryText : WatchTheme.accent }
+
+    #if targetEnvironment(simulator)
+    private func logScreenshotCaptureState() {
+        guard model.screenshotDemoSessionID == sessionID, let session else { return }
+        watchScreenshotCaptureLogger.notice(
+            "language=\(model.displayLanguage.rawValue, privacy: .public) " +
+                "count=\(session.currentCount, privacy: .public) " +
+                "target=\(session.targetCount, privacy: .public) " +
+                "luminanceReduced=\(isLuminanceReduced, privacy: .public) " +
+                "privacyRedacted=\(redactionReasons.contains(.privacy), privacy: .public) " +
+                "placeholderRedacted=\(redactionReasons.contains(.placeholder), privacy: .public)"
+        )
+    }
+    #endif
 
     var body: some View {
         if let session {
@@ -422,6 +445,11 @@ struct WatchCounterDetailView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 3)
             }
+#if targetEnvironment(simulator)
+            .onAppear(perform: logScreenshotCaptureState)
+            .onChange(of: isLuminanceReduced) { _, _ in logScreenshotCaptureState() }
+            .onChange(of: redactionReasons) { _, _ in logScreenshotCaptureState() }
+#endif
             .navigationTitle(watchHomeNameText(session.homeName, isDefault: session.homeNameIsDefault))
             .navigationBarTitleDisplayMode(.inline)
         } else {

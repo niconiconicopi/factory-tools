@@ -128,6 +128,28 @@ def restart_simulator(device_id: str) -> None:
     run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
 
 
+def print_screenshot_diagnostics(device_id: str) -> None:
+    """Print simulator-only Watch rendering state without changing the captured UI."""
+    print("Reading Watch screenshot rendering-state diagnostics.", flush=True)
+    try:
+        result = run(
+            [
+                "xcrun", "simctl", "spawn", device_id,
+                "log", "show", "--last", "2m", "--style", "compact",
+                "--predicate", 'subsystem == "com.factorytools.watch" AND category == "ScreenshotCapture"',
+            ],
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as error:
+        output = (error.stderr or error.stdout or "").strip()
+        print(f"Watch rendering-state diagnostics unavailable: {output or error}", flush=True)
+        return
+    if result.stdout.strip():
+        print(result.stdout, flush=True)
+    else:
+        print("No Watch rendering-state records were emitted.", flush=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device-id", required=True)
@@ -161,6 +183,7 @@ def main() -> int:
     captures["watch-home-en.jpg"] = capture_language(
         arguments.device_id, identifier, arguments.output_dir / "watch-home-en.jpg", japanese=False
     )
+    print_screenshot_diagnostics(arguments.device_id)
     metadata = [
         "Factory Tools App Store Apple Watch screenshot capture",
         f"Simulator: {device}",
