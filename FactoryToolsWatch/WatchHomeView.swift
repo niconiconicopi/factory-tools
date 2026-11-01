@@ -344,6 +344,7 @@ struct WatchCounterDetailView: View {
 
     private var session: WatchCounterSessionSnapshot? { model.session(id: sessionID) }
     private var counterAccent: Color { isLuminanceReduced ? WatchTheme.primaryText : WatchTheme.accent }
+    private var counterValueColor: Color { WatchTheme.primaryText }
     private var progressTrack: Color {
         isLuminanceReduced ? WatchTheme.secondaryText.opacity(0.25) : WatchTheme.panel
     }
@@ -361,7 +362,7 @@ struct WatchCounterDetailView: View {
                     // supported languages, just like the target below.
                     Text(verbatim: String(session.currentCount))
                         .font(.system(size: 38, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(counterAccent)
+                        .foregroundStyle(counterValueColor)
                         .accessibilityLabel("watch.progress.current")
                     if session.targetCount > 0 {
                         let completion = min(Double(session.currentCount) / Double(session.targetCount), 1)
@@ -369,7 +370,7 @@ struct WatchCounterDetailView: View {
                             ZStack(alignment: .leading) {
                                 Capsule().fill(progressTrack)
                                 Capsule()
-                                    .fill(counterAccent)
+                                    .fill(counterValueColor)
                                     .frame(width: geometry.size.width * completion)
                             }
                         }
