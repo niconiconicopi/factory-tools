@@ -356,7 +356,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "read-only repository permission": "permissions:\n  contents: read",
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
-        "standard macOS runner": "runs-on: macos-15",
+        "standard Intel macOS runner": "runs-on: macos-15-intel",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
