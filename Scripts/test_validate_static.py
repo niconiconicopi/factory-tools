@@ -210,6 +210,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("COMMAND_TIMEOUT_SECONDS = 300", capture_script)
         self.assertIn("HOME_READINESS_TIMEOUT_SECONDS = 30", capture_script)
         self.assertIn("HOME_SCREENSHOT_ATTEMPTS = 3", capture_script)
+        self.assertIn('language = "ja" if japanese else "en"', capture_script)
         self.assertIn("wait_for_home_demo_data(device_id, language_code=language)", capture_script)
         self.assertIn('f"locale={language_code}"', capture_script)
         self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER)', capture_script)

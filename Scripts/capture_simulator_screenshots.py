@@ -102,6 +102,7 @@ def capture_language(
     platform: str,
     scenario: str,
 ) -> tuple[int, int]:
+    language = "ja" if japanese else "en"
     language_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         language_arguments.append("--factorytools-screenshot-japanese")
