@@ -249,6 +249,11 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("time.sleep(HOME_RENDER_SETTLE_SECONDS)", capture_script)
         self.assertIn('f"locale={language_code}"', capture_script)
         self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER)', capture_script)
+        self.assertIn('str(HOME_SCREENSHOT_VERIFIER), str(output_path), "286", "300"', capture_script)
+        self.assertLess(
+            capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+            capture_script.index('str(HOME_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+        )
         self.assertIn('"286", "300"', capture_script)
         self.assertIn('current=286 target=300', capture_script)
         self.assertIn('subsystem: "com.factorytools.ios"', home_card)
@@ -325,6 +330,11 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("time.sleep(20)", capture_script)
         self.assertIn("MAX_SCREENSHOT_ATTEMPTS = 3", capture_script)
         self.assertIn('"swift", str(WATCH_SCREENSHOT_VERIFIER)', capture_script)
+        self.assertIn('str(WATCH_SCREENSHOT_VERIFIER), str(output_path), "286", "300"', capture_script)
+        self.assertLess(
+            capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+            capture_script.index('str(WATCH_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+        )
         self.assertIn('"286", "300"', capture_script)
         self.assertIn("Counter text was not visible; restarting Watch Simulator.", capture_script)
         self.assertIn("Watch screenshot is missing visible counter values", screenshot_verifier)

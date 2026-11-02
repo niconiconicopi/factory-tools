@@ -130,14 +130,19 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
         time.sleep(20)
         print(f"Capturing {output_path.name}.", flush=True)
         run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+        run([
+            "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
+            str(temporary_png), "--out", str(output_path),
+        ])
         try:
             verification = run(
-                ["swift", str(WATCH_SCREENSHOT_VERIFIER), str(temporary_png), "286", "300"],
+                ["swift", str(WATCH_SCREENSHOT_VERIFIER), str(output_path), "286", "300"],
                 capture_output=True,
             )
         except subprocess.CalledProcessError as error:
             recognized = (error.stderr or error.stdout or "").strip()
             temporary_png.unlink(missing_ok=True)
+            output_path.unlink(missing_ok=True)
             if attempt == MAX_SCREENSHOT_ATTEMPTS:
                 raise RuntimeError(
                     f"{output_path.name} did not show count and target after "
@@ -148,13 +153,9 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
             continue
 
         print(verification.stdout.strip(), flush=True)
+        temporary_png.unlink()
         break
 
-    run([
-        "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
-        str(temporary_png), "--out", str(output_path),
-    ])
-    temporary_png.unlink()
     if not output_path.is_file() or output_path.stat().st_size < 10_000:
         raise RuntimeError(f"Screenshot output is missing or unexpectedly small: {output_path.name}")
     with output_path.open("rb") as stream:

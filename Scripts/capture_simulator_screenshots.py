@@ -137,15 +137,20 @@ def capture_language(
             # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
             time.sleep(4)
         run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+        run([
+            "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
+            str(temporary_png), "--out", str(output_path),
+        ])
         if scenario == "home":
             try:
                 verification = run(
-                    ["swift", str(HOME_SCREENSHOT_VERIFIER), str(temporary_png), "286", "300"],
+                    ["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), "286", "300"],
                     capture_output=True,
                 )
             except subprocess.CalledProcessError as error:
                 recognized = (error.stderr or error.stdout or "").strip()
                 temporary_png.unlink(missing_ok=True)
+                output_path.unlink(missing_ok=True)
                 if attempt == attempts:
                     raise RuntimeError(
                         f"{output_path.name} did not show both home counter values after {attempts} captures. "
@@ -154,10 +159,6 @@ def capture_language(
                 print(f"Home counter values were not visible; relaunching the app. {recognized}", flush=True)
                 continue
             print(verification.stdout.strip(), flush=True)
-        run([
-            "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
-            str(temporary_png), "--out", str(output_path),
-        ])
         temporary_png.unlink()
         break
     if not output_path.is_file() or output_path.stat().st_size < 10_000:
