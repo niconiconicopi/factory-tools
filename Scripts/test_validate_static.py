@@ -291,7 +291,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("VNRecognizeTextRequest()", screenshot_verifier)
         self.assertIn("VNImageRequestHandler(url: imageURL).perform([request])", screenshot_verifier)
         self.assertIn("requiredVerticalRange.contains(item.bounds.midY)", screenshot_verifier)
-        self.assertIn("expected == expectedValues.first ? 0.40...0.75 : 0.10...0.42", screenshot_verifier)
+        self.assertIn("index == 0 ? 0.40...0.75 : 0.10...0.42", screenshot_verifier)
         self.assertIn("Watch screenshot OCR:", screenshot_verifier)
         self.assertIn('"log", "show", "--last", "2m"', capture_script)
         self.assertEqual(capture_script.count("restart_simulator(arguments.device_id)"), 1)

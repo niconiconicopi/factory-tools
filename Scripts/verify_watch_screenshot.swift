@@ -18,11 +18,12 @@ do {
     let recognizedText = observations.compactMap { observation in
         observation.topCandidates(1).first.map { (text: $0.string, bounds: observation.boundingBox) }
     }
-    let missingValues = expectedValues.filter { expected in
-        let requiredVerticalRange: ClosedRange<CGFloat> = expected == expectedValues.first ? 0.40...0.75 : 0.10...0.42
-        return !recognizedText.contains { item in
+    let missingValues = expectedValues.enumerated().compactMap { index, expected -> String? in
+        let requiredVerticalRange: ClosedRange<CGFloat> = index == 0 ? 0.40...0.75 : 0.10...0.42
+        let isVisible = recognizedText.contains { item in
             item.text.filter(\.isNumber) == expected && requiredVerticalRange.contains(item.bounds.midY)
         }
+        return isVisible ? nil : expected
     }
     let observationSummary = recognizedText.map {
         "\($0.text)@\(String(format: "%.2f", $0.bounds.midY))"
