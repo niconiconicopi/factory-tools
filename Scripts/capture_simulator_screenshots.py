@@ -13,6 +13,9 @@ from pathlib import Path
 
 SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
 COMMAND_TIMEOUT_SECONDS = 300
+HOME_READINESS_TIMEOUT_SECONDS = 30
+HOME_SCREENSHOT_ATTEMPTS = 3
+HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
 
 
 def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
@@ -68,6 +71,28 @@ def image_dimensions(image_path: Path, *, platform: str) -> tuple[int, int]:
     return dimensions
 
 
+def wait_for_home_demo_data(device_id: str, *, language_code: str) -> None:
+    """Wait until the real SwiftData-backed counter query has reached the demo values."""
+    deadline = time.monotonic() + HOME_READINESS_TIMEOUT_SECONDS
+    print("Waiting for the simulator home counter query to load.", flush=True)
+    while time.monotonic() < deadline:
+        result = run(
+            [
+                "xcrun", "simctl", "spawn", device_id,
+                "log", "show", "--last", "1m", "--style", "compact",
+                "--predicate", 'subsystem == "com.factorytools.ios" AND category == "ScreenshotCapture"',
+            ],
+            capture_output=True,
+        )
+        if f"locale={language_code}" in result.stdout and "current=286 target=300" in result.stdout:
+            print("SwiftData-backed home counter values are ready.", flush=True)
+            return
+        time.sleep(2)
+    raise RuntimeError(
+        f"The simulator home counter did not reach 286/300 within {HOME_READINESS_TIMEOUT_SECONDS} seconds."
+    )
+
+
 def capture_language(
     device_id: str,
     identifier: str,
@@ -81,21 +106,48 @@ def capture_language(
     if japanese:
         language_arguments.append("--factorytools-screenshot-japanese")
     language_arguments.append(f"--factorytools-screenshot-{scenario}")
-    run(
-        [
-            "xcrun", "simctl", "launch", "--terminate-running-process", device_id,
-            identifier, *language_arguments,
-        ]
-    )
-    # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
-    time.sleep(4)
     temporary_png = output_path.with_suffix(".png")
-    run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
-    run([
-        "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
-        str(temporary_png), "--out", str(output_path),
-    ])
-    temporary_png.unlink()
+    attempts = HOME_SCREENSHOT_ATTEMPTS if scenario == "home" else 1
+    for attempt in range(1, attempts + 1):
+        print(
+            f"Launching {language} {platform} {scenario} screenshot (attempt {attempt}/{attempts}).",
+            flush=True,
+        )
+        run(
+            [
+                "xcrun", "simctl", "launch", "--terminate-running-process", device_id,
+                identifier, *language_arguments,
+            ]
+        )
+        if scenario == "home":
+            wait_for_home_demo_data(device_id, language_code=language)
+        else:
+            # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
+            time.sleep(4)
+        run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+        if scenario == "home":
+            try:
+                verification = run(
+                    ["swift", str(HOME_SCREENSHOT_VERIFIER), str(temporary_png), "286", "300"],
+                    capture_output=True,
+                )
+            except subprocess.CalledProcessError as error:
+                recognized = (error.stderr or error.stdout or "").strip()
+                temporary_png.unlink(missing_ok=True)
+                if attempt == attempts:
+                    raise RuntimeError(
+                        f"{output_path.name} did not show both home counter values after {attempts} captures. "
+                        f"{recognized}"
+                    ) from error
+                print(f"Home counter values were not visible; relaunching the app. {recognized}", flush=True)
+                continue
+            print(verification.stdout.strip(), flush=True)
+        run([
+            "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
+            str(temporary_png), "--out", str(output_path),
+        ])
+        temporary_png.unlink()
+        break
     if not output_path.is_file() or output_path.stat().st_size < 10_000:
         raise RuntimeError(f"Screenshot output is missing or unexpectedly small: {output_path.name}")
     with output_path.open("rb") as stream:
