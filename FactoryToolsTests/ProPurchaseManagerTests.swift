@@ -5,6 +5,9 @@ import XCTest
 @MainActor
 final class ProPurchaseManagerTests: XCTestCase {
     func testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro() async throws {
+        if ProcessInfo.processInfo.environment["FACTORYTOOLS_SKIP_STOREKIT_TESTS"] == "1" {
+            throw XCTSkip("Headless GitHub Simulator StoreKitTest cannot save SKTestSession configuration (SKInternalErrorDomain Code=3); run this integration test from Xcode.")
+        }
         let configurationURL = try XCTUnwrap(
             Bundle(for: ProPurchaseManagerTests.self)
                 .url(forResource: "FactoryToolsPro", withExtension: "storekit")
