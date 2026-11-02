@@ -49,6 +49,7 @@ This keeps the core count, timing, calculation, basic defect, history and compan
 - Product count: one non-consumable Factory Tools Pro item.
 - Product ID candidate: **`factorytools.pro.lifetime`**. Keep this exact ID in the project and App Store Connect; confirm it is unused in the app before creating the non-consumable, because a saved product ID cannot be changed.
 - StoreKit 2 verifies the entitlement locally, observes transactions, and offers Restore Purchases. No third-party billing SDK or entitlement server.
+- The shared `FactoryTools` scheme uses `Resources/FactoryToolsPro.storekit` for Debug Run testing. It contains only the approved non-consumable, Family Sharing off, Japanese and English product text, and a ¥980 Japan test display price. Apple's local StoreKit configuration is test data; its price is not connected to the App Store Connect price. The Release Archive action does not select this file, and the actual product and price still need App Store Connect setup and verification.
 - If the product is not configured or available, Free remains usable and no Pro entitlement is granted.
 
 ## Access implementation

@@ -1,0 +1,39 @@
+{
+  "identifier" : "F7AC9800",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "980",
+      "familyShareable" : false,
+      "internalID" : "F7AC9801",
+      "localizations" : [
+        {
+          "description" : "全Pro機能を1回の購入で利用できます。",
+          "displayName" : "Factory Tools Pro",
+          "locale" : "ja"
+        },
+        {
+          "description" : "Unlock every Pro feature with one purchase.",
+          "displayName" : "Factory Tools Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "factorytools.pro.lifetime",
+      "referenceName" : "Factory Tools Pro Lifetime",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_storefront" : "JPN",
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}

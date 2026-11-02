@@ -43,6 +43,7 @@ from validate_static import (
     release_preflight_blockers,
     release_preflight_configuration_blockers,
     resolve_family_sharing_candidate,
+    storekit_configuration_errors,
     swiftui_unlocalized_copy_literals,
     swift_model_persisted_properties,
     swift_unsafe_escape_hatches,
@@ -656,6 +657,21 @@ class AppStoreMetadataTests(unittest.TestCase):
         self.assertFalse(is_valid_storekit_product_id("A" * 101))
         self.assertFalse(is_valid_storekit_product_id("factorytools/pro"))
         self.assertFalse(is_valid_storekit_product_id(""))
+
+    def test_local_storekit_configuration_matches_approved_purchase(self) -> None:
+        source = (Path(__file__).resolve().parents[1] / "FactoryTools" / "Resources" / "FactoryToolsPro.storekit").read_text(encoding="utf-8")
+
+        self.assertEqual(storekit_configuration_errors(source, "factorytools.pro.lifetime"), [])
+
+    def test_local_storekit_configuration_rejects_purchase_boundary_drift(self) -> None:
+        source = '{"products":[{"productID":"other","type":"Consumable","familyShareable":true,"displayPrice":"1","localizations":[{"locale":"en_US"}]}],"settings":{"_storefront":"USA"}}'
+
+        errors = storekit_configuration_errors(source, "factorytools.pro.lifetime")
+
+        self.assertEqual(len(errors), 6)
+        self.assertTrue(any("product ID" in error for error in errors))
+        self.assertTrue(any("non-consumable" in error for error in errors))
+        self.assertTrue(any("Family Sharing" in error for error in errors))
 
     def test_app_store_sku_uses_supported_characters_and_valid_prefix(self) -> None:
         self.assertTrue(is_valid_app_store_sku("FACTORYTOOLS-IOS-001"))

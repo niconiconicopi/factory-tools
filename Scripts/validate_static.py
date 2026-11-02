@@ -547,6 +547,39 @@ def is_valid_storekit_product_id(value: str) -> bool:
     return len(value) <= 100 and re.fullmatch(r"[A-Za-z0-9._-]+", value) is not None
 
 
+def storekit_configuration_errors(source: str, expected_product_id: str) -> list[str]:
+    errors: list[str] = []
+    try:
+        configuration = parse_json_no_duplicates(source)
+    except (json.JSONDecodeError, DuplicateJSONKeyError) as error:
+        return [f"invalid StoreKit test configuration JSON: {error}"]
+    if not isinstance(configuration, dict):
+        return ["StoreKit test configuration root must be an object"]
+    products = configuration.get("products")
+    if not isinstance(products, list) or len(products) != 1 or not isinstance(products[0], dict):
+        return ["StoreKit test configuration must contain exactly one in-app purchase product"]
+    product = products[0]
+    if product.get("productID") != expected_product_id:
+        errors.append("StoreKit test product ID must match the configured Factory Tools Pro product ID")
+    if product.get("type") != "NonConsumable":
+        errors.append("StoreKit test product must be a non-consumable lifetime purchase")
+    if product.get("familyShareable") is not False:
+        errors.append("StoreKit test product must keep Family Sharing disabled")
+    if product.get("displayPrice") != "980":
+        errors.append("StoreKit test display price must mirror the approved ¥980 Japan candidate")
+    localizations = product.get("localizations")
+    if not isinstance(localizations, list):
+        errors.append("StoreKit test product must include Japanese and English localizations")
+    else:
+        locales = {item.get("locale") for item in localizations if isinstance(item, dict)}
+        if locales != {"ja", "en_US"}:
+            errors.append("StoreKit test product must include exactly Japanese and English localizations")
+    settings = configuration.get("settings")
+    if not isinstance(settings, dict) or settings.get("_storefront") != "JPN":
+        errors.append("StoreKit test configuration must use the Japan storefront")
+    return errors
+
+
 def is_valid_app_store_sku(value: str) -> bool:
     return re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", value) is not None
 
@@ -905,6 +938,38 @@ def main() -> int:
                 f"Xcode project file reference escapes the workspace: {file_path}")
         require(stays_in_workspace and resolved_path.exists(),
                 f"Xcode project references a missing local file: {file_path}")
+
+    storekit_reference_id = "C00000000000000000000089"
+    storekit_reference = project_objects.get(storekit_reference_id)
+    require(isinstance(storekit_reference, dict)
+            and storekit_reference.get("isa") == "PBXFileReference"
+            and storekit_reference.get("path") == "Resources/FactoryToolsPro.storekit",
+            "local Pro StoreKit configuration must be a project file reference")
+    storekit_path = ROOT / "FactoryTools" / "Resources" / "FactoryToolsPro.storekit"
+    if storekit_path.is_file():
+        for issue in storekit_configuration_errors(
+            storekit_path.read_text(encoding="utf-8"), "factorytools.pro.lifetime"
+        ):
+            ERRORS.append(f"StoreKit local test configuration: {issue}")
+    else:
+        ERRORS.append("local Pro StoreKit configuration is missing")
+    try:
+        scheme_tree = ET.fromstring(scheme.read_text(encoding="utf-8"))
+        launch_action = scheme_tree.find("LaunchAction")
+        archive_action = scheme_tree.find("ArchiveAction")
+        launch_storekit_references = (
+            launch_action.findall("StoreKitConfigurationFileReference") if launch_action is not None else []
+        )
+        archive_storekit_references = (
+            archive_action.findall("StoreKitConfigurationFileReference") if archive_action is not None else []
+        )
+        require(len(launch_storekit_references) == 1
+                and launch_storekit_references[0].get("identifier") == storekit_reference_id,
+                "FactoryTools Debug Run must activate the local Pro StoreKit configuration")
+        require(not archive_storekit_references,
+                "FactoryTools Release Archive must not activate local StoreKit test data")
+    except (ET.ParseError, OSError) as error:
+        ERRORS.append(f"FactoryTools scheme XML is invalid or missing: {error}")
 
     native_targets = {
         object_id: value
