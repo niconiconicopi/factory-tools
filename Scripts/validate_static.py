@@ -2161,6 +2161,12 @@ def main() -> int:
                     for testable in (scheme_tree.findall("./TestAction/Testables/TestableReference")
                                      if "scheme_tree" in locals() else [])),
             "the local Pro purchase regression must run serially in app-hosted XCTest with the StoreKit configuration bundled only for tests")
+    restore_action = re.search(
+        r'Button\("pro\.restore"\)\s*\{\s*Task\s*\{\s*await proPurchases\.restorePurchases\(\)\s*\}\s*\}',
+        purchase_price_view,
+    )
+    require(restore_action is not None and all_swift.count("proPurchases.restorePurchases()") == 1,
+            "StoreKit AppStore.sync restore must remain reachable only from the explicit Restore Purchases button")
     home_view_path = ROOT / "FactoryTools" / "Features" / "Home" / "HomeView.swift"
     home_view_source = home_view_path.read_text(encoding="utf-8") if home_view_path.is_file() else ""
     create_home_path = ROOT / "FactoryTools" / "Features" / "Home" / "CreateHomeView.swift"
