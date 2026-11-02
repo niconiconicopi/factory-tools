@@ -2100,6 +2100,8 @@ def main() -> int:
             "iPad counter screen must send locale-aware Quick Add, Undo, and target commands through the outbox")
     purchase_manager_path = ROOT / "FactoryTools" / "App" / "ProPurchaseManager.swift"
     purchase_manager = purchase_manager_path.read_text(encoding="utf-8") if purchase_manager_path.is_file() else ""
+    purchase_test_path = ROOT / "FactoryToolsTests" / "ProPurchaseManagerTests.swift"
+    purchase_test = purchase_test_path.read_text(encoding="utf-8") if purchase_test_path.is_file() else ""
     purchase_price_view_path = ROOT / "FactoryTools" / "Features" / "Settings" / "AppSettingsView.swift"
     purchase_price_view = purchase_price_view_path.read_text(encoding="utf-8") if purchase_price_view_path.is_file() else ""
     storekit_sources = [path for path in source_files if re.search(
@@ -2131,6 +2133,34 @@ def main() -> int:
             and "¥980" not in all_swift
             and not re.search(r"RevenueCat|Purchases\.shared", purchase_manager),
             "StoreKit must stay in the first-party one-time Pro manager and show the StoreKit-localized regional price rather than a hard-coded yen amount")
+    storekit_test_target = targets_by_name.get("FactoryToolsTests", {})
+    storekit_test_build_phases = [project_objects.get(phase_id, {}) for phase_id in storekit_test_target.get("buildPhases", [])]
+    storekit_test_sources = next((phase for phase in storekit_test_build_phases
+                                  if phase.get("isa") == "PBXSourcesBuildPhase"), {})
+    storekit_test_resources = next((phase for phase in storekit_test_build_phases
+                                    if phase.get("isa") == "PBXResourcesBuildPhase"), {})
+    storekit_test_resource_build = project_objects.get("B00000000000000000000090", {})
+    require(purchase_test_path in source_files
+            and "import StoreKitTest" in purchase_test
+            and "SKTestSession(contentsOf: configurationURL)" in purchase_test
+            and "session.disableDialogs = true" in purchase_test
+            and "session.clearTransactions()" in purchase_test
+            and "session.resetToDefaultState()" in purchase_test
+            and 'session.storefront = "JPN"' in purchase_test
+            and 'session.locale = Locale(identifier: "ja_JP")' in purchase_test
+            and '"factorytools.pro.lifetime"' in purchase_test
+            and "Decimal(980)" in purchase_test
+            and ".isFamilyShareable" in purchase_test
+            and "await manager.purchase()" in purchase_test
+            and '"pro.purchaseComplete"' in purchase_test
+            and storekit_test_target.get("name") == "FactoryToolsTests"
+            and "B00000000000000000000089" in storekit_test_sources.get("files", [])
+            and storekit_test_resource_build.get("isa") == "PBXBuildFile"
+            and "B00000000000000000000090" in storekit_test_resources.get("files", [])
+            and any(testable.get("parallelizable") == "NO"
+                    for testable in (scheme_tree.findall("./TestAction/Testables/TestableReference")
+                                     if "scheme_tree" in locals() else [])),
+            "the local Pro purchase regression must run serially in app-hosted XCTest with the StoreKit configuration bundled only for tests")
     home_view_path = ROOT / "FactoryTools" / "Features" / "Home" / "HomeView.swift"
     home_view_source = home_view_path.read_text(encoding="utf-8") if home_view_path.is_file() else ""
     create_home_path = ROOT / "FactoryTools" / "Features" / "Home" / "CreateHomeView.swift"
