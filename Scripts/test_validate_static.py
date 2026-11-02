@@ -9,7 +9,9 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+from capture_watch_screenshots import capture_language as capture_watch_language
 from capture_watch_screenshots import record_failure_summary
+from capture_simulator_screenshots import capture_language as capture_simulator_language
 from capture_simulator_screenshots import wait_for_home_demo_data
 from validate_static import (
     DuplicateJSONKeyError,
@@ -120,6 +122,53 @@ class WatchScreenshotDiagnosticsTests(unittest.TestCase):
             self.assertIn("simulator refused launch: unavailable", summary)
             self.assertIn("::error title=Apple Watch screenshot capture failure::", annotation.getvalue())
             self.assertIn("simulator refused launch%3A unavailable", annotation.getvalue())
+
+
+class ScreenshotFailureArtifactTests(unittest.TestCase):
+    @staticmethod
+    def failed_verification_capture(
+        arguments: list[str], *, capture_output: bool = False
+    ) -> subprocess.CompletedProcess[str]:
+        if "screenshot" in arguments:
+            Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+        elif arguments and arguments[0] == "sips" and "--out" in arguments:
+            Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+        elif arguments and arguments[0] == "swift":
+            raise subprocess.CalledProcessError(1, arguments, stderr="expected text was not recognized")
+        return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+    def test_iphone_home_retains_final_failed_jpeg_for_ci_artifact_upload(self) -> None:
+        import capture_simulator_screenshots
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-home-en.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=self.failed_verification_capture), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data"), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                with self.assertRaisesRegex(RuntimeError, "Diagnostic JPEG retained"):
+                    capture_simulator_language(
+                        "simulator", "com.example.FactoryTools", output_path,
+                        japanese=False, platform="iPhone", scenario="home",
+                    )
+
+            self.assertTrue(output_path.is_file())
+            self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+            self.assertFalse(output_path.with_suffix(".png").exists())
+
+    def test_watch_home_retains_final_failed_jpeg_for_ci_artifact_upload(self) -> None:
+        import capture_watch_screenshots
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "watch-home-ja.jpg"
+            with patch.object(capture_watch_screenshots, "run", side_effect=self.failed_verification_capture), \
+                    patch.object(capture_watch_screenshots, "restart_simulator"), \
+                    patch.object(capture_watch_screenshots.time, "sleep"):
+                with self.assertRaisesRegex(RuntimeError, "Diagnostic JPEG retained"):
+                    capture_watch_language("simulator", "com.example.FactoryTools.watch", output_path, japanese=True)
+
+            self.assertTrue(output_path.is_file())
+            self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+            self.assertFalse(output_path.with_suffix(".png").exists())
 
 
 class AppleUploadWorkflowContractTests(unittest.TestCase):
@@ -274,6 +323,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("-configuration Release", workflow)
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
+        self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
+        self.assertEqual(workflow.count("if: always()"), 3)
+        self.assertEqual(workflow.count("if-no-files-found: ignore"), 3)
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
@@ -337,6 +389,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         )
         self.assertIn('"286", "300"', capture_script)
         self.assertIn("Counter text was not visible; restarting Watch Simulator.", capture_script)
+        self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
         self.assertIn("Watch screenshot is missing visible counter values", screenshot_verifier)
         self.assertIn("VNRecognizeTextRequest()", screenshot_verifier)
         self.assertIn("VNImageRequestHandler(url: imageURL).perform([request])", screenshot_verifier)

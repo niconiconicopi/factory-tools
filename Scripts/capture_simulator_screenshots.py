@@ -150,12 +150,12 @@ def capture_language(
             except subprocess.CalledProcessError as error:
                 recognized = (error.stderr or error.stdout or "").strip()
                 temporary_png.unlink(missing_ok=True)
-                output_path.unlink(missing_ok=True)
                 if attempt == attempts:
                     raise RuntimeError(
                         f"{output_path.name} did not show both home counter values after {attempts} captures. "
-                        f"{recognized}"
+                        f"Diagnostic JPEG retained at {output_path}. {recognized}"
                     ) from error
+                output_path.unlink(missing_ok=True)
                 print(f"Home counter values were not visible; relaunching the app. {recognized}", flush=True)
                 continue
             print(verification.stdout.strip(), flush=True)

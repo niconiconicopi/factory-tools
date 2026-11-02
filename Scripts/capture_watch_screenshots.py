@@ -142,12 +142,12 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
         except subprocess.CalledProcessError as error:
             recognized = (error.stderr or error.stdout or "").strip()
             temporary_png.unlink(missing_ok=True)
-            output_path.unlink(missing_ok=True)
             if attempt == MAX_SCREENSHOT_ATTEMPTS:
                 raise RuntimeError(
                     f"{output_path.name} did not show count and target after "
-                    f"{MAX_SCREENSHOT_ATTEMPTS} captures. {recognized}"
+                    f"{MAX_SCREENSHOT_ATTEMPTS} captures. Diagnostic JPEG retained at {output_path}. {recognized}"
                 ) from error
+            output_path.unlink(missing_ok=True)
             print(f"Counter text was not visible; restarting Watch Simulator. {recognized}", flush=True)
             restart_simulator(device_id)
             continue

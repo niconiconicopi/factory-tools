@@ -78,11 +78,12 @@ jobs:
             --scenarios home cycle-time takt-time defect-counter counter-history
 
       - name: Upload bilingual iPhone screenshot artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: factory-tools-app-store-iphone-product-page
           path: ${{ runner.temp }}/FactoryToolsAppStoreScreenshots/
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Capture bilingual 13-inch iPad home screenshots from Release Simulator build
@@ -103,11 +104,12 @@ jobs:
             --platform ipad
 
       - name: Upload bilingual 13-inch iPad screenshot artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: factory-tools-app-store-ipad-home
           path: ${{ runner.temp }}/FactoryToolsAppStoreiPadScreenshots/
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Test iPad and app-hosted regression suite
@@ -212,11 +214,12 @@ jobs:
             --output-dir "$RUNNER_TEMP/FactoryToolsWatchScreenshots"
 
       - name: Upload bilingual Apple Watch screenshot artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: factory-tools-app-store-watch-home
           path: ${{ runner.temp }}/FactoryToolsWatchScreenshots/
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Archive generic iPhone and iPad app without signing
