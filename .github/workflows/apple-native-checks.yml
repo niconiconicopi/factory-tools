@@ -48,12 +48,48 @@ jobs:
             echo "No available iPhone Simulator device was found." >&2
             exit 1
           fi
+          result_bundle="$RUNNER_TEMP/FactoryTools-iPhone.xcresult"
+          xcode_log="$RUNNER_TEMP/FactoryTools-iPhone-xcodebuild.log"
+          test_status=0
+          set +e
           xcodebuild test \
             -project FactoryTools.xcodeproj \
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
-            CODE_SIGNING_ALLOWED=NO
+            -resultBundlePath "$result_bundle" \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$xcode_log"
+          test_status=${PIPESTATUS[0]}
+          set -e
+          if [[ "$test_status" -ne 0 ]]; then
+            {
+              echo "## iPhone XCTest failure diagnostics"
+              echo
+              echo "xcodebuild exited with status $test_status on simulator $simulator_id."
+              if [[ -d "$result_bundle" ]]; then
+                echo
+                echo "### xcresult summary"
+                echo '```json'
+                if ! xcrun xcresulttool get test-results summary --path "$result_bundle"; then
+                  echo "xcresulttool could not summarize the result bundle."
+                fi
+                echo '```'
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit "$test_status"
+          fi
+
+      - name: Upload iPhone XCTest diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factory-tools-iphone-xctest-diagnostics
+          path: |
+            ${{ runner.temp }}/FactoryTools-iPhone.xcresult
+            ${{ runner.temp }}/FactoryTools-iPhone-xcodebuild.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Capture bilingual iPhone product-page screenshots from Release Simulator build
         shell: bash

@@ -326,7 +326,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
         self.assertEqual(workflow.count("if: always()"), 3)
-        self.assertEqual(workflow.count("if-no-files-found: ignore"), 3)
+        self.assertEqual(workflow.count("if-no-files-found: ignore"), 4)
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
