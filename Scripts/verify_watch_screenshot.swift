@@ -16,8 +16,10 @@ do {
     try VNImageRequestHandler(url: imageURL).perform([request])
     let recognizedText = (request.results ?? [])
         .compactMap { $0.topCandidates(1).first?.string }
-    let recognizedDigits = recognizedText.joined().filter(\.isNumber)
-    let missingValues = expectedValues.filter { !recognizedDigits.contains($0) }
+    let recognizedValues = recognizedText.map { $0.filter(\.isNumber) }
+    let missingValues = expectedValues.filter { expected in
+        !recognizedValues.contains(expected)
+    }
     guard missingValues.isEmpty else {
         fputs(
             "Watch screenshot is missing visible counter values \(missingValues.joined(separator: ", ")). "

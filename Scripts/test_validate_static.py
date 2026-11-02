@@ -277,7 +277,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Watch screenshot is missing visible counter values", screenshot_verifier)
         self.assertIn("VNRecognizeTextRequest()", screenshot_verifier)
         self.assertIn("VNImageRequestHandler(url: imageURL).perform([request])", screenshot_verifier)
-        self.assertIn("recognizedDigits.contains($0)", screenshot_verifier)
+        self.assertIn("recognizedValues.contains(expected)", screenshot_verifier)
         self.assertIn('"log", "show", "--last", "2m"', capture_script)
         self.assertEqual(capture_script.count("restart_simulator(arguments.device_id)"), 1)
         self.assertIn('print("Restarting Apple Watch Simulator for a clean locale capture.", flush=True)', capture_script)
