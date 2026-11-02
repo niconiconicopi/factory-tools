@@ -357,6 +357,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
         "standard Apple macOS 26 Intel runner": "runs-on: macos-26-intel",
+        "iOS 26.4 Simulator selected for StoreKit test compatibility": 'runtime.endswith("iOS-26-4")',
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
@@ -365,6 +366,8 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if source.count('runtime.endswith("iOS-26-4")') != 4:
+        errors.append("all four iPhone/iPad test and capture selectors must use the iOS 26.4 runtime")
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
         errors.append("workflow must not access repository secrets")
     return errors
