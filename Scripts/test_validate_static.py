@@ -7,8 +7,10 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from capture_watch_screenshots import record_failure_summary
+from capture_simulator_screenshots import wait_for_home_demo_data
 from validate_static import (
     DuplicateJSONKeyError,
     OpenStepParseError,
@@ -180,6 +182,34 @@ jobs:
 
 
 class SimulatorScreenshotWorkflowTests(unittest.TestCase):
+    def test_home_readiness_ignores_stale_capture_logs(self) -> None:
+        stale_output = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout='captureID=previous locale=en current=286 target=300\n', stderr="",
+        )
+        current_output = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout='captureID=current locale=en sessionCount=1 current=286 target=300\n', stderr="",
+        )
+        with patch("capture_simulator_screenshots.run", side_effect=[stale_output, current_output]) as run_command, \
+             patch("capture_simulator_screenshots.time.sleep"):
+            wait_for_home_demo_data("simulator", language_code="en", capture_id="current")
+        self.assertEqual(run_command.call_count, 2)
+
+    def test_home_readiness_does_not_combine_state_from_different_log_lines(self) -> None:
+        split_output = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout=(
+                'captureID=current locale=en sessionCount=1\n'
+                'current=286 target=300\n'
+                'captureID=current locale=en sessionCount=1 current=286 target=300\n'
+            ), stderr="",
+        )
+        with patch("capture_simulator_screenshots.run", return_value=split_output) as run_command, \
+             patch("capture_simulator_screenshots.time.sleep"):
+            wait_for_home_demo_data("simulator", language_code="en", capture_id="current")
+        self.assertEqual(run_command.call_count, 1)
+
     def test_ci_captures_bilingual_release_simulator_screenshots_without_persisting_demo_data(self) -> None:
         root = Path(__file__).resolve().parents[1]
         app_source = (root / "FactoryTools" / "App" / "FactoryToolsApp.swift").read_text(encoding="utf-8")
