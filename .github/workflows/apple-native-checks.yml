@@ -19,7 +19,9 @@ jobs:
     # Public repositories use standard macOS runners at no charge. For private repositories,
     # require a manual run and an explicit confirmation that overage is blocked.
     if: github.event.repository.visibility == 'public' || (github.event_name == 'workflow_dispatch' && inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
-    runs-on: macos-26
+    # Use the macOS 15 image: it includes Xcode 26.3 and iOS/watchOS 26.2 runtimes,
+    # and avoids the repeated macOS 26 runner-allocation timeout seen in run 41459057399.
+    runs-on: macos-15
     timeout-minutes: 60
     steps:
       - name: Check out source
