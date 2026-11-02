@@ -432,12 +432,14 @@ struct WatchCounterDetailView: View {
                         } label: {
                             Text("−1").font(.headline)
                         }
+                        .accessibilityLabel("watch.counter.subtractOne")
                         .tint(WatchTheme.secondaryText)
                         Button {
                             model.addOne(to: session)
                         } label: {
                             Text("+1").font(.headline)
                         }
+                        .accessibilityLabel("watch.counter.addOne")
                         .tint(counterAccent)
                     }
                     Button {

@@ -1184,7 +1184,7 @@ def main() -> int:
     expected_watch_string_keys = {
         "watch.title", "watch.storageUnavailable", "watch.storageUnavailable.message", "watch.noCounters", "watch.noCounters.message",
         "watch.refresh", "watch.connection.connected", "watch.connection.waiting", "watch.pending",
-        "watch.target", "watch.quickAddFive", "watch.sessionUnavailable", "watch.status.applied",
+        "watch.target", "watch.counter.subtractOne", "watch.counter.addOne", "watch.quickAddFive", "watch.sessionUnavailable", "watch.status.applied",
         "home.defaultName",
         "counter.defaultSessionName", "defect.defaultSessionName",
         "watch.status.alreadyApplied", "watch.status.noChange", "watch.status.staleUndo", "watch.status.rejected",
@@ -1589,6 +1589,24 @@ def main() -> int:
                 "background", "panel", "accent", "primaryText", "secondaryText", "warning"
             )),
             "Watch colors must be declared in its dedicated theme token palette")
+    watch_palette = {
+        name: tuple(float(component) for component in rgb)
+        for name, *rgb in re.findall(
+            r"^\s*static let (background|panel|accent|secondaryText|warning) = Color\(red:\s*([0-9.]+),\s*green:\s*([0-9.]+),\s*blue:\s*([0-9.]+)\)",
+            watch_theme_source,
+            re.MULTILINE,
+        )
+    }
+    watch_palette["primaryText"] = (1.0, 1.0, 1.0)
+    watch_palette_required = {"background", "panel", "accent", "secondaryText", "warning", "primaryText"}
+    require(watch_palette_required.issubset(watch_palette),
+            "Watch theme is missing colors required for counter contrast checks")
+    if watch_palette_required.issubset(watch_palette):
+        for foreground in ("primaryText", "secondaryText", "accent", "warning"):
+            for background in ("background", "panel"):
+                ratio = contrast_ratio(watch_palette[foreground], watch_palette[background])
+                require(ratio >= 4.5,
+                        f"Watch {foreground} contrast on {background} is only {ratio:.2f}:1")
     for path in (ROOT / "FactoryToolsWatch").rglob("*.swift"):
         if path == watch_theme_path:
             continue

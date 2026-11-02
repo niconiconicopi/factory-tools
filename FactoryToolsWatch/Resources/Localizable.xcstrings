@@ -12,6 +12,8 @@
     "watch.connection.waiting" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Waiting for iPhone" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "iPhoneとの接続待ち" } } } },
     "watch.pending" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Pending" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "保留" } } } },
     "watch.target" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Target" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "目標" } } } },
+    "watch.counter.subtractOne" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Subtract one from count" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "カウントを1つ減らす" } } } },
+    "watch.counter.addOne" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Add one to count" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "カウントを1つ増やす" } } } },
     "watch.quickAddFive" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Add 5" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "5個追加" } } } },
     "home.defaultName" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Production" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "通常生産" } } } },
     "counter.defaultSessionName" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Production run" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "生産セッション" } } } },
