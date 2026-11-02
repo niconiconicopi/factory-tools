@@ -9,12 +9,14 @@ import os
 import re
 import subprocess
 import time
+import uuid
 from pathlib import Path
 
 SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
 COMMAND_TIMEOUT_SECONDS = 300
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_SCREENSHOT_ATTEMPTS = 3
+HOME_RENDER_SETTLE_SECONDS = 3
 HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
 
 
@@ -71,7 +73,7 @@ def image_dimensions(image_path: Path, *, platform: str) -> tuple[int, int]:
     return dimensions
 
 
-def wait_for_home_demo_data(device_id: str, *, language_code: str) -> None:
+def wait_for_home_demo_data(device_id: str, *, language_code: str, capture_id: str) -> None:
     """Wait until the real SwiftData-backed counter query has reached the demo values."""
     deadline = time.monotonic() + HOME_READINESS_TIMEOUT_SECONDS
     print("Waiting for the simulator home counter query to load.", flush=True)
@@ -84,7 +86,13 @@ def wait_for_home_demo_data(device_id: str, *, language_code: str) -> None:
             ],
             capture_output=True,
         )
-        if f"locale={language_code}" in result.stdout and "current=286 target=300" in result.stdout:
+        ready_line = any(
+            f"captureID={capture_id}" in line
+            and f"locale={language_code}" in line
+            and "current=286 target=300" in line
+            for line in result.stdout.splitlines()
+        )
+        if ready_line:
             print("SwiftData-backed home counter values are ready.", flush=True)
             return
         time.sleep(2)
@@ -110,6 +118,8 @@ def capture_language(
     temporary_png = output_path.with_suffix(".png")
     attempts = HOME_SCREENSHOT_ATTEMPTS if scenario == "home" else 1
     for attempt in range(1, attempts + 1):
+        capture_id = uuid.uuid4().hex
+        capture_arguments = [f"--factorytools-screenshot-capture-id={capture_id}"]
         print(
             f"Launching {language} {platform} {scenario} screenshot (attempt {attempt}/{attempts}).",
             flush=True,
@@ -117,11 +127,12 @@ def capture_language(
         run(
             [
                 "xcrun", "simctl", "launch", "--terminate-running-process", device_id,
-                identifier, *language_arguments,
+                identifier, *language_arguments, *capture_arguments,
             ]
         )
         if scenario == "home":
-            wait_for_home_demo_data(device_id, language_code=language)
+            wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)
+            time.sleep(HOME_RENDER_SETTLE_SECONDS)
         else:
             # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
             time.sleep(4)

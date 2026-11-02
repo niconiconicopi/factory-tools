@@ -486,7 +486,13 @@ struct HomeToolCardView: View {
     private func logScreenshotCaptureState() {
         guard ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-demo"),
               card.toolID == ToolID.productionCounter.rawValue else { return }
+        let captureID = ProcessInfo.processInfo.arguments.first {
+            $0.hasPrefix("--factorytools-screenshot-capture-id=")
+        }.map {
+            String($0.dropFirst("--factorytools-screenshot-capture-id=".count))
+        } ?? "missing"
         let captureState = [
+            "captureID=\(captureID)",
             "locale=\(locale.identifier)",
             "home=\(home.id.uuidString)",
             "sessionCount=\(sessions.count)",

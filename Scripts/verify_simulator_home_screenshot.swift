@@ -14,8 +14,10 @@ request.usesLanguageCorrection = false
 
 do {
     try VNImageRequestHandler(url: imageURL).perform([request])
-    let observations = (request.results ?? []).compactMap { observation in
-        observation.topCandidates(1).first.map { (text: $0.string, confidence: $0.confidence) }
+    let observations = (request.results ?? []).enumerated().compactMap { index, observation in
+        observation.topCandidates(1).first.map {
+            (index: index, text: $0.string, confidence: $0.confidence, bounds: observation.boundingBox)
+        }
     }
     let missingValues = expectedValues.filter { expected in
         let escapedValue = NSRegularExpression.escapedPattern(for: expected)
@@ -26,12 +28,49 @@ do {
         }
     }
     let observationSummary = observations.map {
-        "\($0.text) [confidence=\(String(format: "%.2f", $0.confidence))]"
+        "\($0.text)@\(String(format: "%.2f", $0.bounds.midY)) [confidence=\(String(format: "%.2f", $0.confidence))]"
     }.joined(separator: " | ")
 
-    guard missingValues.isEmpty else {
+    let containsToken: (String, String) -> Bool = { value, text in
+        let escapedValue = NSRegularExpression.escapedPattern(for: value)
+        let pattern = "(?<![0-9])\(escapedValue)(?![0-9])"
+        return text.range(of: pattern, options: .regularExpression) != nil
+    }
+    let hasCountAndTargetOnSameRow: Bool = {
+        guard expectedValues.count >= 2 else { return true }
+        let currentCount = expectedValues[0]
+        let targetCount = expectedValues[1]
+        let plausibleCounterRow: (CGRect) -> Bool = { (0.15...0.95).contains($0.midY) }
+        let sameObservation = observations.contains { observation in
+            guard observation.confidence >= 0.5, plausibleCounterRow(observation.bounds),
+                  let currentRange = observation.text.range(of: "(?<![0-9])\(NSRegularExpression.escapedPattern(for: currentCount))(?![0-9])", options: .regularExpression),
+                  let targetRange = observation.text.range(of: "(?<![0-9])\(NSRegularExpression.escapedPattern(for: targetCount))(?![0-9])", options: .regularExpression)
+            else { return false }
+            return currentRange.lowerBound < targetRange.lowerBound
+        }
+        if sameObservation { return true }
+
+        let currentObservations = observations.filter {
+            $0.confidence >= 0.5 && plausibleCounterRow($0.bounds) && containsToken(currentCount, $0.text)
+        }
+        let targetObservations = observations.filter {
+            $0.confidence >= 0.5 && plausibleCounterRow($0.bounds) && containsToken(targetCount, $0.text)
+        }
+        return currentObservations.contains { current in
+            targetObservations.contains { target in
+                current.index != target.index
+                    && abs(current.bounds.midY - target.bounds.midY) <= 0.06
+                    && current.bounds.minX < target.bounds.minX
+            }
+        }
+    }()
+
+    guard missingValues.isEmpty, hasCountAndTargetOnSameRow else {
+        let detail = missingValues.isEmpty
+            ? "Counter and target values were recognized but not together on the counter row."
+            : "Missing values: \(missingValues.joined(separator: ", "))."
         fputs(
-            "Simulator home screenshot is missing visible values \(missingValues.joined(separator: ", ")). "
+            "Simulator home screenshot does not show a complete counter row. \(detail) "
                 + "Recognized text: \(observationSummary)\n",
             stderr
         )
