@@ -265,6 +265,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("ProgressView(value: completion)", counter_detail)
         self.assertIn(".progressViewStyle(.linear)", counter_detail)
         self.assertIn(".tint(counterAccent)", counter_detail)
+        self.assertIn(".tint(WatchTheme.secondaryText)", counter_detail)
         self.assertIn('category: "ScreenshotCapture"', watch_view)
         self.assertIn("@Environment(\\.colorScheme) private var colorScheme", counter_detail)
         self.assertIn("@Environment(\\.scenePhase) private var scenePhase", counter_detail)

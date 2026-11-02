@@ -432,7 +432,7 @@ struct WatchCounterDetailView: View {
                         } label: {
                             Text("−1").font(.headline)
                         }
-                        .tint(WatchTheme.panel)
+                        .tint(WatchTheme.secondaryText)
                         Button {
                             model.addOne(to: session)
                         } label: {
