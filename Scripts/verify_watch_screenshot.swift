@@ -14,22 +14,30 @@ request.usesLanguageCorrection = false
 
 do {
     try VNImageRequestHandler(url: imageURL).perform([request])
-    let recognizedText = (request.results ?? [])
-        .compactMap { $0.topCandidates(1).first?.string }
-    let recognizedValues = recognizedText.map { $0.filter(\.isNumber) }
-    let missingValues = expectedValues.filter { expected in
-        !recognizedValues.contains(expected)
+    let observations = request.results ?? []
+    let recognizedText = observations.compactMap { observation in
+        observation.topCandidates(1).first.map { (text: $0.string, bounds: observation.boundingBox) }
     }
+    let missingValues = expectedValues.filter { expected in
+        let requiredVerticalRange: ClosedRange<CGFloat> = expected == expectedValues.first ? 0.40...0.75 : 0.10...0.42
+        return !recognizedText.contains { item in
+            item.text.filter(\.isNumber) == expected && requiredVerticalRange.contains(item.bounds.midY)
+        }
+    }
+    let observationSummary = recognizedText.map {
+        "\($0.text)@\(String(format: "%.2f", $0.bounds.midY))"
+    }.joined(separator: " | ")
     guard missingValues.isEmpty else {
         fputs(
             "Watch screenshot is missing visible counter values \(missingValues.joined(separator: ", ")). "
-                + "Recognized text: \(recognizedText.joined(separator: " | "))\n",
+                + "Recognized text with vertical positions: \(observationSummary)\n",
             stderr
         )
         exit(1)
     }
 
     print("Visible Watch counter values confirmed: \(expectedValues.joined(separator: ", ")).")
+    print("Watch screenshot OCR: \(observationSummary)")
 } catch {
     fputs("Watch screenshot text recognition failed: \(error)\n", stderr)
     exit(1)
