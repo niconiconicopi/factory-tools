@@ -357,7 +357,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
         "standard Apple macOS 26 Intel runner": "runs-on: macos-26-intel",
-        "CI StoreKit integration test skip flag": "FACTORYTOOLS_SKIP_STOREKIT_TESTS=1 xcodebuild test",
+        "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
@@ -366,7 +366,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
-    if source.count("FACTORYTOOLS_SKIP_STOREKIT_TESTS=1 xcodebuild test") != 2:
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
         errors.append("both app-hosted CI test runs must isolate the known headless StoreKitTest failure")
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
         errors.append("workflow must not access repository secrets")
@@ -2173,8 +2173,6 @@ def main() -> int:
             and "session.resetToDefaultState()" in purchase_test
             and 'session.storefront = "JPN"' in purchase_test
             and 'session.locale = Locale(identifier: "ja_JP")' in purchase_test
-            and 'ProcessInfo.processInfo.environment["FACTORYTOOLS_SKIP_STOREKIT_TESTS"] == "1"' in purchase_test
-            and "throw XCTSkip(" in purchase_test
             and '"factorytools.pro.lifetime"' in purchase_test
             and "Decimal(980)" in purchase_test
             and ".isFamilyShareable" in purchase_test

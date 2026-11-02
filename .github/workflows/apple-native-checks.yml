@@ -52,13 +52,14 @@ jobs:
           xcode_log="$RUNNER_TEMP/FactoryTools-iPhone-xcodebuild.log"
           test_status=0
           set +e
-          FACTORYTOOLS_SKIP_STOREKIT_TESTS=1 xcodebuild test \
+          xcodebuild test \
             -project FactoryTools.xcodeproj \
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
             -resultBundlePath "$result_bundle" \
             -parallel-testing-enabled NO \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$xcode_log"
           test_status=${PIPESTATUS[0]}
           set -e
@@ -163,12 +164,13 @@ jobs:
           xcode_log="$RUNNER_TEMP/FactoryTools-iPad-xcodebuild.log"
           test_status=0
           set +e
-          FACTORYTOOLS_SKIP_STOREKIT_TESTS=1 xcodebuild test \
+          xcodebuild test \
             -project FactoryTools.xcodeproj \
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
             -resultBundlePath "$result_bundle" \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$xcode_log"
           test_status=${PIPESTATUS[0]}
           set -e
