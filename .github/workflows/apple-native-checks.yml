@@ -20,8 +20,8 @@ jobs:
     # require a manual run and an explicit confirmation that overage is blocked.
     if: github.event.repository.visibility == 'public' || (github.event_name == 'workflow_dispatch' && inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
     # Xcode 16.4 on macOS 15 Intel crashed in the app-hosted StoreKit test with SIGSEGV.
-    # Reuse the previously successful macOS 26 / Xcode 26.6 arm64 runner for StoreKitTest.
-    runs-on: macos-26-arm64
+    # Use Xcode 26.6 on macOS 26 Intel to avoid the currently capacity-constrained arm64 pool.
+    runs-on: macos-26-intel
     timeout-minutes: 60
     steps:
       - name: Check out source
