@@ -2139,6 +2139,10 @@ def main() -> int:
                                   if phase.get("isa") == "PBXSourcesBuildPhase"), {})
     storekit_test_resources = next((phase for phase in storekit_test_build_phases
                                     if phase.get("isa") == "PBXResourcesBuildPhase"), {})
+    app_build_phases = [project_objects.get(phase_id, {}) for phase_id in app_target.get("buildPhases", [])]
+    app_resources = next((phase for phase in app_build_phases
+                          if phase.get("isa") == "PBXResourcesBuildPhase"), {})
+    storekit_test_source_build = project_objects.get("B00000000000000000000089", {})
     storekit_test_resource_build = project_objects.get("B00000000000000000000090", {})
     require(purchase_test_path in source_files
             and "import StoreKitTest" in purchase_test
@@ -2155,12 +2159,15 @@ def main() -> int:
             and '"pro.purchaseComplete"' in purchase_test
             and storekit_test_target.get("name") == "FactoryToolsTests"
             and "B00000000000000000000089" in storekit_test_sources.get("files", [])
+            and storekit_test_source_build.get("fileRef") == "C00000000000000000000090"
             and storekit_test_resource_build.get("isa") == "PBXBuildFile"
+            and storekit_test_resource_build.get("fileRef") == storekit_reference_id
             and "B00000000000000000000090" in storekit_test_resources.get("files", [])
+            and "B00000000000000000000090" not in app_resources.get("files", [])
             and any(testable.get("parallelizable") == "NO"
                     for testable in (scheme_tree.findall("./TestAction/Testables/TestableReference")
                                      if "scheme_tree" in locals() else [])),
-            "the local Pro purchase regression must run serially in app-hosted XCTest with the StoreKit configuration bundled only for tests")
+            "the local Pro purchase regression must run serially in app-hosted XCTest with the StoreKit configuration bundled only for tests, never in the production app")
     restore_action = re.search(
         r'Button\("pro\.restore"\)\s*\{\s*Task\s*\{\s*await proPurchases\.restorePurchases\(\)\s*\}\s*\}',
         purchase_price_view,
