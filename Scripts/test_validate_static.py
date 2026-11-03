@@ -12,7 +12,7 @@ from unittest.mock import patch
 from capture_watch_screenshots import capture_language as capture_watch_language
 from capture_watch_screenshots import record_failure_summary
 from capture_simulator_screenshots import capture_language as capture_simulator_language
-from capture_simulator_screenshots import wait_for_home_demo_data
+from capture_simulator_screenshots import clear_capture_outputs, wait_for_home_demo_data
 from validate_static import (
     DuplicateJSONKeyError,
     OpenStepParseError,
@@ -268,6 +268,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
              patch("capture_simulator_screenshots.time.sleep"):
             wait_for_home_demo_data("simulator", language_code="en", capture_id="current")
         self.assertEqual(run_command.call_count, 2)
+        self.assertEqual(run_command.call_args.kwargs["timeout_seconds"], 10)
+        self.assertIn("2m", run_command.call_args.args[0])
 
     def test_home_readiness_does_not_combine_state_from_different_log_lines(self) -> None:
         split_output = subprocess.CompletedProcess(
@@ -282,6 +284,46 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
              patch("capture_simulator_screenshots.time.sleep"):
             wait_for_home_demo_data("simulator", language_code="en", capture_id="current")
         self.assertEqual(run_command.call_count, 1)
+
+    def test_home_capture_falls_back_to_final_image_ocr_when_readiness_logs_timeout(self) -> None:
+        import capture_simulator_screenshots
+
+        def create_capture_fixture(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            if "screenshot" in arguments:
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                return subprocess.CompletedProcess(arguments, 0, stdout="286/300 visible", stderr="")
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "ipad-home-ja.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=create_capture_fixture), \
+                 patch.object(capture_simulator_screenshots, "wait_for_home_demo_data", side_effect=RuntimeError("log query timed out")), \
+                 patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(2064, 2752)), \
+                 patch.object(capture_simulator_screenshots.time, "sleep"):
+                dimensions = capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=True, platform="iPad", scenario="home",
+                )
+
+            self.assertEqual(dimensions, (2064, 2752))
+            self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+
+    def test_capture_cleans_stale_outputs_but_preserves_unrelated_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_dir = Path(temporary_directory)
+            stale_names = ("ipad-home-en.jpg", "ipad-takt-time-ja.png", "capture-info.txt")
+            for name in stale_names:
+                (output_dir / name).write_text("stale", encoding="utf-8")
+            unrelated = output_dir / "notes.txt"
+            unrelated.write_text("keep", encoding="utf-8")
+
+            clear_capture_outputs(output_dir, platform="ipad")
+
+            self.assertTrue(all(not (output_dir / name).exists() for name in stale_names))
+            self.assertEqual(unrelated.read_text(encoding="utf-8"), "keep")
 
     def test_ci_captures_bilingual_release_simulator_screenshots_without_persisting_demo_data(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -312,11 +354,15 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('f"{arguments.platform}-{scenario}-{language}.jpg"', capture_script)
         self.assertIn("COMMAND_TIMEOUT_SECONDS = 900", capture_script)
         self.assertIn("HOME_READINESS_TIMEOUT_SECONDS = 30", capture_script)
+        self.assertIn("HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10", capture_script)
+        self.assertIn("def clear_capture_outputs", capture_script)
+        self.assertIn("Simulator readiness logs were unavailable; the final image OCR will decide capture readiness.", capture_script)
+        self.assertIn('"log", "show", "--last", "2m"', capture_script)
         self.assertIn("HOME_SCREENSHOT_ATTEMPTS = 3", capture_script)
         self.assertIn("HOME_RENDER_SETTLE_SECONDS = 3", capture_script)
         self.assertIn('language = "ja" if japanese else "en"', capture_script)
         self.assertIn("wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)", capture_script)
-        self.assertIn('"log", "show", "--last", "5m"', capture_script)
+        self.assertIn('"log", "show", "--last", "2m"', capture_script)
         self.assertIn('f"--factorytools-screenshot-capture-id={capture_id}"', capture_script)
         self.assertIn('f"captureID={capture_id}" in line', capture_script)
         self.assertIn("for line in result.stdout.splitlines()", capture_script)
@@ -338,7 +384,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("abs(current.bounds.midY - target.bounds.midY) <= 0.06", home_verifier)
         self.assertIn("current.bounds.minX < target.bounds.minX", home_verifier)
         self.assertIn("Recognized text:", home_verifier)
-        self.assertIn("timeout=COMMAND_TIMEOUT_SECONDS", capture_script)
+        self.assertIn("timeout=timeout_seconds", capture_script)
         self.assertIn("Running simulator capture command:", capture_script)
         self.assertIn("CycleTimeSample(homeProfileID: home.id", app_source)
         self.assertIn('"27000" : ""', (root / "FactoryTools" / "Features" / "Tools" / "TaktTimeCalculatorView.swift").read_text(encoding="utf-8"))

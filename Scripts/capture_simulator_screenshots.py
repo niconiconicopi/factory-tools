@@ -15,12 +15,18 @@ from pathlib import Path
 SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
 COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
+HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
 HOME_SCREENSHOT_ATTEMPTS = 3
 HOME_RENDER_SETTLE_SECONDS = 3
 HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
 
 
-def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
+def run(
+    arguments: list[str],
+    *,
+    capture_output: bool = False,
+    timeout_seconds: int = COMMAND_TIMEOUT_SECONDS,
+) -> subprocess.CompletedProcess[str]:
     print(f"Running simulator capture command: {' '.join(arguments)}", flush=True)
     try:
         return subprocess.run(
@@ -28,12 +34,12 @@ def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.Com
             check=True,
             text=True,
             capture_output=capture_output,
-            timeout=COMMAND_TIMEOUT_SECONDS,
+            timeout=timeout_seconds,
         )
     except subprocess.TimeoutExpired as error:
         command = " ".join(arguments)
         raise RuntimeError(
-            f"Simulator capture command timed out after {COMMAND_TIMEOUT_SECONDS} seconds: {command}"
+            f"Simulator capture command timed out after {timeout_seconds} seconds: {command}"
         ) from error
 
 
@@ -88,6 +94,17 @@ def image_dimensions(image_path: Path, *, platform: str) -> tuple[int, int]:
     return dimensions
 
 
+def clear_capture_outputs(output_dir: Path, *, platform: str) -> None:
+    """Remove only known screenshot outputs so a partial run cannot upload stale images."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for scenario in SCREENSHOT_SCENARIOS:
+        for language in ("en", "ja"):
+            stem = f"{platform}-{scenario}-{language}"
+            for suffix in (".jpg", ".png"):
+                (output_dir / f"{stem}{suffix}").unlink(missing_ok=True)
+    (output_dir / "capture-info.txt").unlink(missing_ok=True)
+
+
 def wait_for_home_demo_data(device_id: str, *, language_code: str, capture_id: str) -> None:
     """Wait until the real SwiftData-backed counter query has reached the demo values."""
     deadline = time.monotonic() + HOME_READINESS_TIMEOUT_SECONDS
@@ -96,10 +113,11 @@ def wait_for_home_demo_data(device_id: str, *, language_code: str, capture_id: s
         result = run(
             [
                 "xcrun", "simctl", "spawn", device_id,
-                "log", "show", "--last", "5m", "--style", "compact",
+                "log", "show", "--last", "2m", "--style", "compact",
                 "--predicate", 'subsystem == "com.factorytools.ios" AND category == "ScreenshotCapture"',
             ],
             capture_output=True,
+            timeout_seconds=HOME_READINESS_COMMAND_TIMEOUT_SECONDS,
         )
         ready_line = any(
             f"captureID={capture_id}" in line
@@ -146,7 +164,13 @@ def capture_language(
             ]
         )
         if scenario == "home":
-            wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)
+            try:
+                wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)
+            except RuntimeError as error:
+                print(
+                    f"Simulator readiness logs were unavailable; the final image OCR will decide capture readiness. {error}",
+                    flush=True,
+                )
             time.sleep(HOME_RENDER_SETTLE_SECONDS)
         else:
             # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
@@ -205,7 +229,7 @@ def main() -> int:
     if arguments.platform == "ipad" and "13-inch" not in device:
         parser.error(f"A 13-inch iPad Simulator is required; found {device}.")
     identifier = bundle_identifier(arguments.app)
-    arguments.output_dir.mkdir(parents=True, exist_ok=True)
+    clear_capture_outputs(arguments.output_dir, platform=arguments.platform)
 
     ensure_simulator_booted(arguments.device_id)
     status_bar_arguments = [
