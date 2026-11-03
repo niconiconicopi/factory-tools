@@ -254,6 +254,22 @@ jobs:
           app_path="$RUNNER_TEMP/FactoryToolsDerivedData/Build/Products/Release-watchsimulator/FactoryToolsWatch.app"
           test -d "$app_path"
 
+      - name: Archive generic iPhone and iPad app without signing
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive_path="$RUNNER_TEMP/FactoryTools.xcarchive"
+          xcodebuild archive \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$archive_path" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
+            CODE_SIGNING_ALLOWED=NO
+          test -d "$archive_path/Products/Applications/FactoryTools.app"
+          test -d "$archive_path/Products/Applications/FactoryTools.app/Watch/FactoryToolsWatch.app"
+
       - name: Capture bilingual Apple Watch screenshots from Release Simulator build
         shell: bash
         run: |
@@ -278,19 +294,3 @@ jobs:
           path: ${{ runner.temp }}/FactoryToolsWatchScreenshots/
           if-no-files-found: ignore
           retention-days: 30
-
-      - name: Archive generic iPhone and iPad app without signing
-        shell: bash
-        run: |
-          set -euo pipefail
-          archive_path="$RUNNER_TEMP/FactoryTools.xcarchive"
-          xcodebuild archive \
-            -project FactoryTools.xcodeproj \
-            -scheme FactoryTools \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$archive_path" \
-            -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
-            CODE_SIGNING_ALLOWED=NO
-          test -d "$archive_path/Products/Applications/FactoryTools.app"
-          test -d "$archive_path/Products/Applications/FactoryTools.app/Watch/FactoryToolsWatch.app"

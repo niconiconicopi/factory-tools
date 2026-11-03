@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-COMMAND_TIMEOUT_SECONDS = 900
+COMMAND_TIMEOUT_SECONDS = 300
 MAX_SCREENSHOT_ATTEMPTS = 3
 WATCH_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_watch_screenshot.swift")
 
@@ -214,11 +214,11 @@ def main() -> int:
     # Install the Release build explicitly; the preceding Watch build step alone does not install it.
     print("Installing the Release Watch app.", flush=True)
     run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
-    # The Debug-to-Release switch can leave the first locale on a stale WatchKit
-    # session. Start both language captures from the same clean simulator state.
-    restart_simulator(arguments.device_id)
-    # Capture both locales in one boot so any first/second boot transition cannot
-    # be mistaken for a locale-specific rendering problem.
+    # The Release build step already boots this Simulator and bootstatus above
+    # confirmed it is ready. Keep that boot for the locale captures: watchOS can
+    # hang indefinitely during a second bootstatus after an otherwise successful
+    # install. Each launch terminates the prior app process and supplies the
+    # requested locale explicitly.
     captures = {
         "watch-home-ja.jpg": capture_language(
             arguments.device_id, identifier, arguments.output_dir / "watch-home-ja.jpg", japanese=True
