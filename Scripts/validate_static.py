@@ -364,6 +364,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "shared Core XCTest": "-scheme FactoryToolsCore",
         "Watch Simulator build": "-scheme FactoryToolsWatch",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
+        "archive verifies Watch app in the Watch bundle directory": "FactoryTools.app/Watch/FactoryToolsWatch.app",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
     if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
@@ -1009,7 +1010,7 @@ def main() -> int:
         len(watch_embed_phases) == 1
         and watch_embed_phases[0].get("dstSubfolderSpec") == "13"
         and watch_embed_phases[0].get("dstPath") == "",
-        "Watch companion app must embed in the parent PlugIns directory for current Xcode",
+        "Watch companion app must embed in the parent Watch directory for current Xcode",
     )
     target_ids_by_name = {target.get("name"): target_id for target_id, target in native_targets.items()}
 

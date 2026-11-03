@@ -293,4 +293,4 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
             CODE_SIGNING_ALLOWED=NO
           test -d "$archive_path/Products/Applications/FactoryTools.app"
-          test -d "$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app"
+          test -d "$archive_path/Products/Applications/FactoryTools.app/Watch/FactoryToolsWatch.app"
