@@ -337,6 +337,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
             workflow.index("Capture bilingual iPhone product-page screenshots from Release Simulator build"),
         )
         self.assertIn('"bootstatus", sys.argv[1], "-b"], check=True, timeout=900)', workflow)
+        self.assertIn('xcrun simctl shutdown "$simulator_id"', workflow)
+        self.assertIn("def ensure_simulator_booted(device_id: str) -> None:", capture_script)
+        self.assertIn('["xcrun", "simctl", "boot", device_id]', capture_script)
         self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
         self.assertIn("factory-tools-app-store-ipad-home", workflow)
 

@@ -106,7 +106,8 @@ jobs:
             xcrun simctl boot "$simulator_id"
           fi
           python3 -c 'import subprocess,sys; subprocess.run(["xcrun", "simctl", "bootstatus", sys.argv[1], "-b"], check=True, timeout=900)' "$simulator_id"
-          echo "13-inch iPad Simulator $simulator_id is ready."
+          xcrun simctl shutdown "$simulator_id"
+          echo "13-inch iPad Simulator $simulator_id completed its first boot and was shut down to free resources."
 
       - name: Capture bilingual iPhone product-page screenshots from Release Simulator build
         shell: bash

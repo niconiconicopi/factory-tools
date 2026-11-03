@@ -47,6 +47,21 @@ def simulator_name(device_id: str) -> str:
     raise RuntimeError("The requested Simulator device is not available.")
 
 
+def ensure_simulator_booted(device_id: str) -> None:
+    result = run(["xcrun", "simctl", "list", "devices", "--json"], capture_output=True)
+    inventory = json.loads(result.stdout)
+    state = next(
+        (device.get("state") for devices in inventory.get("devices", {}).values()
+         for device in devices if device.get("udid") == device_id),
+        None,
+    )
+    if state is None:
+        raise RuntimeError("The requested Simulator device is not available.")
+    if state != "Booted":
+        run(["xcrun", "simctl", "boot", device_id])
+    run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
+
+
 def bundle_identifier(app_path: Path) -> str:
     info_plist = app_path / "Info.plist"
     result = run(
@@ -192,7 +207,7 @@ def main() -> int:
     identifier = bundle_identifier(arguments.app)
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
 
-    run(["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"])
+    ensure_simulator_booted(arguments.device_id)
     status_bar_arguments = [
         "xcrun", "simctl", "status_bar", arguments.device_id, "override",
         "--time", "9:41", "--wifiMode", "active", "--wifiBars", "3",
