@@ -1,7 +1,15 @@
 # Factory Tools Release Readiness Audit
 
-Audit date: 2026-11-03
+Audit date: 2026-11-04
 Purpose: track evidence for the first public iPhone, Apple Watch, and iPad release. A source-level pass is not evidence of a successful Apple-platform build or App Review approval.
+
+## Latest verification update (2026-11-04)
+
+- Commit `6839706` passed the iPhone and iPad Simulator app-hosted suites, bilingual Release screenshot capture and upload for iPhone and iPad, shared Core XCTest, and Watch Debug and Release Simulator builds in [run 41710177725](https://github.com/niconiconicopi/factory-tools/actions/runs/41710177725). GitHub's 90-minute job limit canceled the unsigned archive stage before completion; the Watch screenshot capture was consequently skipped. This run is not counted as an end-to-end pass.
+- The isolated unsigned archive and embedded Watch-app check passed in [run 41725068801](https://github.com/niconiconicopi/factory-tools/actions/runs/41725068801) in 3m37s. It confirmed `FactoryTools.app/PlugIns/FactoryToolsWatch.app` exists in the generic iOS archive.
+- Added a manual-only [Apple archive check](../.github/workflows/apple-archive-check.yml) with a 30-minute limit, and raised the full native workflow limit to 120 minutes. The full native workflow has not yet been rerun with the longer limit.
+- Windows validation passes 84 Python tests and the static project verifier (67 Swift files, 272 XCTest methods, 431 Japanese/English strings). These checks do not compile Swift.
+- The latest run captured iPhone and iPad Simulator images in Japanese and English. The post-fix Apple Watch image capture still needs a successful run; signed build, purchase sandbox, and paired physical-device behavior remain release gates.
 
 ## Verified in the current workspace
 
