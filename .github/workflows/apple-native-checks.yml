@@ -93,6 +93,8 @@ jobs:
           retention-days: 7
 
       - name: Prepare 13-inch iPad Simulator before release screenshot captures
+        id: prepare_ipad_screenshot_simulator
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -110,6 +112,8 @@ jobs:
           echo "13-inch iPad Simulator $simulator_id completed its first boot and was shut down to free resources."
 
       - name: Capture bilingual iPhone product-page screenshots from Release Simulator build
+        id: capture_iphone_screenshots
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -143,6 +147,8 @@ jobs:
           retention-days: 30
 
       - name: Capture bilingual 13-inch iPad home screenshots from Release Simulator build
+        id: capture_ipad_screenshots
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -271,6 +277,8 @@ jobs:
           test -d "$archive_path/Products/Applications/FactoryTools.app/Watch/FactoryToolsWatch.app"
 
       - name: Capture bilingual Apple Watch screenshots from Release Simulator build
+        id: capture_watch_screenshots
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -294,3 +302,27 @@ jobs:
           path: ${{ runner.temp }}/FactoryToolsWatchScreenshots/
           if-no-files-found: ignore
           retention-days: 30
+
+      - name: Report optional screenshot capture status
+        if: always()
+        shell: bash
+        env:
+          IPHONE_SCREENSHOTS: ${{ steps.capture_iphone_screenshots.outcome }}
+          IPAD_SCREENSHOTS: ${{ steps.capture_ipad_screenshots.outcome }}
+          WATCH_SCREENSHOTS: ${{ steps.capture_watch_screenshots.outcome }}
+        run: |
+          {
+            echo "## Optional Simulator screenshot captures"
+            echo
+            for capture in "iPhone:$IPHONE_SCREENSHOTS" "iPad:$IPAD_SCREENSHOTS" "Watch:$WATCH_SCREENSHOTS"; do
+              device="${capture%%:*}"
+              outcome="${capture#*:}"
+              if [[ "$outcome" == "failure" ]]; then
+                echo "- Warning: $device screenshots could not be captured in this hosted Simulator run."
+              elif [[ "$outcome" == "success" ]]; then
+                echo "- $device screenshots captured successfully."
+              else
+                echo "- $device screenshot capture was $outcome."
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

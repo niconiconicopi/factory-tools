@@ -326,7 +326,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
-        self.assertEqual(workflow.count("if: always()"), 3)
+        self.assertEqual(workflow.count("if: always()"), 4)
         self.assertEqual(workflow.count("if-no-files-found: ignore"), 4)
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
@@ -425,6 +425,17 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
         self.assertIn("factory-tools-app-store-watch-home", workflow)
+        for capture_id in (
+            "capture_iphone_screenshots",
+            "capture_ipad_screenshots",
+            "capture_watch_screenshots",
+        ):
+            self.assertRegex(
+                workflow,
+                rf"id: {capture_id}\n\s+continue-on-error: true",
+            )
+        self.assertIn("Report optional screenshot capture status", workflow)
+        self.assertIn("Optional Simulator screenshot captures", workflow)
 
 
 class LegalPagesWorkflowContractTests(unittest.TestCase):
