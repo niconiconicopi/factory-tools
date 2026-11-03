@@ -293,6 +293,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("HOME_RENDER_SETTLE_SECONDS = 3", capture_script)
         self.assertIn('language = "ja" if japanese else "en"', capture_script)
         self.assertIn("wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)", capture_script)
+        self.assertIn('"log", "show", "--last", "5m"', capture_script)
         self.assertIn('f"--factorytools-screenshot-capture-id={capture_id}"', capture_script)
         self.assertIn('f"captureID={capture_id}" in line', capture_script)
         self.assertIn("for line in result.stdout.splitlines()", capture_script)

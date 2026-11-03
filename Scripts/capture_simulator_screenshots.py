@@ -96,7 +96,7 @@ def wait_for_home_demo_data(device_id: str, *, language_code: str, capture_id: s
         result = run(
             [
                 "xcrun", "simctl", "spawn", device_id,
-                "log", "show", "--last", "1m", "--style", "compact",
+                "log", "show", "--last", "5m", "--style", "compact",
                 "--predicate", 'subsystem == "com.factorytools.ios" AND category == "ScreenshotCapture"',
             ],
             capture_output=True,
