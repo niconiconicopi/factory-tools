@@ -274,7 +274,7 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
             CODE_SIGNING_ALLOWED=NO
           test -d "$archive_path/Products/Applications/FactoryTools.app"
-          test -d "$archive_path/Products/Applications/FactoryTools.app/Watch/FactoryToolsWatch.app"
+          test -d "$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app"
 
       - name: Capture bilingual Apple Watch screenshots from Release Simulator build
         id: capture_watch_screenshots

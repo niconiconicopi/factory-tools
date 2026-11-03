@@ -424,6 +424,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
+        self.assertIn("FactoryTools.app/PlugIns/FactoryToolsWatch.app", workflow)
         self.assertIn("factory-tools-app-store-watch-home", workflow)
         for capture_id in (
             "capture_iphone_screenshots",
