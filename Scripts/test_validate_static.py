@@ -287,7 +287,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('f"--factorytools-screenshot-{scenario}"', capture_script)
         self.assertIn('"sips", "-s", "format", "jpeg"', capture_script)
         self.assertIn('f"{arguments.platform}-{scenario}-{language}.jpg"', capture_script)
-        self.assertIn("COMMAND_TIMEOUT_SECONDS = 300", capture_script)
+        self.assertIn("COMMAND_TIMEOUT_SECONDS = 900", capture_script)
         self.assertIn("HOME_READINESS_TIMEOUT_SECONDS = 30", capture_script)
         self.assertIn("HOME_SCREENSHOT_ATTEMPTS = 3", capture_script)
         self.assertIn("HOME_RENDER_SETTLE_SECONDS = 3", capture_script)
@@ -331,6 +331,12 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
         self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
+        self.assertIn("Prepare 13-inch iPad Simulator before release screenshot captures", workflow)
+        self.assertLess(
+            workflow.index("Prepare 13-inch iPad Simulator before release screenshot captures"),
+            workflow.index("Capture bilingual iPhone product-page screenshots from Release Simulator build"),
+        )
+        self.assertIn('"bootstatus", sys.argv[1], "-b"], check=True, timeout=900)', workflow)
         self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
         self.assertIn("factory-tools-app-store-ipad-home", workflow)
 

@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-COMMAND_TIMEOUT_SECONDS = 300
+COMMAND_TIMEOUT_SECONDS = 900
 MAX_SCREENSHOT_ATTEMPTS = 3
 WATCH_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_watch_screenshot.swift")
 

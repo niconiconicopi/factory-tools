@@ -13,7 +13,7 @@ import uuid
 from pathlib import Path
 
 SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
-COMMAND_TIMEOUT_SECONDS = 300
+COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_SCREENSHOT_ATTEMPTS = 3
 HOME_RENDER_SETTLE_SECONDS = 3

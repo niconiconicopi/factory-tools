@@ -22,7 +22,7 @@ jobs:
     # Headless xcodebuild Simulator runs reproduce SKTestSession configuration failures across runtimes.
     # Skip only the StoreKitTest integration case; its Xcode-interactive test remains in the source.
     runs-on: macos-26-intel
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - name: Check out source
         uses: actions/checkout@v7
@@ -92,7 +92,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-      - name: Start 13-inch iPad Simulator migration while iPhone screenshots run
+      - name: Prepare 13-inch iPad Simulator before release screenshot captures
         shell: bash
         run: |
           set -euo pipefail
@@ -105,7 +105,8 @@ jobs:
           if [[ "$device_state" != "Booted" ]]; then
             xcrun simctl boot "$simulator_id"
           fi
-          echo "Started first-boot preparation for 13-inch iPad Simulator $simulator_id (state: ${device_state:-Booting})."
+          python3 -c 'import subprocess,sys; subprocess.run(["xcrun", "simctl", "bootstatus", sys.argv[1], "-b"], check=True, timeout=900)' "$simulator_id"
+          echo "13-inch iPad Simulator $simulator_id is ready."
 
       - name: Capture bilingual iPhone product-page screenshots from Release Simulator build
         shell: bash
