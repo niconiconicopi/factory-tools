@@ -17,6 +17,8 @@ python Scripts/audit_source_hygiene.py
 
 These checks run on Windows. They validate source structure and project contracts, but they do not compile Swift or run XCTest. Native Xcode build and simulator tests are available through the [Apple checks workflow](.github/workflows/apple-native-checks.yml) after the repository is connected to GitHub.
 
+The complete Apple checks also archive the iPhone/iPad app and verify the embedded Watch app. If a long simulator run reaches its job limit before the archive step, run the manual [Apple archive check](.github/workflows/apple-archive-check.yml); it performs the unsigned archive and Watch embedding check on its own.
+
 ## Repository status
 
 This is an in-development project. App Store publisher identity, signing, support and privacy URLs, and the store submission are not configured. If published, the source is intended for public review; no open-source license is included, so publication alone does not grant general reuse rights.

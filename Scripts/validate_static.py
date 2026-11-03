@@ -357,6 +357,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
         "standard Apple macOS 26 Intel runner": "runs-on: macos-26-intel",
+        "bounded native verification job": "timeout-minutes: 120",
         "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
@@ -371,6 +372,25 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         errors.append("both app-hosted CI test runs must isolate the known headless StoreKitTest failure")
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
         errors.append("workflow must not access repository secrets")
+    return errors
+
+
+def apple_archive_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the focused, no-signing Apple archive and Watch embedding check."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "pinned checkout major version": "uses: actions/checkout@v7",
+        "checkout credential persistence disabled": "persist-credentials: false",
+        "hosted macOS Intel runner": "runs-on: macos-26-intel",
+        "bounded archive job": "timeout-minutes: 30",
+        "generic iOS archive": "-destination 'generic/platform=iOS'",
+        "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
+        "archive verifies embedded Watch app": "PlugIns/FactoryToolsWatch.app",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
+        errors.append("archive verification workflow must not access repository secrets")
     return errors
 
 
@@ -845,6 +865,13 @@ def main() -> int:
             ERRORS.append(f"Apple native workflow contract: {workflow_issue}")
     else:
         ERRORS.append("Apple native verification workflow is missing")
+    archive_workflow_path = ROOT / ".github" / "workflows" / "apple-archive-check.yml"
+    if archive_workflow_path.is_file():
+        archive_workflow_source = archive_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_archive_workflow_contract_errors(archive_workflow_source):
+            ERRORS.append(f"Apple archive verification workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple archive verification workflow is missing")
     upload_workflow_path = ROOT / ".github" / "workflows" / "apple-app-store-upload.yml"
     if upload_workflow_path.is_file():
         upload_workflow_source = upload_workflow_path.read_text(encoding="utf-8")
@@ -4820,7 +4847,7 @@ def main() -> int:
             print(f"FAIL: {error}")
         return 1
 
-    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native plus manually confirmed release and legal-pages workflow contracts.")
+    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native, archive, release, and legal-pages workflow contracts.")
     print("PASS: bilingual App Store listing draft fits Apple's name, subtitle, description, and keyword limits.")
     print("PASS: localized Factory Tools Pro in-app purchase metadata fits Apple's display-name and description limits.")
     print("PASS: no Swift packages, third-party billing SDKs, external service endpoints, or distributed counter backends; Apple StoreKit is isolated to the one-time Pro manager; local peer transport is isolated.")
