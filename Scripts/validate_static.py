@@ -861,6 +861,11 @@ def main() -> int:
     workflow_path = ROOT / ".github" / "workflows" / "apple-native-checks.yml"
     if workflow_path.is_file():
         workflow_source = workflow_path.read_text(encoding="utf-8")
+        watch_archive_workflow_path = ROOT / ".github" / "workflows" / "apple-watch-archive-checks.yml"
+        if watch_archive_workflow_path.is_file():
+            workflow_source += "\n" + watch_archive_workflow_path.read_text(encoding="utf-8")
+        else:
+            ERRORS.append("Apple Watch and archive verification workflow is missing")
         for workflow_issue in apple_workflow_contract_errors(workflow_source):
             ERRORS.append(f"Apple native workflow contract: {workflow_issue}")
     else:

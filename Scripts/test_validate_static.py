@@ -54,7 +54,12 @@ from validate_static import (
 class AppleWorkflowContractTests(unittest.TestCase):
     def test_current_workflow_obeys_public_no_cost_contract(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        workflow = "\n".join(
+            (
+                (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8"),
+                (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8"),
+            )
+        )
 
         self.assertEqual(apple_workflow_contract_errors(workflow), [])
 
@@ -102,8 +107,7 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
         step_start = workflow.index("      - name: Test iPad and app-hosted regression suite")
-        step_end = workflow.index("      - name: Test shared Core contracts", step_start)
-        ipad_test = workflow[step_start:step_end]
+        ipad_test = workflow[step_start:]
 
         self.assertIn('-resultBundlePath "$result_bundle"', ipad_test)
         self.assertIn('test_status=${PIPESTATUS[0]}', ipad_test)
@@ -417,8 +421,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
-        self.assertEqual(workflow.count("if: always()"), 4)
-        self.assertEqual(workflow.count("if-no-files-found: ignore"), 5)
+        self.assertEqual(workflow.count("if: always()"), 3)
+        self.assertEqual(workflow.count("if-no-files-found: ignore"), 4)
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
@@ -444,7 +448,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         watch_strings = (root / "FactoryToolsWatch" / "Resources" / "Localizable.xcstrings").read_text(encoding="utf-8")
         capture_script = (root / "Scripts" / "capture_watch_screenshots.py").read_text(encoding="utf-8")
         screenshot_verifier = (root / "Scripts" / "verify_watch_screenshot.swift").read_text(encoding="utf-8")
-        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        workflow = (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8")
 
         self.assertIn("#if targetEnvironment(simulator)", watch_app)
         self.assertIn("model.screenshotDemoSessionID", watch_app)
@@ -518,7 +522,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("if error.stderr:", capture_script)
         self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
         self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
-        self.assertIn("timeout-minutes: 150", workflow)
+        self.assertIn("timeout-minutes: 90", workflow)
         self.assertIn("timeout-minutes: 30", workflow)
         self.assertIn("id: build_watch_release", workflow)
         self.assertIn('timeout=30)', workflow)
@@ -529,17 +533,19 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
         self.assertIn("FactoryTools.app/PlugIns/FactoryToolsWatch.app", workflow)
         self.assertIn("factory-tools-app-store-watch-home", workflow)
-        for capture_id in (
-            "capture_iphone_screenshots",
-            "capture_ipad_screenshots",
-            "capture_watch_screenshots",
-        ):
+        self.assertRegex(
+            workflow,
+            r"id: capture_watch_screenshots\n\s+timeout-minutes: 30\n\s+continue-on-error: true",
+        )
+        self.assertIn("Test shared Core contracts", workflow)
+        self.assertIn("Archive generic iPhone and iPad app without signing", workflow)
+
+        ios_workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        for capture_id in ("capture_iphone_screenshots", "capture_ipad_screenshots"):
             self.assertRegex(
-                workflow,
+                ios_workflow,
                 rf"id: {capture_id}\n(?:\s+timeout-minutes: \d+\n)?\s+continue-on-error: true",
             )
-        self.assertIn("Report optional screenshot capture status", workflow)
-        self.assertIn("Optional Simulator screenshot captures", workflow)
 
 
 class LegalPagesWorkflowContractTests(unittest.TestCase):

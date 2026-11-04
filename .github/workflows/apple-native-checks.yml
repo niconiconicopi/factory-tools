@@ -174,6 +174,29 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Report optional iPhone and iPad screenshot capture status
+        if: always()
+        shell: bash
+        env:
+          IPHONE_SCREENSHOTS: ${{ steps.capture_iphone_screenshots.outcome }}
+          IPAD_SCREENSHOTS: ${{ steps.capture_ipad_screenshots.outcome }}
+        run: |
+          {
+            echo "## Optional iPhone and iPad Simulator screenshot captures"
+            echo
+            for capture in "iPhone:$IPHONE_SCREENSHOTS" "iPad:$IPAD_SCREENSHOTS"; do
+              device="${capture%%:*}"
+              outcome="${capture#*:}"
+              if [[ "$outcome" == "failure" ]]; then
+                echo "- Warning: $device screenshots could not be captured in this hosted Simulator run."
+              elif [[ "$outcome" == "success" ]]; then
+                echo "- $device screenshots captured successfully."
+              else
+                echo "- $device screenshot capture was $outcome."
+              fi
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Test iPad and app-hosted regression suite
         shell: bash
         run: |
@@ -237,119 +260,4 @@ jobs:
             ${{ runner.temp }}/FactoryTools-iPad.xcresult
             ${{ runner.temp }}/FactoryTools-iPad-xcodebuild.log
           if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Test shared Core contracts
-        run: >-
-          xcodebuild test
-          -project FactoryTools.xcodeproj
-          -scheme FactoryToolsCore
-          -destination 'platform=macOS'
-          -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
-          CODE_SIGNING_ALLOWED=NO
-
-      - name: Build Watch Simulator target
-        run: >-
-          xcodebuild build
-          -project FactoryTools.xcodeproj
-          -scheme FactoryToolsWatch
-          -destination 'generic/platform=watchOS Simulator'
-          -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData"
-          CODE_SIGNING_ALLOWED=NO
-
-      - name: Build Watch Release Simulator target for screenshots
-        id: build_watch_release
-        shell: bash
-        run: |
-          set -euo pipefail
-          simulator_info="$(python3 -c 'import json,subprocess; result=subprocess.run(["xcrun", "simctl", "list", "devices", "available", "--json"], check=True, capture_output=True, text=True, timeout=30); data=json.loads(result.stdout); device=next((device for devices in data["devices"].values() for device in devices if device["isAvailable"] and "46mm" in device["name"] and device["name"].startswith("Apple Watch")), None); print((device["udid"] + "|" + device["name"]) if device else "")')"
-          IFS='|' read -r simulator_id simulator_name <<< "$simulator_info"
-          if [[ -z "$simulator_id" || -z "$simulator_name" ]]; then
-            echo "No available 46mm Apple Watch Simulator device was found." >&2
-            exit 1
-          fi
-          xcodebuild build \
-            -project FactoryTools.xcodeproj \
-            -scheme FactoryToolsWatch \
-            -configuration Release \
-            -destination "platform=watchOS Simulator,id=$simulator_id" \
-            -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
-            CODE_SIGNING_ALLOWED=NO \
-            INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES
-          app_path="$RUNNER_TEMP/FactoryToolsDerivedData/Build/Products/Release-watchsimulator/FactoryToolsWatch.app"
-          test -d "$app_path"
-          echo "simulator_id=$simulator_id" >> "$GITHUB_OUTPUT"
-          echo "simulator_name=$simulator_name" >> "$GITHUB_OUTPUT"
-
-      - name: Archive generic iPhone and iPad app without signing
-        shell: bash
-        run: |
-          set -euo pipefail
-          archive_path="$RUNNER_TEMP/FactoryTools.xcarchive"
-          xcodebuild archive \
-            -project FactoryTools.xcodeproj \
-            -scheme FactoryTools \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$archive_path" \
-            -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
-            CODE_SIGNING_ALLOWED=NO
-          test -d "$archive_path/Products/Applications/FactoryTools.app"
-          test -d "$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app"
-
-      - name: Capture bilingual Apple Watch screenshots from Release Simulator build
-        id: capture_watch_screenshots
-        timeout-minutes: 30
-        continue-on-error: true
-        shell: bash
-        env:
-          WATCH_SIMULATOR_ID: ${{ steps.build_watch_release.outputs.simulator_id }}
-          WATCH_SIMULATOR_NAME: ${{ steps.build_watch_release.outputs.simulator_name }}
-        run: |
-          set -euo pipefail
-          simulator_id="$WATCH_SIMULATOR_ID"
-          simulator_name="$WATCH_SIMULATOR_NAME"
-          if [[ -z "$simulator_id" || -z "$simulator_name" ]]; then
-            echo "The selected Watch Simulator identity was not preserved from the Release build." >&2
-            exit 1
-          fi
-          app_path="$RUNNER_TEMP/FactoryToolsDerivedData/Build/Products/Release-watchsimulator/FactoryToolsWatch.app"
-          test -d "$app_path"
-          python3 Scripts/capture_watch_screenshots.py \
-            --device-id "$simulator_id" \
-            --device-name "$simulator_name" \
-            --app "$app_path" \
-            --output-dir "$RUNNER_TEMP/FactoryToolsWatchScreenshots"
-
-      - name: Upload bilingual Apple Watch screenshot artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: factory-tools-app-store-watch-home
-          path: ${{ runner.temp }}/FactoryToolsWatchScreenshots/
-          if-no-files-found: ignore
-          retention-days: 30
-
-      - name: Report optional screenshot capture status
-        if: always()
-        shell: bash
-        env:
-          IPHONE_SCREENSHOTS: ${{ steps.capture_iphone_screenshots.outcome }}
-          IPAD_SCREENSHOTS: ${{ steps.capture_ipad_screenshots.outcome }}
-          WATCH_SCREENSHOTS: ${{ steps.capture_watch_screenshots.outcome }}
-        run: |
-          {
-            echo "## Optional Simulator screenshot captures"
-            echo
-            for capture in "iPhone:$IPHONE_SCREENSHOTS" "iPad:$IPAD_SCREENSHOTS" "Watch:$WATCH_SCREENSHOTS"; do
-              device="${capture%%:*}"
-              outcome="${capture#*:}"
-              if [[ "$outcome" == "failure" ]]; then
-                echo "- Warning: $device screenshots could not be captured in this hosted Simulator run."
-              elif [[ "$outcome" == "success" ]]; then
-                echo "- $device screenshots captured successfully."
-              else
-                echo "- $device screenshot capture was $outcome."
-              fi
-            done
-          } >> "$GITHUB_STEP_SUMMARY"
+          retention-days: 7\n

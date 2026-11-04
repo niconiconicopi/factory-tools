@@ -1,10 +1,12 @@
 # Factory Tools Release Readiness Audit
 
-Audit date: 2026-11-04
+Audit date: 2026-11-05
 Purpose: track evidence for the first public iPhone, Apple Watch, and iPad release. A source-level pass is not evidence of a successful Apple-platform build or App Review approval.
 
-## Latest verification update (2026-11-04)
+## Latest verification update (2026-11-05)
 
+- [Run 41830231636](https://github.com/niconiconicopi/factory-tools/actions/runs/41830231636) completed iPhone and iPad app-hosted XCTest, bilingual iPhone/iPad Release screenshots, shared Core tests, and Watch Debug/Release simulator builds successfully. The 150-minute job limit canceled the generic unsigned archive during compilation; its log ends with the cancellation signal and no compiler error. The Watch screenshot step was skipped after the job was canceled. The archive is being rerun in the focused archive workflow.
+- The CI is being split so iPhone/iPad validation and screenshots finish independently from Core/Watch builds and the unsigned archive. The local Python suite (88 tests), static verifier, and whitespace checks pass for the workflow change; hosted validation is pending.
 - [Run 41800837089](https://github.com/niconiconicopi/factory-tools/actions/runs/41800837089) completed successfully: iPhone/iPad app-hosted suites, shared Core tests, bilingual iPhone/iPad screenshots, Watch Debug/Release builds, unsigned iOS archive, and bilingual Watch screenshots all passed. The 15-minute Watch boot allowance completed; Vision OCR confirmed 286 and 300 in both locales, at the intended vertical positions, and visual review confirmed the English count is visible. The Watch images are 416×496.
 - Current source adds a `ProPurchaseStore` seam and eleven deterministic manager tests for product selection, confirmed/unconfirmed purchase, pending/cancel outcomes, product/purchase/restore failures, retry, and transaction-driven entitlement refresh. The last native run predates this refactor; hosted build and test verification of the current 283-method source is pending. The StoreKit Test integration remains skipped in headless CI.
 - [Run 41820049011](https://github.com/niconiconicopi/factory-tools/actions/runs/41820049011) built the refactor and reached iPhone XCTest, then failed only in the new transaction-update test because its fake store had not subscribed before the update was published. The test now starts the manager's observer, waits for subscription, and closes its stream after the assertion; this correction is awaiting the next hosted run.
