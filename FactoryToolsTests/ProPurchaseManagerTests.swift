@@ -139,8 +139,9 @@ final class ProPurchaseManagerTests: XCTestCase {
 
     func testTransactionUpdateRefreshesEntitlementForConfiguredProduct() async {
         let store = FakeProPurchaseStore(hasPro: false)
-        let manager = Self.makeManager(store: store)
+        let manager = ProPurchaseManager(productID: Self.productID, store: store)
         await store.waitForTransactionSubscriber()
+        XCTAssertNotNil(store.hasTransactionSubscriber)
         store.hasPro = true
 
         store.publishTransactionUpdate(Self.productID)
@@ -206,6 +207,7 @@ private final class FakeProPurchaseStore: ProPurchaseStore {
     private(set) var purchaseProductIDs: [String] = []
     private(set) var synchronizeCallCount = 0
     private var transactionContinuation: AsyncStream<String>.Continuation?
+    var hasTransactionSubscriber: Bool { transactionContinuation != nil }
 
     init(
         products: [ProStoreProduct] = [ProPurchaseManagerTests.lifetimeProduct],
@@ -246,14 +248,16 @@ private final class FakeProPurchaseStore: ProPurchaseStore {
     }
 
     func waitForTransactionSubscriber() async {
-        for _ in 0..<100 where transactionContinuation == nil {
-            await Task.yield()
+        for _ in 0..<100 {
+            if transactionContinuation != nil { return }
+            try? await Task.sleep(for: .milliseconds(10))
         }
     }
 
     func waitUntil(_ condition: () -> Bool) async {
-        for _ in 0..<100 where !condition() {
-            await Task.yield()
+        for _ in 0..<100 {
+            if condition() { return }
+            try? await Task.sleep(for: .milliseconds(10))
         }
     }
 }
