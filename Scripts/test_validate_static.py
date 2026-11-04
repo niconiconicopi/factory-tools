@@ -110,6 +110,10 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         self.assertIn("xcresulttool get test-results summary --path", ipad_test)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', ipad_test)
         self.assertIn('exit "$test_status"', ipad_test)
+        self.assertIn("name: Upload iPad XCTest diagnostics", ipad_test)
+        self.assertIn("factory-tools-ipad-xctest-diagnostics", ipad_test)
+        self.assertIn("FactoryTools-iPad.xcresult", ipad_test)
+        self.assertIn("FactoryTools-iPad-xcodebuild.log", ipad_test)
 
 
 class WatchScreenshotDiagnosticsTests(unittest.TestCase):
@@ -396,7 +400,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("uses: actions/upload-artifact@v4", workflow)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
         self.assertEqual(workflow.count("if: always()"), 4)
-        self.assertEqual(workflow.count("if-no-files-found: ignore"), 4)
+        self.assertEqual(workflow.count("if-no-files-found: ignore"), 5)
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
@@ -1312,4 +1316,3 @@ class WatchTransportSourceRegressionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
