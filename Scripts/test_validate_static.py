@@ -493,7 +493,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("if error.stderr:", capture_script)
         self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
         self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
-        self.assertIn("timeout-minutes: 120", workflow)
+        self.assertIn("timeout-minutes: 150", workflow)
         self.assertIn("timeout-minutes: 20", workflow)
         self.assertIn("id: build_watch_release", workflow)
         self.assertIn('timeout=30)', workflow)

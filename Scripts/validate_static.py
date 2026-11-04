@@ -357,7 +357,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
         "standard Apple macOS 26 Intel runner": "runs-on: macos-26-intel",
-        "bounded native verification job": "timeout-minutes: 120",
+        "bounded native verification job": "timeout-minutes: 150",
         "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
