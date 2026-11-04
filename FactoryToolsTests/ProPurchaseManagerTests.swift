@@ -141,7 +141,7 @@ final class ProPurchaseManagerTests: XCTestCase {
         let store = FakeProPurchaseStore(hasPro: false)
         let manager = ProPurchaseManager(productID: Self.productID, store: store)
         await store.waitForTransactionSubscriber()
-        XCTAssertNotNil(store.hasTransactionSubscriber)
+        XCTAssertTrue(store.hasTransactionSubscriber)
         store.hasPro = true
 
         store.publishTransactionUpdate(Self.productID)
