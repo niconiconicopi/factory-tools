@@ -364,6 +364,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
         "shared Core XCTest": "-scheme FactoryToolsCore",
         "Watch Simulator build": "-scheme FactoryToolsWatch",
+        "screenshot capture failures fail the native workflow": "Require iPhone and iPad screenshot captures",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
         "archive verifies Watch app in the PlugIns bundle directory": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
     }

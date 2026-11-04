@@ -260,4 +260,23 @@ jobs:
             ${{ runner.temp }}/FactoryTools-iPad.xcresult
             ${{ runner.temp }}/FactoryTools-iPad-xcodebuild.log
           if-no-files-found: ignore
-          retention-days: 7\n
+          retention-days: 7
+
+      - name: Require iPhone and iPad screenshot captures
+        if: always()
+        shell: bash
+        env:
+          IPHONE_SCREENSHOTS: ${{ steps.capture_iphone_screenshots.outcome }}
+          IPAD_SCREENSHOTS: ${{ steps.capture_ipad_screenshots.outcome }}
+        run: |
+          set -euo pipefail
+          failed=0
+          for capture in "iPhone:$IPHONE_SCREENSHOTS" "iPad:$IPAD_SCREENSHOTS"; do
+            device="${capture%%:*}"
+            outcome="${capture#*:}"
+            if [[ "$outcome" != "success" ]]; then
+              echo "$device screenshot capture did not succeed (outcome: $outcome)." >&2
+              failed=1
+            fi
+          done
+          exit "$failed"
