@@ -1,6 +1,6 @@
 # Phase 1 acceptance status
 
-This checklist maps the agreed iPhone Phase 1 goal to the current source and regression coverage. Hosted Mac workflow [run 41780014206](https://github.com/niconiconicopi/factory-tools/actions/runs/41780014206) passed the iPhone and iPad app suites, shared Core tests, Watch Debug/Release builds, bilingual iPhone/iPad Release screenshot capture, and unsigned archive with the Watch app embedded. The optional Watch screenshot step failed while the simulator waited for watchOS System App; its boot wait has since been increased to 15 minutes, and the hosted recheck is [run 41800837089](https://github.com/niconiconicopi/factory-tools/actions/runs/41800837089). Simulator evidence does not establish physical-device behavior.
+This checklist maps the agreed iPhone Phase 1 goal to the current source and regression coverage. Hosted Mac workflow [run 41800837089](https://github.com/niconiconicopi/factory-tools/actions/runs/41800837089) passed the iPhone and iPad app suites, shared Core tests, Watch Debug/Release builds, bilingual iPhone/iPad/Watch Release screenshot capture, and unsigned archive with the Watch app embedded. The Watch capture verified count 286 and target 300 in both languages after increasing simulator boot allowance to 15 minutes. Simulator evidence does not establish physical-device behavior.
 
 | Acceptance item | Implementation | Regression evidence | Source status |
 |---|---|---|---|
@@ -16,7 +16,7 @@ This checklist maps the agreed iPhone Phase 1 goal to the current source and reg
 
 - `python Scripts/validate_static.py`: passed with the Free/Pro access registry, purchase integration, and localized Watch counter accessibility labels; it inspects 67 Swift files, 272 XCTest methods, 431 Japanese/English strings, resources, target membership, privacy manifest, and architecture contracts. These static checks do not compile or run Swift tests.
 - `python -B -m unittest discover -s Scripts -p "test_*.py"`: 88 verifier, public-site, and source-hygiene self-tests pass, including Watch Simulator boot-timeout behavior, public-free and manually guarded private native-workflow checks, crash-prone Swift escape-hatch checks, StoreKit/App Store metadata, screenshot workflow, bilingual site generation, legal-page publication guards, generated-file synchronization, ignore rules, and secret-pattern detection.
-- The 2026-11-04 native run [41780014206](https://github.com/niconiconicopi/factory-tools/actions/runs/41780014206) includes the newer StoreKit/VoiceOver source and passes both native app suites. The Apple Watch screenshot retry fix is under hosted recheck in run 41800837089. Simulator screenshots are diagnostic, not accepted release media.
+- The 2026-11-04 native run [41800837089](https://github.com/niconiconicopi/factory-tools/actions/runs/41800837089) includes the current app sources and passes both native app suites, shared Core, Watch builds, screenshot generation, and unsigned archive. The later commit adds only Python timeout behavior tests and evidence updates; 88 Python tests pass locally. Simulator screenshots are diagnostic, not accepted release media.
 - This Windows workspace still cannot run Apple's build tools or simulate interaction with physical devices. The simulator results are hosted CI evidence, not physical-device verification.
 
 ## Remaining gates
