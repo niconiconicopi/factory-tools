@@ -484,6 +484,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"log", "show", "--last", "2m"', capture_script)
         self.assertNotIn("restart_simulator(arguments.device_id)", capture_script)
         self.assertIn("COMMAND_TIMEOUT_SECONDS = 300", capture_script)
+        self.assertIn('parser.add_argument("--device-name")', capture_script)
+        self.assertIn("arguments.device_name or simulator_name(arguments.device_id)", capture_script)
         self.assertIn("Each launch terminates the prior app process", capture_script)
         self.assertIn('summary_path = os.environ.get("GITHUB_STEP_SUMMARY")', capture_script)
         self.assertIn("record_failure_summary(error)", capture_script)
@@ -491,6 +493,13 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("if error.stderr:", capture_script)
         self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
         self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
+        self.assertIn("timeout-minutes: 120", workflow)
+        self.assertIn("timeout-minutes: 20", workflow)
+        self.assertIn("id: build_watch_release", workflow)
+        self.assertIn('timeout=30)', workflow)
+        self.assertIn('echo "simulator_id=$simulator_id" >> "$GITHUB_OUTPUT"', workflow)
+        self.assertIn("WATCH_SIMULATOR_ID: ${{ steps.build_watch_release.outputs.simulator_id }}", workflow)
+        self.assertIn('--device-name "$simulator_name"', workflow)
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
         self.assertIn("FactoryTools.app/PlugIns/FactoryToolsWatch.app", workflow)
@@ -502,7 +511,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         ):
             self.assertRegex(
                 workflow,
-                rf"id: {capture_id}\n\s+continue-on-error: true",
+                rf"id: {capture_id}\n(?:\s+timeout-minutes: \d+\n)?\s+continue-on-error: true",
             )
         self.assertIn("Report optional screenshot capture status", workflow)
         self.assertIn("Optional Simulator screenshot captures", workflow)

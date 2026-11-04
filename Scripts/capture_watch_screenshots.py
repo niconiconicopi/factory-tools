@@ -197,13 +197,14 @@ def print_screenshot_diagnostics(device_id: str) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--device-id", required=True)
+    parser.add_argument("--device-name")
     parser.add_argument("--app", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     arguments = parser.parse_args()
     if not arguments.app.is_dir():
         parser.error(f"Release Watch Simulator app does not exist: {arguments.app}")
 
-    device = simulator_name(arguments.device_id)
+    device = arguments.device_name or simulator_name(arguments.device_id)
     if "46mm" not in device:
         parser.error(f"A 46mm Apple Watch Simulator is required; found {device}.")
     identifier = bundle_identifier(arguments.app)
