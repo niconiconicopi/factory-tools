@@ -61,7 +61,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
-3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。ネイティブ検証は、公開GitHubリポジトリで無料のmacOS runnerを使う[Apple native checks](https://github.com/niconiconicopi/factory-tools/actions/runs/41273710950)で実施でき、MacやApple Developer登録は不要。確認済みrun 41273710950／41294221145では、当時のソースでiPhone/iPad Simulator XCTestが各223件、共有Core XCTestが48件、Watch Debug/Releaseビルド、Releaseスクリーンショット生成、Watchを含む未署名archiveが成功済み。現在のソースにはSimulator XCTestが各224件あり、新しく加えたStoreKit Testの購入・Pro解除・取引消去テストはまだApple環境で実行されていません。以前の画像ではWatch操作表示に修正点が見つかり、修正版の最終画像確認も残っています。Xcode Cloudは任意であり、最初のワークフロー設定にXcodeが動くMacが必要なため、このプロジェクトの無料検証には使いません。
+3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。ネイティブ検証は、公開GitHubリポジトリで無料のmacOS runnerを使う[Apple native checks](https://github.com/niconiconicopi/factory-tools/actions/runs/41800837089)で実施でき、MacやApple Developer登録は不要。run 41800837089では、当時のソースでiPhone/iPad Simulator XCTest、共有Core XCTestが48件、Watch Debug/Releaseビルド、日英のiPhone/iPad/Watch画面生成、Watchを含む未署名archiveが成功済み。現在のソースにはSimulator XCTestが各235件あります。今回、購入成功・保留・取消・復元、エラー復旧などアプリ側のPro状態管理をStoreKit本体から分離して検証する11件を追加しました。現行ソースのビルドとテストは次のホストCIで確認します。実購入とSandbox購入はApple側の商品設定後に残る確認事項です。Xcode Cloudは任意であり、最初のワークフロー設定にXcodeが動くMacが必要なため、このプロジェクトの無料検証には使いません。
 4. 準備が整った最後の有料段階でApple Developer Programに登録する。登録を進めるかは公開者が判断し、費用の発生する操作は無断で行わない。
 5. 登録後にTeam IDを確認し、署名を設定する。App Store Connectで商品、価格、Family Sharing、アプリ情報を登録し、EU公開前にDSA販売者ステータスと掲載連絡先を申告・確認する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。

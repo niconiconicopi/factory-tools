@@ -2164,16 +2164,25 @@ def main() -> int:
         re.MULTILINE,
     )]
     observe_transactions_position = purchase_manager.find("private func observeTransactions()")
-    product_filter_position = purchase_manager.find("guard transaction.productID == productID else { continue }")
-    transaction_finish_position = purchase_manager.find("await transaction.finish()", observe_transactions_position)
+    store_transaction_updates_position = purchase_manager.find("func transactionUpdates() -> AsyncStream<String> {")
+    product_filter_position = purchase_manager.find(
+        "guard transaction.productID == productID else { continue }", store_transaction_updates_position
+    )
+    transaction_finish_position = purchase_manager.find("await transaction.finish()", store_transaction_updates_position)
     require(storekit_sources == [purchase_manager_path]
             and "import StoreKit" in purchase_manager
+            and "private final class StoreKitProPurchaseStore: ProPurchaseStore" in purchase_manager
+            and "@MainActor\nprotocol ProPurchaseStore" in purchase_manager
+            and "Product.products(for: [productID])" in purchase_manager
+            and "product.purchase()" in purchase_manager
             and "Transaction.currentEntitlements" in purchase_manager
             and "Transaction.updates" in purchase_manager
-            and 0 <= observe_transactions_position < product_filter_position < transaction_finish_position
+            and 0 <= store_transaction_updates_position < product_filter_position < transaction_finish_position
+            and 0 <= transaction_finish_position < observe_transactions_position
+            and "guard updatedProductID == productID else { continue }" in purchase_manager
             and "AppStore.sync()" in purchase_manager
-            and "await self.observeTransactions()" in purchase_manager
-            and "await self.refresh()" in purchase_manager
+            and "await self?.observeTransactions()" in purchase_manager
+            and "await self?.refresh()" in purchase_manager
             and "product.type == .nonConsumable" in purchase_manager
             and "evidence.grantsPro(for: productID)" in purchase_manager
             and "transaction.ownershipType == .familyShared" in purchase_manager
@@ -4029,7 +4038,7 @@ def main() -> int:
     )
     require(f"Simulator XCTestが各{hosted_app_test_count}件" in release_setup_guide
             and f"共有Core XCTestが{shared_core_test_count}件" in release_setup_guide
-            and "https://github.com/niconiconicopi/factory-tools/actions/runs/41273710950" in release_setup_guide
+            and "https://github.com/niconiconicopi/factory-tools/actions/runs/41800837089" in release_setup_guide
             and "41244759649" not in release_setup_guide,
             "Japanese Apple release setup guide must point to the latest verified simulator/Core run and current test counts")
     registered_tool_count = registry.count("ToolDefinition(")
