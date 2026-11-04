@@ -17,7 +17,7 @@ python Scripts/audit_source_hygiene.py
 
 These checks run on Windows. They validate source structure and project contracts, but they do not compile Swift or run XCTest. Native Xcode build and simulator tests run through two GitHub Actions workflows: the [Apple native checks](.github/workflows/apple-native-checks.yml) cover iPhone/iPad tests and their bilingual screenshots; [Apple Watch and archive checks](.github/workflows/apple-watch-archive-checks.yml) run shared Core tests, Watch builds and screenshots, and the unsigned iOS archive in separate hosted Mac jobs.
 
-Hosted simulator checks currently target the standard macOS 15 Apple silicon image (Xcode 16.4) while GitHub cannot acquire Intel macOS runners. The project targets iOS 17 and watchOS 10, so this provides an additional compatibility build; a signed Xcode 26 release archive is still required before App Store submission. The manual [Apple archive check](.github/workflows/apple-archive-check.yml) remains available when an on-demand unsigned archive and Watch embedding check is needed.
+Hosted simulator checks target GitHub's standard macOS 26 Apple silicon image and stable Xcode 26 toolchain, matching the current release-build generation. The project still supports iOS 17 and watchOS 10. The manual [Apple archive check](.github/workflows/apple-archive-check.yml) remains available when an on-demand unsigned archive and Watch embedding check is needed.
 
 ## Repository status
 
