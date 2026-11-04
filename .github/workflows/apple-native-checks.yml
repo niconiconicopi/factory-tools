@@ -21,7 +21,7 @@ jobs:
     if: github.event.repository.visibility == 'public' || (github.event_name == 'workflow_dispatch' && inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
     # Headless xcodebuild Simulator runs reproduce SKTestSession configuration failures across runtimes.
     # Skip only the StoreKitTest integration case; its Xcode-interactive test remains in the source.
-    runs-on: macos-15-intel
+    runs-on: macos-15
     timeout-minutes: 150
     steps:
       - name: Check out source

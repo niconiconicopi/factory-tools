@@ -100,7 +100,7 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
 
         self.assertIn("missing manual dispatch only", errors)
         self.assertIn("missing read-only repository permission", errors)
-        self.assertIn("missing hosted macOS Intel runner", errors)
+        self.assertIn("missing hosted macOS runner", errors)
         self.assertIn("archive verification workflow must not access repository secrets", errors)
 
     def test_ipad_xctest_failures_write_result_summary_before_failing(self) -> None:
