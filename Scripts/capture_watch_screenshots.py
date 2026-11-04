@@ -14,11 +14,17 @@ import time
 from pathlib import Path
 
 COMMAND_TIMEOUT_SECONDS = 300
+SIMULATOR_BOOT_TIMEOUT_SECONDS = 900
 MAX_SCREENSHOT_ATTEMPTS = 3
 WATCH_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_watch_screenshot.swift")
 
 
-def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
+def run(
+    arguments: list[str],
+    *,
+    capture_output: bool = False,
+    timeout_seconds: int = COMMAND_TIMEOUT_SECONDS,
+) -> subprocess.CompletedProcess[str]:
     print(f"Running Watch capture command: {shlex.join(arguments)}", flush=True)
     try:
         result = subprocess.run(
@@ -26,12 +32,12 @@ def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.Com
             check=False,
             text=True,
             capture_output=True,
-            timeout=COMMAND_TIMEOUT_SECONDS,
+            timeout=timeout_seconds,
         )
     except subprocess.TimeoutExpired as error:
         command = shlex.join(arguments)
         raise RuntimeError(
-            f"Watch capture command timed out after {COMMAND_TIMEOUT_SECONDS} seconds: {command}"
+            f"Watch capture command timed out after {timeout_seconds} seconds: {command}"
         ) from error
     if not capture_output:
         if result.stdout:
@@ -169,7 +175,10 @@ def restart_simulator(device_id: str) -> None:
     print("Restarting Apple Watch Simulator for a clean locale capture.", flush=True)
     run(["xcrun", "simctl", "shutdown", device_id])
     run(["xcrun", "simctl", "boot", device_id])
-    run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
+    run(
+        ["xcrun", "simctl", "bootstatus", device_id, "-b"],
+        timeout_seconds=SIMULATOR_BOOT_TIMEOUT_SECONDS,
+    )
 
 
 def print_screenshot_diagnostics(device_id: str) -> None:
@@ -210,7 +219,10 @@ def main() -> int:
     identifier = bundle_identifier(arguments.app)
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
     print(f"Booting 46mm Apple Watch Simulator: {device}.", flush=True)
-    run(["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"])
+    run(
+        ["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"],
+        timeout_seconds=SIMULATOR_BOOT_TIMEOUT_SECONDS,
+    )
     # watchOS Simulator does not support simctl status_bar overrides.
     # Install the Release build explicitly; the preceding Watch build step alone does not install it.
     print("Installing the Release Watch app.", flush=True)
