@@ -146,6 +146,7 @@ final class ProPurchaseManagerTests: XCTestCase {
 
         store.publishTransactionUpdate(Self.productID)
         await store.waitUntil { manager.hasPro }
+        store.finishTransactionUpdates()
 
         XCTAssertTrue(manager.hasPro)
     }
@@ -245,6 +246,10 @@ private final class FakeProPurchaseStore: ProPurchaseStore {
 
     func publishTransactionUpdate(_ productID: String) {
         transactionContinuation?.yield(productID)
+    }
+
+    func finishTransactionUpdates() {
+        transactionContinuation?.finish()
     }
 
     func waitForTransactionSubscriber() async {
