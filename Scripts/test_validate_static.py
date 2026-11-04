@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from capture_watch_screenshots import capture_language as capture_watch_language
-from capture_watch_screenshots import record_failure_summary
+from capture_watch_screenshots import record_failure_summary, run as run_watch_capture_command
 from capture_simulator_screenshots import capture_language as capture_simulator_language
 from capture_simulator_screenshots import clear_capture_outputs, wait_for_home_demo_data
 from validate_static import (
@@ -121,6 +121,21 @@ class WatchScreenshotDiagnosticsTests(unittest.TestCase):
         source = (Path(__file__).resolve().parent / "capture_watch_screenshots.py").read_text(encoding="utf-8")
 
         self.assertNotIn('"status_bar"', source)
+
+    def test_watch_simulator_boot_timeout_can_exceed_normal_command_timeout(self) -> None:
+        with patch("capture_watch_screenshots.subprocess.run") as process_run:
+            process_run.return_value = subprocess.CompletedProcess(["xcrun"], 0, stdout="ready", stderr="")
+            run_watch_capture_command(["xcrun", "simctl", "bootstatus", "watch", "-b"], timeout_seconds=900)
+
+        self.assertEqual(process_run.call_args.kwargs["timeout"], 900)
+
+    def test_watch_capture_timeout_error_reports_the_selected_limit(self) -> None:
+        with patch(
+            "capture_watch_screenshots.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(["xcrun", "simctl", "bootstatus"], 900),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "timed out after 900 seconds"):
+                run_watch_capture_command(["xcrun", "simctl", "bootstatus"], timeout_seconds=900)
 
     def test_process_failure_summary_includes_command_and_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
