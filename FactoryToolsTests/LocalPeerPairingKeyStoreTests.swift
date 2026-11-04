@@ -50,16 +50,15 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         let listener = try NWListener(using: listenerParameters)
         let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS.Rejection")
         let listenerReady = DispatchSemaphore(value: 0)
-        let handshakeRejected = DispatchSemaphore(value: 0)
+        let listenerAccepted = DispatchSemaphore(value: 0)
+        let clientReady = DispatchSemaphore(value: 0)
         var clientDidBecomeReady = false
 
         listener.stateUpdateHandler = { state in
             if case .ready = state { listenerReady.signal() }
         }
         listener.newConnectionHandler = { connection in
-            connection.stateUpdateHandler = { state in
-                if case .failed = state { handshakeRejected.signal() }
-            }
+            listenerAccepted.signal()
             connection.start(queue: callbackQueue)
         }
         listener.start(queue: callbackQueue)
@@ -72,17 +71,20 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
             using: clientParameters
         )
         client.stateUpdateHandler = { state in
-            switch state {
-            case .ready:
+            if case .ready = state {
                 clientDidBecomeReady = true
-            default:
-                break
+                clientReady.signal()
             }
         }
         client.start(queue: callbackQueue)
         defer { client.cancel() }
 
-        XCTAssertEqual(handshakeRejected.wait(timeout: .now() + 10), .success)
+        XCTAssertEqual(listenerAccepted.wait(timeout: .now() + 10), .success)
+        // Network.framework may keep retrying a failed TLS-PSK handshake without
+        // reporting .failed on the listener-side connection. The matching-key
+        // test proves the simulator can complete the same loopback handshake;
+        // here the mismatched peer must never become ready.
+        XCTAssertEqual(clientReady.wait(timeout: .now() + 10), .timedOut)
         let connected = callbackQueue.sync { clientDidBecomeReady }
         XCTAssertFalse(connected, "a TLS-PSK peer with a different pairing key must not become ready")
     }

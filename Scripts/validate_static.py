@@ -1989,8 +1989,13 @@ def main() -> int:
             and "testLocalPeerTLSParametersCompleteLoopbackPSKHandshake" in peer_outbox_tests
             and "testLocalPeerTLSParametersRejectMismatchedPairingKey" in peer_outbox_tests
             and "LocalPeerTLSParameters.make(pairingKey: pairingKey)" in peer_outbox_tests
-            and 'host: "127.0.0.1"' in peer_outbox_tests,
-            "the local peer transport's production TLS-PSK parameters must pass a loopback handshake test")
+            and 'host: "127.0.0.1"' in peer_outbox_tests
+            and "let listenerAccepted = DispatchSemaphore(value: 0)" in peer_outbox_tests
+            and "listenerAccepted.signal()" in peer_outbox_tests
+            and "listenerAccepted.wait(timeout: .now() + 10), .success" in peer_outbox_tests
+            and "clientReady.wait(timeout: .now() + 10), .timedOut" in peer_outbox_tests
+            and "handshakeRejected" not in peer_outbox_tests,
+            "the local peer TLS-PSK tests must verify matching-key readiness and reject a mismatched peer without depending on listener-side failure delivery")
     require(not re.search(r"\bimport\s+(?:Network|CFNetwork|FoundationNetworking|WebKit|SafariServices)\b", other_swift)
             and "import Network" in local_peer_transport
             and "NWListener" in local_peer_transport
