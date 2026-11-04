@@ -114,6 +114,9 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         self.assertIn("factory-tools-ipad-xctest-diagnostics", ipad_test)
         self.assertIn("FactoryTools-iPad.xcresult", ipad_test)
         self.assertIn("FactoryTools-iPad-xcodebuild.log", ipad_test)
+        self.assertIn('"13-inch" in device["name"]', ipad_test)
+        self.assertIn('xcrun", "simctl", "bootstatus"', ipad_test)
+        self.assertIn("-parallel-testing-enabled NO", ipad_test)
 
 
 class WatchScreenshotDiagnosticsTests(unittest.TestCase):
