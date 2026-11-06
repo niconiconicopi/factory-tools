@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload iPhone XCTest diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: factory-tools-iphone-xctest-diagnostics
           path: |
@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload bilingual iPhone screenshot artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: factory-tools-app-store-iphone-product-page
           path: ${{ runner.temp }}/FactoryToolsAppStoreScreenshots/
@@ -167,7 +167,7 @@ jobs:
 
       - name: Upload bilingual 13-inch iPad screenshot artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: factory-tools-app-store-ipad-home
           path: ${{ runner.temp }}/FactoryToolsAppStoreiPadScreenshots/
@@ -253,7 +253,7 @@ jobs:
 
       - name: Upload iPad XCTest diagnostics
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: factory-tools-ipad-xctest-diagnostics
           path: |

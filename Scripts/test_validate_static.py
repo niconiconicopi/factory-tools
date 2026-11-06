@@ -419,7 +419,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('dimensions not in {(2064, 2752), (2048, 2732)}', capture_script)
         self.assertIn("-configuration Release", workflow)
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
-        self.assertIn("uses: actions/upload-artifact@v4", workflow)
+        self.assertIn("uses: actions/upload-artifact@v7.0.1", workflow)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
         self.assertEqual(workflow.count("if: always()"), 4)
         self.assertEqual(workflow.count("if-no-files-found: ignore"), 4)
