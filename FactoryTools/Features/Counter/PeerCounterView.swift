@@ -2,6 +2,13 @@ import FactoryToolsCore
 import Foundation
 import SwiftUI
 
+#if targetEnvironment(simulator)
+enum PeerCounterScreenshotMode: Equatable {
+    case connected
+    case offline
+}
+#endif
+
 struct PeerCounterView: View {
     @Environment(\.appTheme) private var theme
     @Environment(\.locale) private var locale
@@ -9,21 +16,78 @@ struct PeerCounterView: View {
     @ObservedObject private var transport = LocalPeerCounterTransport.shared
     @State private var activeSheet: PeerCounterSheet?
     @State private var sessionPendingReset: WatchCounterSessionSnapshot?
+#if targetEnvironment(simulator)
+    private let screenshotDemoMode: PeerCounterScreenshotMode?
+    init(screenshotDemoMode: PeerCounterScreenshotMode? = nil) {
+        self.screenshotDemoMode = screenshotDemoMode
+    }
+#else
+    init() {}
+#endif
+
+    private var displayedStatusKey: String {
+#if targetEnvironment(simulator)
+        switch screenshotDemoMode {
+        case .connected: "peer.status.connected"
+        case .offline: "peer.status.reconnecting"
+        case nil: transport.statusKey
+        }
+#else
+        transport.statusKey
+#endif
+    }
+
+    private var displayedCatalog: [WatchCounterSessionSnapshot] {
+#if targetEnvironment(simulator)
+        screenshotDemoMode == nil ? transport.catalog : Self.screenshotDemoCatalog
+#else
+        transport.catalog
+#endif
+    }
+
+    private var displayedPendingCommandCount: Int {
+#if targetEnvironment(simulator)
+        switch screenshotDemoMode {
+        case .offline: 2
+        case .connected: 0
+        case nil: transport.pendingCommandCount
+        }
+#else
+        transport.pendingCommandCount
+#endif
+    }
+
+#if targetEnvironment(simulator)
+    private static let screenshotDemoCatalog = [
+        WatchCounterSessionSnapshot(
+            sessionID: UUID(),
+            homeProfileID: UUID(),
+            homeName: "Assembly",
+            toolID: .productionCounter,
+            sessionName: "Line A",
+            currentCount: 286,
+            targetCount: 300,
+            latestUndoableEventID: UUID(),
+            defaultSessionNameToolID: nil,
+            homeNameIsDefault: false
+        )
+    ]
+#endif
 
     var body: some View {
         List {
             Section("peer.connection") {
-                Text(LocalizedStringKey(transport.statusKey))
+                Text(LocalizedStringKey(displayedStatusKey))
                     .font(theme.captionFont)
                     .foregroundStyle(theme.secondaryText)
-                LabeledContent("peer.pendingCommands", value: formattedCount(transport.pendingCommandCount))
-                Button("peer.refresh", systemImage: "arrow.clockwise", action: transport.requestCatalog)
+                LabeledContent("peer.pendingCommands", value: formattedCount(displayedPendingCommandCount))
+                Button("peer.refresh", systemImage: "arrow.clockwise", action: requestCatalog)
             }
             Section("peer.counters") {
-                if transport.catalog.isEmpty {
+                if displayedCatalog.isEmpty {
                     ContentUnavailableView("peer.empty.title", systemImage: "dot.radiowaves.left.and.right", description: Text("peer.empty.message"))
                 } else {
-                    ForEach(transport.catalog) { session in
+                    ForEach(displayedCatalog) { session in
                         counterRow(session)
                     }
                 }
@@ -34,7 +98,7 @@ struct PeerCounterView: View {
         .navigationTitle("peer.dashboard")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("peer.disconnect", systemImage: "wifi.slash", action: transport.disconnectClient)
+                Button("peer.disconnect", systemImage: "wifi.slash", action: disconnect)
             }
         }
         .sheet(item: $activeSheet) { destination in
@@ -63,9 +127,18 @@ struct PeerCounterView: View {
         } message: {
             Text("counter.resetConfirmation.message")
         }
-        .onAppear(perform: transport.resumeClient)
+        .onAppear {
+#if targetEnvironment(simulator)
+            guard screenshotDemoMode == nil else { return }
+#endif
+            transport.resumeClient()
+        }
         .onChange(of: scenePhase) { _, phase in
+#if targetEnvironment(simulator)
+            if screenshotDemoMode == nil, phase == .active { transport.resumeClient() }
+#else
             if phase == .active { transport.resumeClient() }
+#endif
         }
         .tint(theme.accent)
     }
@@ -136,7 +209,24 @@ struct PeerCounterView: View {
     }
 
     private func enqueue(_ session: WatchCounterSessionSnapshot, operation: CounterCommandOperation) {
+#if targetEnvironment(simulator)
+        guard screenshotDemoMode == nil else { return }
+#endif
         transport.enqueue(CounterCommand(sessionID: session.sessionID, operation: operation))
+    }
+
+    private func requestCatalog() {
+#if targetEnvironment(simulator)
+        guard screenshotDemoMode == nil else { return }
+#endif
+        transport.requestCatalog()
+    }
+
+    private func disconnect() {
+#if targetEnvironment(simulator)
+        guard screenshotDemoMode == nil else { return }
+#endif
+        transport.disconnectClient()
     }
 
     private func formattedCount(_ value: Int) -> String {

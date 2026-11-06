@@ -22,6 +22,11 @@ struct HomeView: View {
         self.screenshotDemoScenario = screenshotDemoScenario
         let selectedHomeID = home.id
         _cards = Query(filter: #Predicate<ToolCard> { $0.homeProfileID == selectedHomeID })
+#if targetEnvironment(simulator)
+        let startsOnPeerDashboard = UIDevice.current.userInterfaceIdiom == .pad
+            && screenshotDemoScenario?.peerCounterScreenshotMode != nil
+        _activeSheet = State(initialValue: startsOnPeerDashboard ? .peerCounters : nil)
+#endif
     }
 
     private var homeCards: [ToolCard] {
@@ -166,7 +171,20 @@ struct HomeView: View {
                 case .settings:
                     AppSettingsView(home: home)
                 case .peerCounters:
-                    NavigationStack { PeerCounterView() }
+                    NavigationStack {
+#if targetEnvironment(simulator)
+                        PeerCounterView(screenshotDemoMode: screenshotDemoScenario?.peerCounterScreenshotMode)
+#else
+                        PeerCounterView()
+#endif
+                    }
+                    .presentationDetents(
+#if targetEnvironment(simulator)
+                        screenshotDemoScenario?.peerCounterScreenshotMode == nil ? [.medium, .large] : [.large]
+#else
+                        [.medium, .large]
+#endif
+                    )
                 case .createHome:
                     CreateHomeView()
                 case .manageHomes:

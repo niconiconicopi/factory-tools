@@ -12,7 +12,15 @@ import time
 import uuid
 from pathlib import Path
 
-SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
+SCREENSHOT_SCENARIOS = (
+    "home",
+    "cycle-time",
+    "takt-time",
+    "defect-counter",
+    "counter-history",
+    "ipad-dashboard",
+    "ipad-offline",
+)
 COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
@@ -149,7 +157,7 @@ def capture_language(
         language_arguments.append("--factorytools-screenshot-japanese")
     language_arguments.append(f"--factorytools-screenshot-{scenario}")
     temporary_png = output_path.with_suffix(".png")
-    attempts = HOME_SCREENSHOT_ATTEMPTS if scenario == "home" else 1
+    attempts = HOME_SCREENSHOT_ATTEMPTS if scenario in {"home", "ipad-dashboard", "ipad-offline"} else 1
     for attempt in range(1, attempts + 1):
         capture_id = uuid.uuid4().hex
         capture_arguments = [f"--factorytools-screenshot-capture-id={capture_id}"]
@@ -163,7 +171,7 @@ def capture_language(
                 identifier, *language_arguments, *capture_arguments,
             ]
         )
-        if scenario == "home":
+        if scenario in {"home", "ipad-dashboard", "ipad-offline"}:
             try:
                 wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)
             except RuntimeError as error:
@@ -180,7 +188,7 @@ def capture_language(
             "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
             str(temporary_png), "--out", str(output_path),
         ])
-        if scenario == "home":
+        if scenario in {"home", "ipad-dashboard", "ipad-offline"}:
             try:
                 verification = run(
                     ["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), "286", "300"],
@@ -191,7 +199,7 @@ def capture_language(
                 temporary_png.unlink(missing_ok=True)
                 if attempt == attempts:
                     raise RuntimeError(
-                        f"{output_path.name} did not show both home counter values after {attempts} captures. "
+                        f"{output_path.name} did not show both counter values after {attempts} captures. "
                         f"Diagnostic JPEG retained at {output_path}. {recognized}"
                     ) from error
                 output_path.unlink(missing_ok=True)
@@ -263,6 +271,10 @@ def main() -> int:
         f"Bundle ID: {identifier}",
         "Build configuration: Release Simulator; demo data uses an in-memory store and is compiled only for Simulator.",
     ]
+    if arguments.platform == "ipad" and any(scenario.startswith("ipad-") for scenario in arguments.scenarios):
+        metadata.append(
+            "iPad connection and pending-command labels are simulator-only fixtures; no peer connection was established."
+        )
     for filename, (width, height) in captures.items():
         metadata.append(f"{filename}: {width}×{height} JPEG")
     if run_id := os.environ.get("GITHUB_RUN_ID"):

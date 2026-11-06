@@ -9,6 +9,18 @@ enum ScreenshotDemoScenario: String, CaseIterable {
     case taktTime = "takt-time"
     case defectCounter = "defect-counter"
     case counterHistory = "counter-history"
+    case ipadDashboard = "ipad-dashboard"
+    case ipadOffline = "ipad-offline"
+
+#if targetEnvironment(simulator)
+    var peerCounterScreenshotMode: PeerCounterScreenshotMode? {
+        switch self {
+        case .ipadDashboard: .connected
+        case .ipadOffline: .offline
+        default: nil
+        }
+    }
+#endif
 
     var launchArgument: String { "--factorytools-screenshot-\(rawValue)" }
 
@@ -128,7 +140,7 @@ struct FactoryToolsApp: App {
         context.insert(settings)
 
         switch scenario {
-        case .home, .counterHistory:
+        case .home, .counterHistory, .ipadDashboard, .ipadOffline:
             let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
             addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
             insertEvents(for: production, deltas: [200, 80, 6], context: context)

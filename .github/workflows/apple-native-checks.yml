@@ -146,7 +146,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      - name: Capture bilingual 13-inch iPad home screenshots from Release Simulator build
+      - name: Capture bilingual 13-inch iPad product-page screenshots from Release Simulator build
         id: capture_ipad_screenshots
         continue-on-error: true
         shell: bash
@@ -163,13 +163,14 @@ jobs:
             --device-id "$simulator_id" \
             --app "$app_path" \
             --output-dir "$RUNNER_TEMP/FactoryToolsAppStoreiPadScreenshots" \
-            --platform ipad
+            --platform ipad \
+            --scenarios ipad-dashboard ipad-offline
 
       - name: Upload bilingual 13-inch iPad screenshot artifact
         if: always()
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: factory-tools-app-store-ipad-home
+          name: factory-tools-app-store-ipad-product-page
           path: ${{ runner.temp }}/FactoryToolsAppStoreiPadScreenshots/
           if-no-files-found: ignore
           retention-days: 30

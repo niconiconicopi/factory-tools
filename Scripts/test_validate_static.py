@@ -354,6 +354,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
     def test_ci_captures_bilingual_release_simulator_screenshots_without_persisting_demo_data(self) -> None:
         root = Path(__file__).resolve().parents[1]
         app_source = (root / "FactoryTools" / "App" / "FactoryToolsApp.swift").read_text(encoding="utf-8")
+        bootstrap_view = (root / "FactoryTools" / "App" / "AppBootstrapView.swift").read_text(encoding="utf-8")
         home_view = (root / "FactoryTools" / "Features" / "Home" / "HomeView.swift").read_text(encoding="utf-8")
         capture_script = (root / "Scripts" / "capture_simulator_screenshots.py").read_text(encoding="utf-8")
         home_card = (root / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")
@@ -367,6 +368,15 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('case taktTime = "takt-time"', app_source)
         self.assertIn('case defectCounter = "defect-counter"', app_source)
         self.assertIn('case counterHistory = "counter-history"', app_source)
+        self.assertIn('case ipadDashboard = "ipad-dashboard"', app_source)
+        self.assertIn('case ipadOffline = "ipad-offline"', app_source)
+        self.assertIn("PeerCounterView(screenshotDemoMode:", home_view)
+        peer_view = (root / "FactoryTools" / "Features" / "Counter" / "PeerCounterView.swift").read_text(encoding="utf-8")
+        self.assertIn('case .connected: "peer.status.connected"', peer_view)
+        self.assertIn('case .offline: "peer.status.reconnecting"', peer_view)
+        self.assertIn("guard screenshotDemoMode == nil else { return }", peer_view)
+        self.assertIn("guard screenshotDemoScenario == nil else { return }", bootstrap_view)
+        self.assertIn("guard screenshotDemoScenario == nil,", bootstrap_view)
         self.assertIn("case .cycleTime where card.toolID == ToolID.cycleTime.rawValue:", home_view)
         self.assertIn("case .taktTime where card.toolID == ToolID.taktTime.rawValue:", home_view)
         self.assertIn("case .counterHistory where card.toolID == ToolID.productionCounter.rawValue:", home_view)
@@ -438,8 +448,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('xcrun simctl shutdown "$simulator_id"', workflow)
         self.assertIn("def ensure_simulator_booted(device_id: str) -> None:", capture_script)
         self.assertIn('["xcrun", "simctl", "boot", device_id]', capture_script)
-        self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
-        self.assertIn("factory-tools-app-store-ipad-home", workflow)
+        self.assertIn("Capture bilingual 13-inch iPad product-page screenshots from Release Simulator build", workflow)
+        self.assertIn("--scenarios ipad-dashboard ipad-offline", workflow)
+        self.assertIn("factory-tools-app-store-ipad-product-page", workflow)
 
     def test_ci_captures_bilingual_release_watch_screenshots_with_simulator_only_data(self) -> None:
         root = Path(__file__).resolve().parents[1]

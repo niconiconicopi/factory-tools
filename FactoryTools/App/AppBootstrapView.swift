@@ -46,21 +46,26 @@ struct AppBootstrapView: View {
         }
         .task { seedInitialDataIfNeeded() }
         .onAppear {
+            guard screenshotDemoScenario == nil else { return }
             startPeerAuthorityIfAvailable()
             WatchConnectivityReceiver.shared.publishCatalog()
         }
         .onChange(of: scenePhase) { _, phase in
-            guard phase == .active, UIDevice.current.userInterfaceIdiom == .phone else { return }
+            guard screenshotDemoScenario == nil,
+                  phase == .active,
+                  UIDevice.current.userInterfaceIdiom == .phone else { return }
             startPeerAuthorityIfAvailable()
             WatchConnectivityReceiver.shared.publishCatalog()
         }
         .onChange(of: proPurchases.hasPro) { _, hasPro in
+            guard screenshotDemoScenario == nil else { return }
             WatchConnectivityReceiver.shared.publishCatalog()
             guard UIDevice.current.userInterfaceIdiom == .phone else { return }
             if FeatureAccessRegistry.allows(.ipadCounterControl, isPro: hasPro) { startPeerAuthorityIfAvailable() }
             else { LocalPeerCounterTransport.shared.stopAuthority() }
         }
         .onChange(of: proPurchases.hasResolvedEntitlement) { _, _ in
+            guard screenshotDemoScenario == nil else { return }
             WatchConnectivityReceiver.shared.publishCatalog()
             startPeerAuthorityIfAvailable()
         }

@@ -1936,7 +1936,8 @@ def main() -> int:
             and "testPeerAuthorityDoesNotReplacePendingOrActivePairedConnection" in core_contract_tests,
             "the iPhone peer authority must preserve its current connection until a new paired connection is established")
     require("@Environment(\\.locale) private var locale" in peer_counter_view
-            and "value: formattedCount(transport.pendingCommandCount)" in peer_counter_view
+            and "value: formattedCount(displayedPendingCommandCount)" in peer_counter_view
+            and "case nil: transport.pendingCommandCount" in peer_counter_view
             and 'Text(formattedCount(session.currentCount))' in peer_counter_view
             and 'Text("/ \\(formattedCount(session.targetCount))")' in peer_counter_view
             and '.accessibilityLabel("counter.currentCount")' in peer_counter_view
