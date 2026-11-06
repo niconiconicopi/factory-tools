@@ -1,0 +1,87 @@
+name: Apple local StoreKit purchase test
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_private_macos_runner:
+        description: Confirm FACTORYTOOLS_PRIVATE_MACOS_CI is enabled only after a no-overage billing guard is verified.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  storekit:
+    if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Show Apple toolchain
+        run: xcodebuild -version
+
+      - name: Run the local StoreKit purchase integration test
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((device["udid"] for devices in data["devices"].values() for device in devices if device["isAvailable"] and device["name"].startswith("iPhone")), ""))')"
+          if [[ -z "$simulator_id" ]]; then
+            echo "No available iPhone Simulator device was found." >&2
+            exit 1
+          fi
+          result_bundle="$RUNNER_TEMP/FactoryTools-StoreKit.xcresult"
+          xcode_log="$RUNNER_TEMP/FactoryTools-StoreKit-xcodebuild.log"
+          test_status=0
+          set +e
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsStoreKitDerivedData" \
+            -resultBundlePath "$result_bundle" \
+            -parallel-testing-enabled NO \
+            -only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            CODE_SIGNING_ALLOWED=YES \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=- 2>&1 | tee "$xcode_log"
+          test_status=${PIPESTATUS[0]}
+          set -e
+          if [[ "$test_status" -ne 0 ]]; then
+            {
+              echo "## Local StoreKit integration diagnostics"
+              echo
+              echo "xcodebuild exited with status $test_status on simulator $simulator_id."
+              if [[ -d "$result_bundle" ]]; then
+                echo
+                echo '```json'
+                if ! xcrun xcresulttool get test-results summary --path "$result_bundle"; then
+                  echo "xcresulttool could not summarize the result bundle."
+                fi
+                echo '```'
+              fi
+              echo
+              echo '```text'
+              if ! grep -E -i 'SKInternalErrorDomain|error:|failed|failure|test case.*(failed|errored)' "$xcode_log" | tail -n 80; then
+                tail -n 80 "$xcode_log"
+              fi
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit "$test_status"
+          fi
+
+      - name: Upload StoreKit integration diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: factory-tools-storekit-integration-diagnostics
+          path: |
+            ${{ runner.temp }}/FactoryTools-StoreKit.xcresult
+            ${{ runner.temp }}/FactoryTools-StoreKit-xcodebuild.log
+          if-no-files-found: ignore
+          retention-days: 7

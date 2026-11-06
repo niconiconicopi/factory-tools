@@ -18,6 +18,7 @@ from validate_static import (
     OpenStepParseError,
     apple_workflow_contract_errors,
     apple_archive_workflow_contract_errors,
+    apple_storekit_workflow_contract_errors,
     apple_upload_workflow_contract_errors,
     pages_publication_workflow_contract_errors,
     apply_release_candidate_overrides,
@@ -81,6 +82,7 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn("workflow must not access repository secrets", errors)
 
+
     def test_current_archive_workflow_is_manual_read_only_and_unsigned(self) -> None:
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "apple-archive-check.yml").read_text(encoding="utf-8")
@@ -102,6 +104,30 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing hosted macOS runner", errors)
         self.assertIn("archive verification workflow must not access repository secrets", errors)
+
+
+    def test_current_storekit_probe_is_manual_public_free_and_ad_hoc_signed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-storekit-local-test.yml").read_text(encoding="utf-8")
+
+        self.assertEqual(apple_storekit_workflow_contract_errors(workflow), [])
+
+    def test_storekit_probe_rejects_automatic_triggers_and_secrets(self) -> None:
+        source = """on:
+  push:
+permissions:
+  contents: write
+runs-on: macos-latest
+run: xcodebuild test -scheme FactoryTools CODE_SIGNING_ALLOWED=NO ${{ secrets.SIGNING_KEY }}
+"""
+
+        errors = apple_storekit_workflow_contract_errors(source)
+
+        self.assertIn("missing manual dispatch only", errors)
+        self.assertIn("missing read-only repository permission", errors)
+        self.assertIn("StoreKit integration workflow must be manually dispatched only", errors)
+        self.assertIn("StoreKit integration probe must allow simulator ad-hoc signing", errors)
+        self.assertIn("StoreKit integration workflow must not access repository secrets", errors)
 
     def test_ipad_xctest_failures_write_result_summary_before_failing(self) -> None:
         root = Path(__file__).resolve().parents[1]

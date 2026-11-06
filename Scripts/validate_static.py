@@ -395,6 +395,31 @@ def apple_archive_workflow_contract_errors(source: str) -> list[str]:
     return errors
 
 
+def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the manually dispatched, public-free local StoreKit integration probe."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "pinned checkout major version": "uses: actions/checkout@v7",
+        "checkout credential persistence disabled": "persist-credentials: false",
+        "public or manually confirmed private-run job condition": "if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')",
+        "hosted macOS runner": "runs-on: macos-26",
+        "bounded StoreKit probe": "timeout-minutes: 30",
+        "focused local StoreKit purchase test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "simulator signing enabled for StoreKit integration": "CODE_SIGNING_ALLOWED=YES",
+        "ad-hoc simulator identity avoids publisher signing account": "CODE_SIGN_IDENTITY=-",
+        "failure diagnostics are retained": "factory-tools-storekit-integration-diagnostics",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
+        errors.append("StoreKit integration workflow must be manually dispatched only")
+    if "CODE_SIGNING_ALLOWED=NO" in source:
+        errors.append("StoreKit integration probe must allow simulator ad-hoc signing")
+    if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
+        errors.append("StoreKit integration workflow must not access repository secrets")
+    return errors
+
+
 def apple_upload_workflow_contract_errors(source: str) -> list[str]:
     """Guard the manually confirmed, API-key authenticated App Store upload workflow."""
     requirements = {
@@ -878,6 +903,13 @@ def main() -> int:
             ERRORS.append(f"Apple archive verification workflow contract: {workflow_issue}")
     else:
         ERRORS.append("Apple archive verification workflow is missing")
+    storekit_workflow_path = ROOT / ".github" / "workflows" / "apple-storekit-local-test.yml"
+    if storekit_workflow_path.is_file():
+        storekit_workflow_source = storekit_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_storekit_workflow_contract_errors(storekit_workflow_source):
+            ERRORS.append(f"Apple StoreKit integration workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple local StoreKit integration workflow is missing")
     upload_workflow_path = ROOT / ".github" / "workflows" / "apple-app-store-upload.yml"
     if upload_workflow_path.is_file():
         upload_workflow_source = upload_workflow_path.read_text(encoding="utf-8")
