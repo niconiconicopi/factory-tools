@@ -193,7 +193,7 @@ def capture_language(
             try:
                 expected_values = ["286", "300"]
                 if scenario == "counter-quick-add":
-                    expected_values = ["任意の数を追加" if japanese else "Custom amount"]
+                    expected_values = ["286", "300", "10"]
                 verification = run(
                     ["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values],
                     capture_output=True,

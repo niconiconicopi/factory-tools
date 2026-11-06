@@ -369,6 +369,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('case defectCounter = "defect-counter"', app_source)
         self.assertIn('case counterHistory = "counter-history"', app_source)
         self.assertIn('case counterQuickAdd = "counter-quick-add"', app_source)
+        self.assertIn("insertUndoHistoryDemoEvents(for: production, context: context)", app_source)
+        self.assertIn("reversesEventID: undoneIncrement.id", app_source)
+        self.assertIn("kind: .undo", app_source)
         self.assertIn('case ipadDashboard = "ipad-dashboard"', app_source)
         self.assertIn('case ipadOffline = "ipad-offline"', app_source)
         self.assertIn("PeerCounterView(screenshotDemoMode:", home_view)
@@ -384,7 +387,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("case .cycleTime where card.toolID == ToolID.cycleTime.rawValue:", home_view)
         self.assertIn("case .taktTime where card.toolID == ToolID.taktTime.rawValue:", home_view)
         self.assertIn("case .counterHistory where card.toolID == ToolID.productionCounter.rawValue:", home_view)
-        self.assertIn(".presentationDetents(initialSheet == nil ? [.medium, .large] : [.large])", home_card)
+        self.assertIn("initialSheet == nil || initialSheet == .customQuickAdd ? [.medium, .large] : [.large]", home_card)
         self.assertIn(".presentationDragIndicator(initialSheet == nil ? .visible : .hidden)", home_card)
         self.assertIn("isStoredInMemoryOnly: screenshotLanguage != nil", app_source)
         self.assertIn("ProductionSession(", app_source)
@@ -410,7 +413,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('f"locale={language_code}"', capture_script)
         self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER)', capture_script)
         self.assertIn('["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values]', capture_script)
-        self.assertIn('expected_values = ["任意の数を追加" if japanese else "Custom amount"]', capture_script)
+        self.assertIn('expected_values = ["286", "300", "10"]', capture_script)
+        self.assertIn("initialSheet == .customQuickAdd ? [.medium, .large] : [.large]", home_card)
         self.assertLess(
             capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
             capture_script.index('str(HOME_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),

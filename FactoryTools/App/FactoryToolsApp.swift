@@ -141,10 +141,15 @@ struct FactoryToolsApp: App {
         context.insert(settings)
 
         switch scenario {
-        case .home, .counterQuickAdd, .counterHistory, .ipadDashboard, .ipadOffline:
+        case .home, .counterQuickAdd, .ipadDashboard, .ipadOffline:
             let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
             addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
             insertEvents(for: production, deltas: [200, 80, 6], context: context)
+        case .counterHistory:
+            let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
+            production.nextEventSequence = 5
+            addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
+            insertUndoHistoryDemoEvents(for: production, context: context)
         case .cycleTime:
             context.insert(ToolCard(homeProfileID: home.id, toolID: .cycleTime, size: .large, sortOrder: 0))
             let referenceDate = Date(timeIntervalSinceNow: -86_400 * 2)
@@ -209,6 +214,49 @@ struct FactoryToolsApp: App {
                 occurredAt: Date(timeIntervalSinceNow: -86_400 * Double(deltas.count - sequence)),
                 kind: sequence == 0 ? .quickAdd : .increment
             ))
+        }
+    }
+
+    private static func insertUndoHistoryDemoEvents(for session: ProductionSession, context: ModelContext) {
+        let referenceDate = Date(timeIntervalSinceNow: -86_400 * 4)
+        let quickAdd = CountEvent(
+            sessionID: session.id,
+            delta: 200,
+            sequence: 0,
+            occurredAt: referenceDate,
+            kind: .quickAdd
+        )
+        let firstIncrement = CountEvent(
+            sessionID: session.id,
+            delta: 80,
+            sequence: 1,
+            occurredAt: referenceDate.addingTimeInterval(3_600),
+            kind: .increment
+        )
+        let undoneIncrement = CountEvent(
+            sessionID: session.id,
+            delta: 10,
+            sequence: 2,
+            occurredAt: referenceDate.addingTimeInterval(7_200),
+            kind: .increment
+        )
+        let undo = CountEvent(
+            sessionID: session.id,
+            delta: -10,
+            sequence: 3,
+            occurredAt: referenceDate.addingTimeInterval(7_260),
+            reversesEventID: undoneIncrement.id,
+            kind: .undo
+        )
+        let finalIncrement = CountEvent(
+            sessionID: session.id,
+            delta: 6,
+            sequence: 4,
+            occurredAt: referenceDate.addingTimeInterval(10_800),
+            kind: .increment
+        )
+        for event in [quickAdd, firstIncrement, undoneIncrement, undo, finalIncrement] {
+            context.insert(event)
         }
     }
     #endif

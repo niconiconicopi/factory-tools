@@ -203,7 +203,9 @@ struct HomeToolCardView: View {
                     AppSettingsView(home: home)
                 }
             }
-            .presentationDetents(initialSheet == nil ? [.medium, .large] : [.large])
+            .presentationDetents(
+                initialSheet == nil || initialSheet == .customQuickAdd ? [.medium, .large] : [.large]
+            )
             .presentationDragIndicator(initialSheet == nil ? .visible : .hidden)
         }
         .alert("error.saveFailed", isPresented: $showingSaveError) {
