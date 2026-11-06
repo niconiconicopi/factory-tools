@@ -111,6 +111,8 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         workflow = (root / ".github" / "workflows" / "apple-storekit-local-test.yml").read_text(encoding="utf-8")
 
         self.assertEqual(apple_storekit_workflow_contract_errors(workflow), [])
+        self.assertIn("runs-on: xcode-27", workflow)
+        self.assertIn("xcrun simctl list runtimes", workflow)
 
     def test_storekit_probe_rejects_automatic_triggers_and_secrets(self) -> None:
         source = """on:
