@@ -41,6 +41,14 @@ struct HomeView: View {
         HomeGridLayout.minimumColumnWidth(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize)
     }
 
+    private var peerDashboardSheetDetents: Set<PresentationDetent> {
+#if targetEnvironment(simulator)
+        screenshotDemoScenario?.peerCounterScreenshotMode == nil ? [.medium, .large] : [.large]
+#else
+        [.medium, .large]
+#endif
+    }
+
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
@@ -178,13 +186,7 @@ struct HomeView: View {
                         PeerCounterView()
 #endif
                     }
-                    .presentationDetents(
-#if targetEnvironment(simulator)
-                        screenshotDemoScenario?.peerCounterScreenshotMode == nil ? [.medium, .large] : [.large]
-#else
-                        [.medium, .large]
-#endif
-                    )
+                    .presentationDetents(peerDashboardSheetDetents)
                 case .createHome:
                     CreateHomeView()
                 case .manageHomes:
