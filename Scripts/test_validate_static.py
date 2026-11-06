@@ -368,6 +368,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('case taktTime = "takt-time"', app_source)
         self.assertIn('case defectCounter = "defect-counter"', app_source)
         self.assertIn('case counterHistory = "counter-history"', app_source)
+        self.assertIn('case counterQuickAdd = "counter-quick-add"', app_source)
         self.assertIn('case ipadDashboard = "ipad-dashboard"', app_source)
         self.assertIn('case ipadOffline = "ipad-offline"', app_source)
         self.assertIn("PeerCounterView(screenshotDemoMode:", home_view)
@@ -408,7 +409,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("time.sleep(HOME_RENDER_SETTLE_SECONDS)", capture_script)
         self.assertIn('f"locale={language_code}"', capture_script)
         self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER)', capture_script)
-        self.assertIn('str(HOME_SCREENSHOT_VERIFIER), str(output_path), "286", "300"', capture_script)
+        self.assertIn('["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values]', capture_script)
+        self.assertIn('expected_values = ["任意の数を追加" if japanese else "Custom amount"]', capture_script)
         self.assertLess(
             capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
             capture_script.index('str(HOME_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
@@ -439,7 +441,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("retention-days: 30", workflow)
         self.assertIn("Require iPhone and iPad screenshot captures", workflow)
         self.assertIn('exit "$failed"', workflow)
-        self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
+        self.assertIn("--scenarios home counter-quick-add cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
         self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
         self.assertIn("Prepare 13-inch iPad Simulator before release screenshot captures", workflow)

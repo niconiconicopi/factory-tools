@@ -5,6 +5,7 @@ import FactoryToolsCore
 
 enum ScreenshotDemoScenario: String, CaseIterable {
     case home
+    case counterQuickAdd = "counter-quick-add"
     case cycleTime = "cycle-time"
     case taktTime = "takt-time"
     case defectCounter = "defect-counter"
@@ -140,7 +141,7 @@ struct FactoryToolsApp: App {
         context.insert(settings)
 
         switch scenario {
-        case .home, .counterHistory, .ipadDashboard, .ipadOffline:
+        case .home, .counterQuickAdd, .counterHistory, .ipadDashboard, .ipadOffline:
             let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
             addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
             insertEvents(for: production, deltas: [200, 80, 6], context: context)

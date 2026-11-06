@@ -135,7 +135,7 @@ jobs:
             --device-id "$simulator_id" \
             --app "$app_path" \
             --output-dir "$RUNNER_TEMP/FactoryToolsAppStoreScreenshots" \
-            --scenarios home cycle-time takt-time defect-counter counter-history
+            --scenarios home counter-quick-add cycle-time takt-time defect-counter counter-history
 
       - name: Upload bilingual iPhone screenshot artifact
         if: always()

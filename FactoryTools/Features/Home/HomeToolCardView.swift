@@ -184,7 +184,9 @@ struct HomeToolCardView: View {
                 case .counterSettings:
                     if let session { CounterSettingsView(session: session) }
                 case .customQuickAdd:
-                    if let session { CounterQuickAddView(session: session) }
+                    if let session {
+                        CounterQuickAddView(session: session, screenshotDemoValues: initialSheet == .customQuickAdd)
+                    }
                 case .history:
                     if let session { CounterHistoryView(session: session) }
                 case .cycleTime:
