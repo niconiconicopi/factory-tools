@@ -1320,6 +1320,7 @@ def main() -> int:
     require(len(core_build_settings) == 2 and {name for name, _ in core_build_settings} == {"Debug", "Release"}
             and all(settings.get("DEFINES_MODULE") == "YES" for _, settings in core_build_settings)
             and all(settings.get("MACH_O_TYPE") == "staticlib" for _, settings in core_build_settings)
+            and all(settings.get("GENERATE_INFOPLIST_FILE") == "YES" for _, settings in core_build_settings)
             and all(settings.get("SUPPORTED_PLATFORMS") == "iphoneos iphonesimulator macosx watchos watchsimulator" for _, settings in core_build_settings)
             and all(settings.get("SDKROOT") == "auto" for _, settings in core_build_settings)
             and all(settings.get("ALLOW_TARGET_PLATFORM_SPECIALIZATION") == "YES" for _, settings in core_build_settings)
