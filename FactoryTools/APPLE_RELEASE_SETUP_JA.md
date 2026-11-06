@@ -61,7 +61,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
-3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。現行のSwift／Xcodeプロジェクトソースは、[run 41830231636](https://github.com/niconiconicopi/factory-tools/actions/runs/41830231636)（ソースrevision `ee30582`）でiPhone/iPadのアプリテスト、共有Coreテスト、Watch Debug/Releaseビルドを通過済みです。現行のSwiftソースは同revisionから変更していません。アプリテストは各235件、Coreテストは48件です。一方、このrunは150分上限で未署名archiveのコンパイル中に打ち切られ、iPad画面キャプチャは900秒でタイムアウト、Watch画面キャプチャは未実施です。後続のmacOS 15/26 runner試行も、ジョブ手順開始前にrunner未割当で終了しました。実購入とSandbox購入はApple側の商品設定後に残る確認事項です。Xcode Cloudは任意であり、最初のワークフロー設定にXcodeが動くMacが必要なため、このプロジェクトの無料検証には使いません。
+3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。現行のSwift／Xcodeソースは、[run 42298190799](https://github.com/niconiconicopi/factory-tools/actions/runs/42298190799) でソース検査、iPhone/iPadのアプリテスト、英日Release画面撮影を完了し、必須のスクリーンショット検査も通過しました。[run 42298190637](https://github.com/niconiconicopi/factory-tools/actions/runs/42298190637) では共有Coreテスト、Watch Debug/Releaseビルドと英日撮影、Watchを含む未署名archiveも通過しました。iPhoneとiPadアプリテストは各235件、Coreテストは48件、合計283 XCTestケースのソースが対象です。これらはGitHub上の無料macOS runnerを使ったSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入の確認ではありません。Xcode Cloudは任意であり、最初のワークフロー設定にXcodeが動くMacが必要なため、このプロジェクトの無料検証には使いません。
 4. 準備が整った最後の有料段階でApple Developer Programに登録する。登録を進めるかは公開者が判断し、費用の発生する操作は無断で行わない。
 5. 登録後にTeam IDを確認し、署名を設定する。App Store Connectで商品、価格、Family Sharing、アプリ情報を登録し、EU公開前にDSA販売者ステータスと掲載連絡先を申告・確認する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。

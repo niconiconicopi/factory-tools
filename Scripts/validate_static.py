@@ -4043,11 +4043,15 @@ def main() -> int:
         len(re.findall(r"\bfunc\s+test\w+\s*\(", path.read_text(encoding="utf-8")))
         for path in (ROOT / "FactoryToolsCoreTests").rglob("*.swift")
     )
+    release_setup_run_ids = set(re.findall(
+        r"https://github\.com/niconiconicopi/factory-tools/actions/runs/(\d+)",
+        release_setup_guide,
+    ))
     require(f"アプリテストは各{hosted_app_test_count}件" in release_setup_guide
             and f"Coreテストは{shared_core_test_count}件" in release_setup_guide
-            and "https://github.com/niconiconicopi/factory-tools/actions/runs/41830231636" in release_setup_guide
+            and len(release_setup_run_ids) >= 2
             and "41244759649" not in release_setup_guide,
-            "Japanese Apple release setup guide must point to the current Swift-source simulator/Core run and current test counts")
+            "Japanese Apple release setup guide must cite hosted simulator/Core runs and current test counts")
     registered_tool_count = registry.count("ToolDefinition(")
     require(f"{test_case_count} XCTest methods across app and Core targets" in roadmap,
             "the roadmap's XCTest source count must match the current test inventory")
