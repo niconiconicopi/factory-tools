@@ -4086,7 +4086,8 @@ def main() -> int:
         r"https://github\.com/niconiconicopi/factory-tools/actions/runs/(\d+)",
         release_setup_guide,
     ))
-    require(f"アプリテストは各{hosted_app_test_count}件" in release_setup_guide
+    require(f"アプリ側のテストメソッドは{hosted_app_test_count}件" in release_setup_guide
+            and f"iPhoneとiPadのアプリテストが各{hosted_app_test_count - 1}件" in release_setup_guide
             and f"Coreテストは{shared_core_test_count}件" in release_setup_guide
             and len(release_setup_run_ids) >= 2
             and "41244759649" not in release_setup_guide,
