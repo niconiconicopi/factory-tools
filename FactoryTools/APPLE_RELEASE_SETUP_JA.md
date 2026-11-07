@@ -1,6 +1,6 @@
 # Factory Tools 公開準備ガイド
 
-**現在の状態:** Apple Developer／App Store Connectの値は未設定との認識。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。App Store Connectの設定は未完了。
+**現在の状態:** Apple Developer／App Store Connectの値は未設定との認識。発行者は個人登録を選択済みですが、Apple Developer Programへの登録はまだです。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。App Store Connectの設定は未完了。
 
 ## 公開にかかるApple登録料
 
@@ -12,9 +12,9 @@ Appleの年会費免除は、一定の条件を満たす非営利団体、認定
 
 このプロジェクトでは、登録と支払いは**無償でできる実装・文書・ソース検証を終えた後の最後の有料準備段階**に置きます。登録前でも、ソース作業、製品仕様の確定、公開文面の準備、Windows上の静的検証は進められます。Team IDの取得、App Store Connectの商品設定、署名付き提出は登録後の段階です。年会費は年ごとの更新費用であり、Developerアプリで加入したメンバーシップは自動更新です。更新を望まない場合は更新日の少なくとも1日前に解約し、支払い済みの年会費は返金されない点も含めて判断してください。[年会費・更新の説明](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
 
-## 登録前に選ぶ公開者の名義
+## 決定済みの登録名義
 
-Apple Developer Programには個人登録と組織登録があります。これは表示名だけの選択ではなく、Appleとの契約者とApp Store上の販売者名に関わります。登録・支払いは最後に保留したまま、どちらの名義で公開するかを先に決めておきます。
+Apple Developer Programには個人登録と組織登録があります。これは表示名だけの選択ではなく、Appleとの契約者とApp Store上の販売者名に関わります。発行者は個人登録を選択済みです。登録・支払いは最後の有料準備として保留しています。
 
 | 登録区分 | Appleが案内する主な条件 | App Store上の表示 |
 |---|---|---|
