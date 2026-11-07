@@ -32,7 +32,7 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 | 名前 | 値 |
 |---|---|
-| `FACTORYTOOLS_APP_BUNDLE_ID` | 公開者が所有するアプリBundle ID |
+| `FACTORYTOOLS_APP_BUNDLE_ID` | 暫定候補 `com.niconiconicopi.factorytools`。Apple Developer登録後に利用可能性・登録可否を確認し、必要なら初回アップロード前に変更 |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 | `FACTORYTOOLS_PRIVACY_POLICY_URL` | 公開済みプライバシーポリシーHTTPS URL |
 | `FACTORYTOOLS_SUPPORT_URL` | 連絡先を含む公開済みサポートHTTPS URL |
@@ -50,7 +50,7 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 ## 手動アップロード
 
-1. [Release preflight](RELEASE_READINESS_AUDIT.md#release-preflight-evidence)の5つのプロジェクト項目が埋まり、Apple側のアプリ/IAP設定とURL公開が完了していることを確認します。
+1. [Release preflight](RELEASE_READINESS_AUDIT.md#release-preflight-evidence)の3つの未設定項目を解消し、暫定Bundle IDがApple側で利用可能と確認したうえで、アプリ/IAP設定とURL公開が完了していることを確認します。
 2. GitHubの **Actions → Apple App Store upload → Run workflow** をmainブランチから開きます。
 3. Appleへのアップロードを行うときだけ、`confirm_app_store_connect_upload` をオンにします。対象バージョンと、App Store Connectで未使用のビルド番号を入力します。
 4. 成功したらApp Store Connectのビルド処理完了を待ちます。ワークフローは審査提出をしません。

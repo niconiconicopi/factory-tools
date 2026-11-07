@@ -993,7 +993,7 @@ class ReleasePreflightTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("JP / JPY:980", result.stdout)
-        self.assertIn("5 project identity/configuration blocker(s)", result.stdout)
+        self.assertIn("3 project identity/configuration blocker(s)", result.stdout)
         self.assertIn("This count covers project settings only", result.stdout)
         self.assertNotIn("distribution blocker(s)", result.stdout)
         self.assertNotIn("base storefront price candidate", result.stdout)
@@ -1261,7 +1261,7 @@ class ReleasePreflightTests(unittest.TestCase):
 
     def test_candidate_distribution_values_validate_both_targets_without_mutation(self) -> None:
         project_settings = {
-            "FACTORYTOOLS_APP_BUNDLE_ID": "com.example.FactoryTools",
+            "FACTORYTOOLS_APP_BUNDLE_ID": "com.niconiconicopi.factorytools",
             "MARKETING_VERSION": "0.1",
             "CURRENT_PROJECT_VERSION": "1",
         }
@@ -1300,7 +1300,7 @@ class ReleasePreflightTests(unittest.TestCase):
                 ),
                 [],
             )
-        self.assertEqual(project_settings["FACTORYTOOLS_APP_BUNDLE_ID"], "com.example.FactoryTools")
+        self.assertEqual(project_settings["FACTORYTOOLS_APP_BUNDLE_ID"], "com.niconiconicopi.factorytools")
         self.assertEqual(project_settings["MARKETING_VERSION"], "0.1")
         self.assertNotIn("DEVELOPMENT_TEAM", project_settings)
 

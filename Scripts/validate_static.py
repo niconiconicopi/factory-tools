@@ -1138,7 +1138,7 @@ def main() -> int:
     app_bundle_identifiers = {settings.get("PRODUCT_BUNDLE_IDENTIFIER") for _, settings in app_build_settings}
     require(len(project_build_settings) == 2
             and {name for name, _ in project_build_settings} == {"Debug", "Release"}
-            and all(settings.get("FACTORYTOOLS_APP_BUNDLE_ID") == "com.example.FactoryTools" for _, settings in project_build_settings)
+            and all(settings.get("FACTORYTOOLS_APP_BUNDLE_ID") == "com.niconiconicopi.factorytools" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_PRIVACY_POLICY_URL") == "" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_SUPPORT_URL") == "" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_PRO_PRODUCT_ID") == "factorytools.pro.lifetime" for _, settings in project_build_settings)

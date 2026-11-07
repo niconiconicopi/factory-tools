@@ -34,7 +34,7 @@ Apple Developer Programには個人登録と組織登録があります。これ
 | Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 個人として登録する方針。登録は未実施。Appleの案内は年99米ドルまたは現地通貨額。円での請求額は登録画面で確認。加入は最後の有料準備として保留 |
 | 公開者の登録区分・販売者名 | 個人名または法人等の法的名称のどちらをApp Store販売者として表示するか | 個人登録では本人の法的氏名がApp Storeの販売者名に表示される | 個人登録を選択済み。法的氏名はAppleの登録画面に入力。チャット・公開文面には入力しない |
 | Free／Proの機能境界 | どの機能を無料で使え、どの機能をPro購入で解放するか | Version 1の境界は決定済み。無料は基本ツール・基本不良記録・基本履歴・基本Watch/iPad操作・Industrial Dark。Proは独立した生産進捗、OEE、追加ホーム、詳細分析・専門ツール・高度なWatch機能・将来のProテーマ | 決定済み。公開前にアプリ表示とストア説明の一致を確認 |
-| Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 未設定。発行者名義の値が必要 |
+| Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 暫定候補 `com.niconiconicopi.factorytools` をDebug/Releaseに設定済み。Apple Developer登録後に利用可能性と発行者名義での登録可否を確認し、初回アップロード前に確定する |
 | App Store Connect SKU | 顧客には表示されない、App Store Connectでアプリを管理する内部番号 | 候補は `FACTORYTOOLS-IOS-001`。公開者のアカウント内で未使用かを確認してからアプリ記録を作成する | 候補を選定。アカウント内の未使用確認は未実施 |
 | Team ID | Apple Developer登録にひも付く10文字のチーム番号 | 登録後、Apple Developerアカウントの「Membership details」に表示される | 未設定。登録後に確認 |
 | Pro商品ID | アプリ内で「Factory Tools Pro」を識別する内部番号。購入者に表示する価格とは別物 | 今の候補は `factorytools.pro.lifetime`。App Store Connectの商品を作るときにこの値を使う。保存後は変更できない | 候補をプロジェクトに設定済み。商品登録は未実施 |
