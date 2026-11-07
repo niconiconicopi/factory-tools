@@ -10,6 +10,7 @@ enum ScreenshotDemoScenario: String, CaseIterable {
     case taktTime = "takt-time"
     case defectCounter = "defect-counter"
     case counterHistory = "counter-history"
+    case proPurchase = "pro-purchase"
     case ipadDashboard = "ipad-dashboard"
     case ipadOffline = "ipad-offline"
 

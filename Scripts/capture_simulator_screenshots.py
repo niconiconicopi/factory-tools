@@ -19,6 +19,7 @@ SCREENSHOT_SCENARIOS = (
     "takt-time",
     "defect-counter",
     "counter-history",
+    "pro-purchase",
     "ipad-dashboard",
     "ipad-offline",
 )
