@@ -2236,7 +2236,7 @@ def main() -> int:
             and "ProEntitlementEvidence" in all_swift
             and "public func grantsPro(for configuredProductID: String) -> Bool" in all_swift
             and "testProEntitlementRequiresVerifiedActiveOwnershipOfConfiguredProduct" in core_contract_tests
-            and 'XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro"))' in core_contract_tests
+            and 'XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro.lifetime"))' in core_contract_tests
             and "hasResolvedEntitlement = true" in purchase_manager
             and "Text(product.displayPrice)" in purchase_price_view
             and "¥980" not in production_purchase_price_view

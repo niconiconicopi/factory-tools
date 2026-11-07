@@ -50,7 +50,7 @@ final class CoreContractTests: XCTestCase {
 
     func testProEntitlementRequiresVerifiedActiveOwnershipOfConfiguredProduct() {
         func evidence(
-            productID: String = "factorytools.pro",
+            productID: String = "factorytools.pro.lifetime",
             isVerified: Bool = true,
             isRevoked: Bool = false,
             isUpgraded: Bool = false,
@@ -65,12 +65,12 @@ final class CoreContractTests: XCTestCase {
             )
         }
 
-        XCTAssertTrue(evidence().grantsPro(for: "factorytools.pro"))
-        XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro"))
-        XCTAssertFalse(evidence(productID: "other.product").grantsPro(for: "factorytools.pro"))
-        XCTAssertFalse(evidence(isVerified: false).grantsPro(for: "factorytools.pro"))
-        XCTAssertFalse(evidence(isRevoked: true).grantsPro(for: "factorytools.pro"))
-        XCTAssertFalse(evidence(isUpgraded: true).grantsPro(for: "factorytools.pro"))
+        XCTAssertTrue(evidence().grantsPro(for: "factorytools.pro.lifetime"))
+        XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro.lifetime"))
+        XCTAssertFalse(evidence(productID: "other.product").grantsPro(for: "factorytools.pro.lifetime"))
+        XCTAssertFalse(evidence(isVerified: false).grantsPro(for: "factorytools.pro.lifetime"))
+        XCTAssertFalse(evidence(isRevoked: true).grantsPro(for: "factorytools.pro.lifetime"))
+        XCTAssertFalse(evidence(isUpgraded: true).grantsPro(for: "factorytools.pro.lifetime"))
         XCTAssertFalse(evidence().grantsPro(for: ""))
     }
 
