@@ -23,6 +23,25 @@ SCREENSHOT_SCENARIOS = (
     "ipad-dashboard",
     "ipad-offline",
 )
+DEMO_READY_SCENARIOS = {
+    "home",
+    "counter-quick-add",
+    "defect-counter",
+    "ipad-dashboard",
+    "ipad-offline",
+}
+COUNTER_ROW_SCENARIOS = DEMO_READY_SCENARIOS
+SCENARIO_EXPECTED_VALUES = {
+    "home": ("286", "300"),
+    "counter-quick-add": ("286", "300", "10"),
+    "cycle-time": ("120", "4", "30"),
+    "takt-time": ("27000", "450", "60"),
+    "defect-counter": ("286", "300", "8"),
+    "counter-history": ("286", "200"),
+    "pro-purchase": ("980",),
+    "ipad-dashboard": ("286", "300"),
+    "ipad-offline": ("286", "300"),
+}
 COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
@@ -159,7 +178,7 @@ def capture_language(
         language_arguments.append("--factorytools-screenshot-japanese")
     language_arguments.append(f"--factorytools-screenshot-{scenario}")
     temporary_png = output_path.with_suffix(".png")
-    attempts = HOME_SCREENSHOT_ATTEMPTS if scenario in {"home", "counter-quick-add", "ipad-dashboard", "ipad-offline"} else 1
+    attempts = HOME_SCREENSHOT_ATTEMPTS if scenario in DEMO_READY_SCENARIOS else 1
     for attempt in range(1, attempts + 1):
         capture_id = uuid.uuid4().hex
         capture_arguments = [f"--factorytools-screenshot-capture-id={capture_id}"]
@@ -173,7 +192,7 @@ def capture_language(
                 identifier, *language_arguments, *capture_arguments,
             ]
         )
-        if scenario in {"home", "counter-quick-add", "ipad-dashboard", "ipad-offline"}:
+        if scenario in DEMO_READY_SCENARIOS:
             try:
                 wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)
             except RuntimeError as error:
@@ -190,25 +209,25 @@ def capture_language(
             "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
             str(temporary_png), "--out", str(output_path),
         ])
-        if scenario in {"home", "counter-quick-add", "ipad-dashboard", "ipad-offline"}:
+        expected_values = SCENARIO_EXPECTED_VALUES.get(scenario)
+        if expected_values is not None:
+            verification_arguments = [
+                "swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values,
+            ]
+            if scenario in COUNTER_ROW_SCENARIOS:
+                verification_arguments.append("--counter-row")
             try:
-                expected_values = ["286", "300"]
-                if scenario == "counter-quick-add":
-                    expected_values = ["286", "300", "10"]
-                verification = run(
-                    ["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values],
-                    capture_output=True,
-                )
+                verification = run(verification_arguments, capture_output=True)
             except subprocess.CalledProcessError as error:
                 recognized = (error.stderr or error.stdout or "").strip()
                 temporary_png.unlink(missing_ok=True)
                 if attempt == attempts:
                     raise RuntimeError(
-                        f"{output_path.name} did not show the required screen values after {attempts} captures. "
+                        f"{output_path.name} did not show the required screen content after {attempts} capture(s). "
                         f"Diagnostic JPEG retained at {output_path}. {recognized}"
                     ) from error
                 output_path.unlink(missing_ok=True)
-                print(f"Home counter values were not visible; relaunching the app. {recognized}", flush=True)
+                print(f"Required screen content was not visible; relaunching the app. {recognized}", flush=True)
                 continue
             print(verification.stdout.strip(), flush=True)
         temporary_png.unlink()

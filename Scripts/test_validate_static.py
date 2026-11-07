@@ -325,6 +325,50 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(run_command.call_args.kwargs["timeout_seconds"], 10)
         self.assertIn("2m", run_command.call_args.args[0])
 
+    def test_defect_counter_waits_for_demo_data_and_retries_until_both_counters_are_visible(self) -> None:
+        import capture_simulator_screenshots
+
+        launches: list[list[str]] = []
+        readiness_checks: list[tuple[str, str, str]] = []
+        verifier_arguments: list[list[str]] = []
+
+        def capture_command(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            if arguments[:3] == ["xcrun", "simctl", "launch"]:
+                launches.append(arguments)
+            if "screenshot" in arguments:
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                verifier_arguments.append(arguments)
+                if len(verifier_arguments) == 1:
+                    raise subprocess.CalledProcessError(
+                        1, arguments, stderr="Missing values: 8. Recognized text: blank screen."
+                    )
+                return subprocess.CompletedProcess(arguments, 0, stdout="286, 300, 8 visible", stderr="")
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        def check_readiness(device_id: str, *, language_code: str, capture_id: str) -> None:
+            readiness_checks.append((device_id, language_code, capture_id))
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-defect-counter-ja.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=capture_command), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data", side_effect=check_readiness), \
+                    patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(1206, 2622)), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                dimensions = capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=True, platform="iPhone", scenario="defect-counter",
+                )
+            self.assertTrue(output_path.is_file())
+
+        self.assertEqual(dimensions, (1206, 2622))
+        self.assertEqual(len(launches), 2)
+        self.assertEqual(len(readiness_checks), 2)
+        self.assertEqual(len(verifier_arguments), 2)
+        self.assertEqual(verifier_arguments[1][-4:], ["286", "300", "8", "--counter-row"])
+
     def test_home_readiness_does_not_combine_state_from_different_log_lines(self) -> None:
         split_output = subprocess.CompletedProcess(
             args=[], returncode=0,
@@ -446,8 +490,12 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("time.sleep(HOME_RENDER_SETTLE_SECONDS)", capture_script)
         self.assertIn('f"locale={language_code}"', capture_script)
         self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER)', capture_script)
-        self.assertIn('["swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values]', capture_script)
-        self.assertIn('expected_values = ["286", "300", "10"]', capture_script)
+        self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values,', capture_script)
+        self.assertIn('"defect-counter": ("286", "300", "8")', capture_script)
+        self.assertIn('"counter-history": ("286", "200")', capture_script)
+        self.assertIn('"pro-purchase": ("980",)', capture_script)
+        self.assertIn('if scenario in COUNTER_ROW_SCENARIOS:', capture_script)
+        self.assertIn('"--counter-row"', capture_script)
         self.assertIn("initialSheet == .customQuickAdd ? [.medium, .large] : [.large]", home_card)
         self.assertLess(
             capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
@@ -460,6 +508,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("session?.currentCount.description", home_card)
         self.assertIn("confidence >= 0.5", home_verifier)
         self.assertIn("hasCountAndTargetOnSameRow", home_verifier)
+        self.assertIn('verifierArguments.contains("--counter-row")', home_verifier)
         self.assertIn("abs(current.bounds.midY - target.bounds.midY) <= 0.06", home_verifier)
         self.assertIn("current.bounds.minX < target.bounds.minX", home_verifier)
         self.assertIn("Recognized text:", home_verifier)

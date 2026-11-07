@@ -2,12 +2,18 @@ import Foundation
 import Vision
 
 guard CommandLine.arguments.count >= 3 else {
-    fputs("Usage: verify_simulator_home_screenshot.swift <image> <required-value>...\n", stderr)
+    fputs("Usage: verify_simulator_home_screenshot.swift <image> <required-value>... [--counter-row]\n", stderr)
     exit(2)
 }
 
 let imageURL = URL(fileURLWithPath: CommandLine.arguments[1])
-let expectedValues = Array(CommandLine.arguments.dropFirst(2))
+let verifierArguments = Array(CommandLine.arguments.dropFirst(2))
+let requiresCounterRow = verifierArguments.contains("--counter-row")
+let expectedValues = verifierArguments.filter { $0 != "--counter-row" }
+guard !expectedValues.isEmpty else {
+    fputs("At least one required visible value must be supplied.\n", stderr)
+    exit(2)
+}
 let request = VNRecognizeTextRequest()
 request.recognitionLevel = .accurate
 request.usesLanguageCorrection = false
@@ -37,7 +43,8 @@ do {
         return text.range(of: pattern, options: .regularExpression) != nil
     }
     let hasCountAndTargetOnSameRow: Bool = {
-        guard expectedValues.count >= 2 else { return true }
+        guard requiresCounterRow else { return true }
+        guard expectedValues.count >= 2 else { return false }
         let currentCount = expectedValues[0]
         let targetCount = expectedValues[1]
         let plausibleCounterRow: (CGRect) -> Bool = { (0.15...0.95).contains($0.midY) }
@@ -70,14 +77,14 @@ do {
             ? "Counter and target values were recognized but not together on the counter row."
             : "Missing values: \(missingValues.joined(separator: ", "))."
         fputs(
-            "Simulator home screenshot does not show a complete counter row. \(detail) "
+            "Simulator screenshot does not show the required visible content. \(detail) "
                 + "Recognized text: \(observationSummary)\n",
             stderr
         )
         exit(1)
     }
 
-    print("Visible simulator home values confirmed: \(expectedValues.joined(separator: ", ")).")
+    print("Visible simulator screenshot values confirmed: \(expectedValues.joined(separator: ", ")).")
     print("Simulator screenshot OCR: \(observationSummary)")
 } catch {
     fputs("Simulator home screenshot text recognition failed: \(error)\n", stderr)
