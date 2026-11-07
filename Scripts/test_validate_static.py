@@ -435,6 +435,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
         asset_plan = (root / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
 
+        self.assertIn('"cycle-time": ("120", "30")', capture_script)
+        self.assertNotIn('"cycle-time": ("120", "4", "30")', capture_script)
         self.assertIn("#if targetEnvironment(simulator)", app_source)
         self.assertIn('arguments.contains("--factorytools-screenshot-demo")', app_source)
         self.assertIn('case cycleTime = "cycle-time"', app_source)

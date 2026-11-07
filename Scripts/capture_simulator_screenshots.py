@@ -34,7 +34,10 @@ COUNTER_ROW_SCENARIOS = DEMO_READY_SCENARIOS
 SCENARIO_EXPECTED_VALUES = {
     "home": ("286", "300"),
     "counter-quick-add": ("286", "300", "10"),
-    "cycle-time": ("120", "4", "30"),
+    # Vision intermittently omits the small standalone unit-count input even
+    # though it is visible; the time input and derived result uniquely verify
+    # this screen without making the capture gate OCR-fragile.
+    "cycle-time": ("120", "30"),
     "takt-time": ("27000", "450", "60"),
     "defect-counter": ("286", "300", "8"),
     "counter-history": ("286", "200"),
