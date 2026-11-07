@@ -6,7 +6,9 @@
 
 App Storeで一般公開するにはApple Developer Programのメンバーシップが必要で、Appleの案内では年99米ドルまたは現地通貨の同等額です。これはアプリ開発用APIやSDKの料金とは別ですが、公開を続けるための年会費です。Developerアプリから登録する場合は、解約するまで毎年自動更新されます。日本円の金額と支払い条件は、登録画面に表示された内容で確認してください。登録・支払いはまだ行われていません。費用を含めて公開するかは公開者が判断します。[Appleの登録料と支払い条件](https://developer.apple.com/jp/help/account/membership/program-enrollment)
 
-登録は、対応地域ならApple Developerアプリを入れたiPhoneまたはiPadからも行えます。登録にはApple Accountの2ファクタ認証と、端末のパスコードまたは生体認証などが必要です。これは登録手続きの方法であり、Xcode Cloudの最初のワークフローを作るMac/Xcode要件は別に残ります。[iPhone/iPadでの登録要件](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
+Apple公式はApple Developer Programへの登録をWebとDeveloperアプリの両方で受け付けています。そのためMacがなくても、WindowsのブラウザーからWeb登録を開始できます。Apple Accountの2ファクタ認証と、地域で定められた成人年齢が必要です。個人登録では本人の法的氏名がApp Storeの販売者名になります。登録で本人確認や追加手続きが表示された場合はAppleの画面の案内に従い、本人確認書類や認証情報をこのチャットへ送らないでください。アプリから登録する方法を選ぶ場合は、パスコード等を設定したiPhone/iPadまたは対応Mac、最新のDeveloperアプリ、iCloudへのサインインが必要です。年会費の購入は、無償の準備を終えて公開者が最終判断するまで行いません。[Apple Developer Programの登録方法](https://developer.apple.com/help/account/membership/program-enrollment/)、[Developerアプリでの登録要件](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
+
+署名付きビルドとApp Store Connectへのアップロードは、登録後に既存のGitHub Actions手動ワークフローで実行する設計です。Xcode Cloudの初回設定に必要なMac/Xcodeとは別経路なので、Factory Toolsの提出用ビルドのためにMacを購入・レンタルする計画はありません。[GitHub Actionsからのアップロード手順](APPLE_GITHUB_RELEASE_SETUP.md)
 
 Appleの年会費免除は、一定の条件を満たす非営利団体、認定教育機関、政府機関向けです。個人・個人事業主は対象外で、免除申請者は有料アプリ契約に署名しておらず、アプリでデジタル商品・サービスを販売していない必要があります。Factory Tools Proを買い切りアプリ内購入として販売する計画とは両立しないため、このプロジェクトでは免除を見込まず、年会費を必要な公開コストとして扱います。[Appleの年会費免除条件](https://developer.apple.com/help/account/membership/fee-waivers)
 
