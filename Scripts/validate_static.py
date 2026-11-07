@@ -2026,16 +2026,20 @@ def main() -> int:
         other_swift,
     ), "Only the local peer transport may use Network.framework clients")
     require("import Network" in peer_outbox_tests
-            and "testLocalPeerTLSParametersCompleteLoopbackPSKHandshake" in peer_outbox_tests
+            and "testLocalPeerTLSParametersRoundTripVersionedFramesOverTLSPSK" in peer_outbox_tests
             and "testLocalPeerTLSParametersRejectMismatchedPairingKey" in peer_outbox_tests
             and "LocalPeerTLSParameters.make(pairingKey: pairingKey)" in peer_outbox_tests
+            and "CounterPeerFrameCodec.encode(request)" in peer_outbox_tests
+            and "connection.send(" in peer_outbox_tests
+            and "client.send(content: requestFrame" in peer_outbox_tests
+            and "clientReceivedFrame.wait(timeout: .now() + 10), .success" in peer_outbox_tests
             and 'host: "127.0.0.1"' in peer_outbox_tests
             and "let listenerAccepted = DispatchSemaphore(value: 0)" in peer_outbox_tests
             and "listenerAccepted.signal()" in peer_outbox_tests
             and "listenerAccepted.wait(timeout: .now() + 10), .success" in peer_outbox_tests
             and "clientReady.wait(timeout: .now() + 10), .timedOut" in peer_outbox_tests
             and "handshakeRejected" not in peer_outbox_tests,
-            "the local peer TLS-PSK tests must verify matching-key readiness and reject a mismatched peer without depending on listener-side failure delivery")
+            "the local peer TLS-PSK tests must round-trip versioned frames, verify matching-key readiness, and reject mismatched peers without relying on listener-side failure delivery")
     require(not re.search(r"\bimport\s+(?:Network|CFNetwork|FoundationNetworking|WebKit|SafariServices)\b", other_swift)
             and "import Network" in local_peer_transport
             and "NWListener" in local_peer_transport

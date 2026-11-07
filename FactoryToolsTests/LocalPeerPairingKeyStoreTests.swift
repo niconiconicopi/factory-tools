@@ -7,7 +7,7 @@ import FactoryToolsCore
 @testable import FactoryTools
 
 final class LocalPeerPairingKeyStoreTests: XCTestCase {
-    func testLocalPeerTLSParametersCompleteLoopbackPSKHandshake() throws {
+    func testLocalPeerTLSParametersRoundTripVersionedFramesOverTLSPSK() throws {
         let pairingKey = Data(repeating: 0x5a, count: 32)
         let listenerParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: pairingKey))
         let clientParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: pairingKey))
@@ -15,11 +15,45 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS")
         let listenerReady = DispatchSemaphore(value: 0)
         let clientReady = DispatchSemaphore(value: 0)
+        let serverReady = DispatchSemaphore(value: 0)
+        let serverReceivedFrame = DispatchSemaphore(value: 0)
+        let clientReceivedFrame = DispatchSemaphore(value: 0)
+        let resultQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS.Results")
+        let request = CounterPeerMessage.catalogRequest(
+            messageID: UUID(uuidString: "00000000-0000-0000-0000-000000000251")!
+        )
+        let requestFrame = try CounterPeerFrameCodec.encode(request)
+        var serverReceived: [CounterPeerMessage] = []
+        var clientReceived: [CounterPeerMessage] = []
 
         listener.stateUpdateHandler = { state in
             if case .ready = state { listenerReady.signal() }
         }
         listener.newConnectionHandler = { connection in
+            connection.stateUpdateHandler = { state in
+                if case .ready = state {
+                    serverReady.signal()
+                    connection.receive(
+                        minimumIncompleteLength: requestFrame.count,
+                        maximumLength: requestFrame.count
+                    ) { data, _, _, error in
+                        guard let data, error == nil else { return }
+                        do {
+                            var decoder = CounterPeerFrameDecoder()
+                            let messages = try decoder.append(data)
+                            guard messages == [request] else { return }
+                            resultQueue.sync { serverReceived = messages }
+                            serverReceivedFrame.signal()
+                            connection.send(
+                                content: CounterPeerFrameCodec.encode(messages[0]),
+                                completion: .contentProcessed { _ in }
+                            )
+                        } catch {
+                            return
+                        }
+                    }
+                }
+            }
             connection.start(queue: callbackQueue)
         }
         listener.start(queue: callbackQueue)
@@ -40,6 +74,32 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         defer { client.cancel() }
 
         XCTAssertEqual(clientReady.wait(timeout: .now() + 10), .success)
+        XCTAssertEqual(serverReady.wait(timeout: .now() + 10), .success)
+
+        let sentFrame = DispatchSemaphore(value: 0)
+        client.send(content: requestFrame, completion: .contentProcessed { error in
+            if error == nil { sentFrame.signal() }
+        })
+        XCTAssertEqual(sentFrame.wait(timeout: .now() + 10), .success)
+        XCTAssertEqual(serverReceivedFrame.wait(timeout: .now() + 10), .success)
+
+        client.receive(
+            minimumIncompleteLength: requestFrame.count,
+            maximumLength: requestFrame.count
+        ) { data, _, _, error in
+            guard let data, error == nil else { return }
+            do {
+                var decoder = CounterPeerFrameDecoder()
+                let messages = try decoder.append(data)
+                resultQueue.sync { clientReceived = messages }
+                clientReceivedFrame.signal()
+            } catch {
+                return
+            }
+        }
+        XCTAssertEqual(clientReceivedFrame.wait(timeout: .now() + 10), .success)
+        XCTAssertEqual(resultQueue.sync { serverReceived }, [request])
+        XCTAssertEqual(resultQueue.sync { clientReceived }, [request])
     }
 
     func testLocalPeerTLSParametersRejectMismatchedPairingKey() throws {
