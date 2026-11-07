@@ -21,7 +21,7 @@ Apple Developer Programには個人登録と組織登録があります。これ
 | 個人・個人事業主 | Apple Accountの2ファクタ認証、法定年齢、本人の法的氏名・住所・連絡先。本人確認書類を求められる場合がある。D‑U‑N‑S番号は不要 | 個人の法的氏名が販売者として表示される。屋号やアプリ名にはできない |
 | 組織 | Appleと契約できる法人等の法的実体、登録を行う人の契約権限、組織のD‑U‑N‑S番号、組織ドメインの業務メール、組織に結び付いた機能する公開Webサイト。追加書類を求められる場合がある | 法的な組織名が販売者として表示される |
 
-AppleはD‑U‑N‑S番号について、多くの地域では無料で取得でき、番号の発行に最大5営業日、その情報がAppleへ届くまでさらに最大2営業日かかると案内しています。個人事業主・単独事業はAppleの案内上、個人として登録します。登録区分や公開者名義は、販売者名の希望と実際の法的資格に合わせて選びます。[Appleの登録要件](https://developer.apple.com/help/account/membership/program-enrollment)、[D‑U‑N‑S番号の確認・申請](https://developer.apple.com/help/account/membership/D-U-N-S)、[開発者名の設定](https://developer.apple.com/help/app-store-connect/create-an-app-record/set-your-developer-name/)
+発行者は個人登録を選択済みです。Apple登録には本人の法的氏名・住所・連絡先が必要で、個人の法的氏名がApp Storeの販売者名として表示されます。登録情報はAppleの手続き画面に入力し、チャットには送らないでください。[Appleの登録要件](https://developer.apple.com/help/account/membership/program-enrollment)、[開発者名の設定](https://developer.apple.com/help/app-store-connect/create-an-app-record/set-your-developer-name/)
 
 ## いま分からなくて問題ない項目
 
@@ -29,8 +29,8 @@ AppleはD‑U‑N‑S番号について、多くの地域では無料で取得�
 
 | 項目 | かんたんな説明 | どこで決まるか | 今の状態 |
 |---|---|---|---|
-| Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 未登録との認識。Appleの案内は年99米ドルまたは現地通貨額。円での請求額は登録手続き画面で確認。加入は最後の有料準備として保留 |
-| 公開者の登録区分・販売者名 | 個人名または法人等の法的名称のどちらをApp Store販売者として表示するか | 個人は法的氏名。組織は法的実体・契約権限・D‑U‑N‑S・組織ドメインの業務メール・機能する公開Webサイトが必要 | 未決定。登録前に名義と要件を確認 |
+| Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 個人として登録する方針。登録は未実施。Appleの案内は年99米ドルまたは現地通貨額。円での請求額は登録画面で確認。加入は最後の有料準備として保留 |
+| 公開者の登録区分・販売者名 | 個人名または法人等の法的名称のどちらをApp Store販売者として表示するか | 個人登録では本人の法的氏名がApp Storeの販売者名に表示される | 個人登録を選択済み。法的氏名はAppleの登録画面に入力。チャット・公開文面には入力しない |
 | Free／Proの機能境界 | どの機能を無料で使え、どの機能をPro購入で解放するか | Version 1の境界は決定済み。無料は基本ツール・基本不良記録・基本履歴・基本Watch/iPad操作・Industrial Dark。Proは独立した生産進捗、OEE、追加ホーム、詳細分析・専門ツール・高度なWatch機能・将来のProテーマ | 決定済み。公開前にアプリ表示とストア説明の一致を確認 |
 | Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 未設定。発行者名義の値が必要 |
 | App Store Connect SKU | 顧客には表示されない、App Store Connectでアプリを管理する内部番号 | 候補は `FACTORYTOOLS-IOS-001`。公開者のアカウント内で未使用かを確認してからアプリ記録を作成する | 候補を選定。アカウント内の未使用確認は未実施 |
