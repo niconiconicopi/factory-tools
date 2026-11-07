@@ -42,10 +42,11 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
                             var decoder = CounterPeerFrameDecoder()
                             let messages = try decoder.append(data)
                             guard messages == [request] else { return }
+                            let responseFrame = try CounterPeerFrameCodec.encode(messages[0])
                             resultQueue.sync { serverReceived = messages }
                             serverReceivedFrame.signal()
                             connection.send(
-                                content: CounterPeerFrameCodec.encode(messages[0]),
+                                content: responseFrame,
                                 completion: .contentProcessed { _ in }
                             )
                         } catch {
