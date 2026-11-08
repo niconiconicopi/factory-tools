@@ -21,18 +21,30 @@ guard !expectedValues.isEmpty else {
     fputs("At least one required visible value must be supplied.\n", stderr)
     exit(2)
 }
-let request = VNRecognizeTextRequest()
-request.recognitionLevel = .accurate
-request.usesLanguageCorrection = false
-if let recognitionLanguage {
-    request.recognitionLanguages = [recognitionLanguage]
+let recognitionLanguages = recognitionLanguage == "ja-JP"
+    ? ["ja-JP", "en-US"]
+    : [recognitionLanguage ?? "en-US"]
+let requests = recognitionLanguages.map { language in
+    let request = VNRecognizeTextRequest()
+    request.recognitionLevel = .accurate
+    request.usesLanguageCorrection = false
+    request.recognitionLanguages = [language]
+    return request
 }
 
 do {
-    try VNImageRequestHandler(url: imageURL).perform([request])
-    let observations = (request.results ?? []).enumerated().compactMap { index, observation in
-        observation.topCandidates(1).first.map {
-            (index: index, text: $0.string, confidence: $0.confidence, bounds: observation.boundingBox)
+    try VNImageRequestHandler(url: imageURL).perform(requests)
+    let observations = requests.enumerated().flatMap { requestIndex, request in
+        (request.results ?? []).enumerated().compactMap { index, observation in
+            observation.topCandidates(1).first.map {
+                (
+                    index: requestIndex * 1_000 + index,
+                    language: recognitionLanguages[requestIndex],
+                    text: $0.string,
+                    confidence: $0.confidence,
+                    bounds: observation.boundingBox
+                )
+            }
         }
     }
     let missingValues = expectedValues.filter { expected in
@@ -44,7 +56,7 @@ do {
         }
     }
     let observationSummary = observations.map {
-        "\($0.text)@\(String(format: "%.2f", $0.bounds.midY)) [confidence=\(String(format: "%.2f", $0.confidence))]"
+        "[\($0.language)] \($0.text)@\(String(format: "%.2f", $0.bounds.midY)) [confidence=\(String(format: "%.2f", $0.confidence))]"
     }.joined(separator: " | ")
 
     let containsToken: (String, String) -> Bool = { value, text in
