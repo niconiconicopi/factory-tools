@@ -508,6 +508,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"cycle-time": ("120", "30")', capture_script)
         self.assertNotIn('"cycle-time": ("120", "4", "30")', capture_script)
         self.assertIn("#if targetEnvironment(simulator)", app_source)
+        self.assertIn('HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)', app_source)
         self.assertIn('arguments.contains("--factorytools-screenshot-demo")', app_source)
         self.assertIn('case cycleTime = "cycle-time"', app_source)
         self.assertIn('case taktTime = "takt-time"', app_source)

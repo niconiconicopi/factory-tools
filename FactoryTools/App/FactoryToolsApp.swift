@@ -135,7 +135,7 @@ struct FactoryToolsApp: App {
         language: AppLanguage,
         scenario: ScreenshotDemoScenario
     ) throws {
-        let home = HomeProfile(name: "Assembly", usesDefaultName: false, sortOrder: 0)
+        let home = HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)
         let settings = AppSettings(
             language: language.rawValue,
             themeID: ThemeID.industrialDark.rawValue,
