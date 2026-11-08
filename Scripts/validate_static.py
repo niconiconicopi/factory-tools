@@ -369,6 +369,8 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "S/M/L screenshot artifact is retained for review": "factory-tools-iphone-counter-card-size-evidence",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
         "archive verifies Watch app in the PlugIns bundle directory": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
+        "archive verifies privacy manifests in both app bundles": 'for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do',
+        "archive verifies required elapsed-time privacy reason": '"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])',
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
     if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
@@ -4738,8 +4740,9 @@ def main() -> int:
             }, "FactoryTools app target must bundle its localized resources and privacy manifest")
     require(resource_membership("D40000000000000000000007") == set(),
             "standalone Core tests must not bundle app resources or localization catalogs")
-    require(resource_membership("D40000000000000000000009") == {"Localizable.xcstrings", "Assets.xcassets"},
-            "FactoryToolsWatch must bundle its own Japanese/English String Catalog and watchOS AppIcon asset catalog")
+    require(resource_membership("D40000000000000000000009") == {
+                "Localizable.xcstrings", "Assets.xcassets", "PrivacyInfo.xcprivacy"
+            }, "FactoryToolsWatch must bundle its Japanese/English catalog, watchOS AppIcon, and required-reason privacy manifest")
     privacy_manifest_path = ROOT / "FactoryTools" / "PrivacyInfo.xcprivacy"
     try:
         privacy_manifest = plistlib.loads(privacy_manifest_path.read_bytes())
@@ -4752,7 +4755,10 @@ def main() -> int:
         }],
     }
     require(privacy_manifest == expected_privacy_manifest,
-            "the app privacy manifest must declare only the ContinuousClock stopwatch's approved SystemBootTime reason")
+            "iPhone and Watch privacy manifests must declare the ContinuousClock stopwatches' approved SystemBootTime reason")
+    require("ContinuousClock" in (ROOT / "FactoryTools" / "Features" / "Tools" / "CycleTimeCalculatorView.swift").read_text(encoding="utf-8")
+            and "ContinuousClock" in (ROOT / "FactoryToolsWatch" / "WatchCounterModel.swift").read_text(encoding="utf-8"),
+            "iPhone/iPad and Watch timer implementations must both be covered by the declared SystemBootTime reason")
     privacy_inventory = (ROOT / "FactoryTools" / "PRIVACY_DATA_INVENTORY.md").read_text(encoding="utf-8")
     require("not an App Store Connect submission" in privacy_inventory
             and "no app-operated cloud storage or sync, account, advertising, analytics, tracking, external API, or third-party SDK integration" in privacy_inventory

@@ -58,7 +58,7 @@ Archive the iOS app; this scheme embeds the Watch companion:
 xcodebuild archive -project FactoryTools.xcodeproj -scheme FactoryTools -configuration Release -destination 'generic/platform=iOS' -archivePath '<archive path>' -allowProvisioningUpdates DEVELOPMENT_TEAM='<Apple team ID>' FACTORYTOOLS_APP_BUNDLE_ID='<publisher bundle ID>' FACTORYTOOLS_PRIVACY_POLICY_URL='<privacy URL>' FACTORYTOOLS_SUPPORT_URL='<support URL>' FACTORYTOOLS_PRO_PRODUCT_ID='<Pro product ID>' MARKETING_VERSION='<release version>' CURRENT_PROJECT_VERSION='<build number>'
 ```
 
-Inspect the archive in Xcode Organizer, verify the iPhone and Watch bundle identifiers, signing, embedded Watch app, privacy manifest, icons, and generated `Info.plist` URLs/product ID. Validate upload and purchase/restore in the App Store sandbox/TestFlight before submitting.
+Inspect the archive in Xcode Organizer, verify the iPhone and Watch bundle identifiers, signing, embedded Watch app, icons, and generated `Info.plist` URLs/product ID. Confirm that both `FactoryTools.app/PrivacyInfo.xcprivacy` and `FactoryTools.app/PlugIns/FactoryToolsWatch.app/PrivacyInfo.xcprivacy` are present and declare System Boot Time reason `35F9.1`. Validate upload and purchase/restore in the App Store sandbox/TestFlight before submitting.
 
 ## 5. Close App Store Connect decisions and evidence
 

@@ -131,5 +131,23 @@ jobs:
             CODE_SIGNING_ALLOWED=NO
           app_path="$archive_path/Products/Applications/FactoryTools.app"
           test -d "$app_path"
-          test -d "$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app"
-          echo "Unsigned iOS archive contains the Watch companion at PlugIns/FactoryToolsWatch.app." >> "$GITHUB_STEP_SUMMARY"
+          watch_app_path="$app_path/PlugIns/FactoryToolsWatch.app"
+          test -d "$watch_app_path"
+          for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do
+            test -f "$manifest"
+            python3 - "$manifest" <<'PY'
+          import plistlib
+          import sys
+
+          with open(sys.argv[1], "rb") as manifest_file:
+              manifest = plistlib.load(manifest_file)
+          required_reason = any(
+              entry.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategorySystemBootTime"
+              and "35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])
+              for entry in manifest.get("NSPrivacyAccessedAPITypes", [])
+          )
+          if not required_reason:
+              raise SystemExit(f"Missing SystemBootTime reason 35F9.1: {sys.argv[1]}")
+          PY
+          done
+          echo "Unsigned iOS archive contains FactoryTools.app/PlugIns/FactoryToolsWatch.app and valid privacy manifests in both app bundles." >> "$GITHUB_STEP_SUMMARY"

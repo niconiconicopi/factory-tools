@@ -748,6 +748,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
         self.assertIn("FactoryTools.app/PlugIns/FactoryToolsWatch.app", workflow)
+        self.assertIn('for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do', workflow)
+        self.assertIn('entry.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategorySystemBootTime"', workflow)
+        self.assertIn('"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])', workflow)
         self.assertIn("factory-tools-app-store-watch-home", workflow)
         self.assertRegex(
             workflow,
@@ -1056,6 +1059,32 @@ class JSONResourceValidationTests(unittest.TestCase):
     def test_rejects_duplicate_keys_in_resource_json(self) -> None:
         with self.assertRaises(DuplicateJSONKeyError):
             parse_json_no_duplicates('{"language": "ja", "language": "en"}')
+
+
+class PrivacyManifestTargetTests(unittest.TestCase):
+    def test_required_reason_manifest_is_bundled_in_each_timer_app(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        project = parse_openstep((root / "FactoryTools.xcodeproj" / "project.pbxproj").read_text(encoding="utf-8"))
+        objects = project["objects"]
+        manifest_reference = next(
+            object_id for object_id, item in objects.items()
+            if item.get("isa") == "PBXFileReference" and item.get("path") == "PrivacyInfo.xcprivacy"
+        )
+
+        for target_name in ("FactoryTools", "FactoryToolsWatch"):
+            target = next(
+                item for item in objects.values()
+                if item.get("isa") == "PBXNativeTarget" and item.get("name") == target_name
+            )
+            bundled_manifest = any(
+                objects[build_file_id].get("fileRef") == manifest_reference
+                for phase_id in target["buildPhases"]
+                for phase in (objects[phase_id],)
+                if phase.get("isa") == "PBXResourcesBuildPhase"
+                for build_file_id in phase["files"]
+            )
+            with self.subTest(target=target_name):
+                self.assertTrue(bundled_manifest)
 
 
 class SwiftDataModelSourceTests(unittest.TestCase):

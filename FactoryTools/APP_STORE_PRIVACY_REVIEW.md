@@ -11,7 +11,7 @@ This source-based review prepares the App Store Connect privacy questionnaire. I
 - The app can send counter commands and one-unit Cycle Time samples between the user's paired iPhone and Apple Watch. The iPhone also sends counter catalog data and, while Pro is active, read-only Production Progress snapshots containing the selected home name, count, and target. The paired iPad receives counter commands and required session snapshots over the local peer connection. No project endpoint sends these records to a developer-operated or third-party server.
 - User-selected JSON backup and CSV export files can be saved or shared to a location chosen in the system share sheet. The app does not control the destination selected by the user.
 - Factory Tools Pro uses Apple's StoreKit non-consumable purchase. Apple's App Privacy guidance says payment information entered into Apple's payment service outside the app and not available to the developer is not collected by the developer. The app checks the signed entitlement locally and has no server or analytics destination for transaction data. Reconfirm the final StoreKit implementation and App Store privacy definitions before the publisher attests.
-- `PrivacyInfo.xcprivacy` declares the System Boot Time accessed API with reason `35F9.1`, used by the local Cycle Time stopwatch. It does not declare collected data types.
+- `PrivacyInfo.xcprivacy` declares the System Boot Time accessed API with reason `35F9.1` for the iPhone/iPad and Watch Cycle Time stopwatches. The manifest is included in both app bundles. The Watch sends the resulting elapsed Cycle Time interval to its paired iPhone, not raw system boot time. It does not declare collected data types.
 
 ## Proposed App Store Connect response
 

@@ -74,6 +74,7 @@ B00000000000000000000071 /* WatchTheme.swift in Sources */ = {isa = PBXBuildFile
 B00000000000000000000072 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000074 /* Localizable.xcstrings */; };
 B00000000000000000000084 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000084 /* Assets.xcassets */; };
 	B00000000000000000000085 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000085 /* PrivacyInfo.xcprivacy */; };
+B00000000000000000000091 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000085 /* PrivacyInfo.xcprivacy */; };
 B00000000000000000000073 /* FactoryToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000060 /* FactoryToolsCore.framework */; };
 B00000000000000000000074 /* FactoryToolsWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C00000000000000000000075 /* FactoryToolsWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, );}; };
 B00000000000000000000075 /* CounterPeerMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000076 /* CounterPeerMessage.swift */; };
@@ -275,7 +276,7 @@ D40000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActio
 D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000060,); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000008 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000068, B00000000000000000000069, B00000000000000000000070, B00000000000000000000071,); runOnlyForDeploymentPostprocessing = 0;};
-D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084,); runOnlyForDeploymentPostprocessing = 0;};
+D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084, B00000000000000000000091,); runOnlyForDeploymentPostprocessing = 0;};
 D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
 /* End PBXSourcesBuildPhase section */
 

@@ -27,7 +27,7 @@ Factory Tools Pro uses Apple's StoreKit non-consumable purchase. StoreKit return
 
 ## System APIs and privacy manifest
 
-The iPhone/iPad app uses `ContinuousClock` for its local Cycle Time stopwatch. `PrivacyInfo.xcprivacy` declares the System Boot Time accessed API with reason `35F9.1`. The project verifier checks the manifest syntax, target membership, and the source's known required-reason API use.
+The universal iPhone/iPad app and the Watch app use `ContinuousClock` for their local Cycle Time stopwatches. Each app bundle includes `PrivacyInfo.xcprivacy` declaring the System Boot Time accessed API with reason `35F9.1`. The Watch sends the resulting elapsed Cycle Time interval to its paired iPhone as an in-app measurement; it does not send the raw system boot time. The project verifier checks the manifest syntax, both target memberships, and the source's known required-reason API use.
 
 The app also declares the Bonjour service and localized local-network permission text required for optional iPad pairing. The user initiates pairing and can remove the pairing code in Settings.
 
