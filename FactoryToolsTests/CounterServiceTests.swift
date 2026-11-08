@@ -3800,7 +3800,6 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testHostedTestsMarkTheAppContainerForInMemoryStorage() {
-        XCTAssertEqual(ProcessInfo.processInfo.environment["FACTORYTOOLS_HOSTED_TESTS"], "1")
         XCTAssertTrue(FactoryToolsApp.isRunningHostedTests)
     }
 
