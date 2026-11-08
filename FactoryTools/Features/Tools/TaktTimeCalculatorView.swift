@@ -26,13 +26,23 @@ struct TaktTimeCalculatorView: View {
         NavigationStack {
             Form {
                 Section("taktTime.inputs") {
-                    TextField("taktTime.netSeconds", text: $netAvailableSecondsText)
-                        .keyboardType(.numberPad)
+                    LabeledContent("taktTime.netSeconds") {
+                        TextField("taktTime.netSeconds", text: $netAvailableSecondsText)
+                            .labelsHidden()
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityLabel("taktTime.netSeconds")
+                    }
                     Text("taktTime.netTimeNote")
                         .font(theme.captionFont)
                         .foregroundStyle(theme.secondaryText)
-                    TextField("taktTime.demand", text: $customerDemandText)
-                        .keyboardType(.numberPad)
+                    LabeledContent("taktTime.demand") {
+                        TextField("taktTime.demand", text: $customerDemandText)
+                            .labelsHidden()
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityLabel("taktTime.demand")
+                    }
                 }
                 Section("taktTime.result") {
                     if let secondsPerUnit {

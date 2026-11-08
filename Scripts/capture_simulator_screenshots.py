@@ -54,6 +54,16 @@ SCENARIO_EXPECTED_VALUES = {
     "ipad-dashboard": ("286", "300"),
     "ipad-offline": ("286", "300"),
 }
+SCENARIO_EXPECTED_LABELS = {
+    "cycle-time": {
+        "en": ("Total time", "Units produced"),
+        "ja": ("合計時間", "生産個数"),
+    },
+    "takt-time": {
+        "en": ("Net production time", "Customer demand"),
+        "ja": ("正味稼働時間", "顧客需要数"),
+    },
+}
 COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
@@ -223,6 +233,7 @@ def capture_language(
         ])
         expected_values = SCENARIO_EXPECTED_VALUES.get(scenario)
         if expected_values is not None:
+            expected_values += SCENARIO_EXPECTED_LABELS.get(scenario, {}).get(language, ())
             verification_arguments = [
                 "swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values,
             ]

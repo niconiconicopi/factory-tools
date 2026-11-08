@@ -438,7 +438,11 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
                     raise subprocess.CalledProcessError(
                         1, arguments, stderr="Missing values: 27000, 450, 60. Recognized text: blank screen."
                     )
-                return subprocess.CompletedProcess(arguments, 0, stdout="27000, 450, 60 visible", stderr="")
+                return subprocess.CompletedProcess(
+                    arguments, 0,
+                    stdout="27000, 450, 60, Net production time, Customer demand visible",
+                    stderr="",
+                )
             return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
 
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -459,7 +463,10 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(len(launches), 2)
         self.assertEqual(captures, 2)
         self.assertEqual(len(verifier_arguments), 2)
-        self.assertEqual(verifier_arguments[1][-3:], ["27000", "450", "60"])
+        self.assertEqual(
+            verifier_arguments[1][-5:],
+            ["27000", "450", "60", "Net production time", "Customer demand"],
+        )
         readiness.assert_not_called()
 
     def test_home_readiness_does_not_combine_state_from_different_log_lines(self) -> None:
@@ -627,6 +634,13 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Running simulator capture command:", capture_script)
         self.assertIn("CycleTimeSample(homeProfileID: home.id", app_source)
         self.assertIn('"27000" : ""', (root / "FactoryTools" / "Features" / "Tools" / "TaktTimeCalculatorView.swift").read_text(encoding="utf-8"))
+        takt_view = (root / "FactoryTools" / "Features" / "Tools" / "TaktTimeCalculatorView.swift").read_text(encoding="utf-8")
+        cycle_view = (root / "FactoryTools" / "Features" / "Tools" / "CycleTimeCalculatorView.swift").read_text(encoding="utf-8")
+        self.assertIn('LabeledContent("taktTime.netSeconds")', takt_view)
+        self.assertIn('LabeledContent("taktTime.demand")', takt_view)
+        self.assertIn('LabeledContent("cycleTime.totalSeconds")', cycle_view)
+        self.assertIn('LabeledContent("cycleTime.quantity")', cycle_view)
+        self.assertIn('"ja": ("正味稼働時間", "顧客需要数")', capture_script)
         self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
         self.assertIn('"13-inch" not in device', capture_script)
         self.assertIn('dimensions not in {(2064, 2752), (2048, 2732)}', capture_script)

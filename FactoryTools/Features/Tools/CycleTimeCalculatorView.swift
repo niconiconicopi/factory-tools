@@ -70,10 +70,20 @@ struct CycleTimeCalculatorView: View {
         NavigationStack {
             Form {
                 Section("cycleTime.inputs") {
-                    TextField("cycleTime.totalSeconds", text: $totalSecondsText)
-                        .keyboardType(.numberPad)
-                    TextField("cycleTime.quantity", text: $quantityText)
-                        .keyboardType(.numberPad)
+                    LabeledContent("cycleTime.totalSeconds") {
+                        TextField("cycleTime.totalSeconds", text: $totalSecondsText)
+                            .labelsHidden()
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityLabel("cycleTime.totalSeconds")
+                    }
+                    LabeledContent("cycleTime.quantity") {
+                        TextField("cycleTime.quantity", text: $quantityText)
+                            .labelsHidden()
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityLabel("cycleTime.quantity")
+                    }
                 }
                 Section("cycleTime.timer") {
                     TimelineView(.periodic(from: .now, by: 0.1)) { _ in
