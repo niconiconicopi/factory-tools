@@ -1,5 +1,7 @@
 # Factory Tools 公開準備ガイド
 
+迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
+
 **現在の状態:** Apple Developer／App Store Connectの値は未設定との認識。発行者は個人登録を選択済みですが、Apple Developer Programへの登録はまだです。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。App Store Connectの設定は未完了。
 
 ## 公開にかかるApple登録料

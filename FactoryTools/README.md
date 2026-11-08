@@ -18,6 +18,8 @@ For the Apple-platform test, paired-device verification, and signed archive sequ
 
 For plain-language explanations of the publisher values and release decisions that are not configured yet, see [APPLE_RELEASE_SETUP_JA.md](APPLE_RELEASE_SETUP_JA.md).
 
+For the owner actions in order, including what is needed now, after Apple enrollment, and before release, see [PUBLISHER_RELEASE_CHECKLIST_JA.md](PUBLISHER_RELEASE_CHECKLIST_JA.md).
+
 ## Native iOS verification status
 
 This workspace provides Windows source-level verification only. Swift compilation, launching the app, and native XCTest execution are outside the checks reported here because Apple's SDK and runtime are unavailable in this environment.
