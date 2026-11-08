@@ -70,7 +70,7 @@ Inspect the archive in Xcode Organizer, verify the iPhone and Watch bundle ident
 - In the signed app, verify that the Pro settings screen's Family Sharing disclosure matches the product's `isFamilyShareable` value after the App Store Connect setting is finalized.
 - Create the single Factory Tools Pro non-consumable using the configured product ID and confirm its localized metadata and price.
 - Publish the bilingual privacy and support pages with monitored publisher contact details; add App Review contact information.
-- Capture genuine screenshots and the required Watch icon/metadata from the final signed build.
+- Upload genuine product-page screenshots that match the accepted Release UI and Apple's current dimensions; they may come from the hosted Release Simulator captures and do not need a signed build. Capture the separate IAP review image from the configured purchase screen after signed-build StoreKit verification. Include the required Watch icon and metadata.
 - Complete age rating, privacy, export compliance, and App Review questions against the archive and the publisher's actual practices.
 
 The release is complete only when the native build/tests, device checks, signed archive, App Store Connect configuration, and submission assets have direct recorded evidence. The Windows source verifier is supporting evidence only.
