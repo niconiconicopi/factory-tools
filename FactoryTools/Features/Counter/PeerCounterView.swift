@@ -64,11 +64,11 @@ struct PeerCounterView: View {
             homeProfileID: UUID(),
             homeName: "Production",
             toolID: .productionCounter,
-            sessionName: "Line A",
+            sessionName: "Production run",
             currentCount: 286,
             targetCount: 300,
             latestUndoableEventID: UUID(),
-            defaultSessionNameToolID: nil,
+            defaultSessionNameToolID: .productionCounter,
             homeNameIsDefault: true
         )
     ]
