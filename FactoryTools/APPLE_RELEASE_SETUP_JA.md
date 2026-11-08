@@ -42,7 +42,7 @@ Appleが示す判断材料は、アプリ内購入などの収益、消費者に
 
 販売者と申告する場合、住所・電話番号は商品ページ上で公開されます。私書箱を使う場合も本人との関係を示す書類が必要です。自宅住所や電話番号はこのチャットや公開リポジトリに書かず、使う場合はAppleの手続き画面へ直接入力してください。サポートメールとして選んだアドレスをDSA用にも使うかは、公開者が別途確認します。
 
-公開者の実態による回答はまだ未確定です。回答が決まるまではEU配信を有効にする最終準備へ進めません。Appleはこの情報を一般的な説明であり法的助言ではないとしています。判断が難しい場合は、必要に応じて法律の専門家に確認してください。[AppleのDSA販売者要件・判断材料・必要情報](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/)
+趣味として運営する場合でも、Appleはアプリ内購入を含むアプリ収益を判断材料として明示しています。非販売者の例は「趣味で開発し、商業化する意図がない場合」です。Factory ToolsではProを¥980で販売する計画があるため、趣味という説明だけでは非販売者として確定できません。Pro販売を含めた実態について公開者本人が最終自己評価し、App Store Connectに申告する必要があります。販売者と判断する場合は、住所または私書箱・電話番号・メールアドレスがEU向け商品ページに表示されます。Appleは一般情報であり法的助言ではないと明記しています。判断が難しい場合は、必要に応じて法律の専門家に確認してください。[AppleのDSA販売者要件・判断材料・必要情報](https://developer.apple.com/jp/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/)
 
 ## いま分からなくて問題ない項目
 
