@@ -409,6 +409,7 @@ def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
         "bounded StoreKit probe": "timeout-minutes: 30",
         "dedicated StoreKit test plan scheme": "-scheme FactoryToolsStoreKit",
         "explicit StoreKit test plan selection": "-testPlan FactoryToolsStoreKit",
+        "latest available iPhone Simulator runtime selection": "max(candidates)",
         "focused local StoreKit purchase test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "simulator signing enabled for StoreKit integration": "CODE_SIGNING_ALLOWED=YES",
         "ad-hoc simulator identity avoids publisher signing account": "CODE_SIGN_IDENTITY=-",

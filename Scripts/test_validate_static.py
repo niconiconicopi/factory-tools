@@ -118,6 +118,7 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         self.assertIn("-scheme FactoryToolsStoreKit", workflow)
         self.assertIn("-testPlan FactoryToolsStoreKit", workflow)
         self.assertIn("xcrun simctl list runtimes", workflow)
+        self.assertIn("max(candidates)", workflow)
 
     def test_dedicated_storekit_test_plan_targets_app_and_local_configuration(self) -> None:
         root = Path(__file__).resolve().parents[1]
