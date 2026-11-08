@@ -65,12 +65,12 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
-3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。現在のローカル検証は94件のPythonテスト、静的構造検査（Swift 67ファイル・XCTestソース284件・日英431文字列）、公開ページ生成確認、秘密情報検査を通過しています。静的ソース上のアプリ側のテストメソッドは236件、Coreテストは48件です。最新app-source commit `2ffd462` は [Apple native checks run 42444845017](https://github.com/niconiconicopi/factory-tools/actions/runs/42444845017) でiPhoneとiPadのアプリテストが各235件通過し、英日Release画面撮影、追加のS/M/Lカウンター撮影6枚、必須スクリーンショット検査も通過しました。前回失敗した英語Takt Time画面は、OCRに失敗した初回撮影から最大3回再撮影する処理により成功しています。[Watch/archive run 42444845036](https://github.com/niconiconicopi/factory-tools/actions/runs/42444845036) も成功し、Watchビルド・共有Coreテスト・Watch入り未署名archiveを確認しました。SDK 27 forward-check run 42438704276 はアプリ／XcodeプロジェクトのSwift変更前のrevision `a050e18` で成功しており、現在のソース自体は最新の標準Apple CIで検証されています。StoreKit実購入テストはheadless Simulatorで商品読込ができず通常CIから外しています。Apple Developer Technical Supportは関連するCLI Simulator問題を既知として回答しており、後日のXcode更新で再検証が必要です（[Apple Developer Forums](https://developer.apple.com/forums/thread/826971)）。これらは無料macOS runnerを使ったSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入の確認ではありません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
+3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。現在のローカル検証は94件のPythonテスト、静的構造検査（Swift 67ファイル・XCTestソース284件・日英431文字列）、公開ページ生成確認、秘密情報検査を通過しています。静的ソース上のアプリ側のテストメソッドは236件、iPhoneとiPadのアプリテストは各235件、Coreテストは48件です。最新app-source commit `cd33ee7` は [Apple native checks run 42449358150](https://github.com/niconiconicopi/factory-tools/actions/runs/42449358150) でiPhoneとiPadのアプリテストが各235件通過し、英日Release画面撮影、追加のS/M/Lカウンター撮影6枚、必須スクリーンショット検査も通過しました。日本語ホーム画面の初期名「通常生産」も撮影画像で確認しました。[Watch/archive run 42449358067](https://github.com/niconiconicopi/factory-tools/actions/runs/42449358067) も成功し、48件の共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面、Watch入り未署名archiveを確認しました。SDK 27の将来互換チェックは最新main `b38c31e` に対して実行中です。StoreKit実購入テストはheadless Simulatorで商品読込ができず通常CIから外しています。これらは無料macOS runnerを使ったSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入の確認ではありません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
 4. 準備が整った最後の有料段階でApple Developer Programに登録する。登録を進めるかは公開者が判断し、費用の発生する操作は無断で行わない。
 5. 登録後にTeam IDを確認し、署名を設定する。App Store Connectで商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。
 7. 署名済みアプリの購入画面で日本向け¥980を確認し、購入・復元、Watch/iPad連携を確認する。
-8. 年齢評価、プライバシー、輸出コンプライアンスの質問に回答し、必要なスクリーンショットとWatch情報を揃えて提出する。
+8. 年齢評価、プライバシー、輸出コンプライアンスの質問に回答し、必要なスクリーンショットとWatch情報を揃えて提出する。2027年4月以降の提出では、iPhone Duoの外側・内側ディスプレイ用スクリーンショットも必要です。
 
 各値がそろった後は、リポジトリ内の `Scripts/validate_static.py --release-preflight` で入力形式と設定の不足を確認できる。これは値の所有者、Webページが実際に公開されているか、App Store Connectの実設定、署名済みアプリの動作までは確認しない。
 
