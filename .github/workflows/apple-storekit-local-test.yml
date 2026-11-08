@@ -44,6 +44,7 @@ jobs:
           xcodebuild test \
             -project FactoryTools.xcodeproj \
             -scheme FactoryToolsStoreKit \
+            -testPlan FactoryToolsStoreKit \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsStoreKitDerivedData" \
             -resultBundlePath "$result_bundle" \
