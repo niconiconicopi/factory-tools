@@ -20,6 +20,34 @@ Invite only people who agree to test. Use a small email-invited group for the fi
 
 One tester may cover multiple groups. The publisher does not need to own any of these devices. If no suitable Watch or iPad tester is available, record those cases as **not tested**; do not infer device behavior from the iPhone Simulator.
 
+## Copy-ready tester invitation
+
+### Japanese
+
+Factory ToolsのTestFlightテストに協力いただける方を募集しています。製造現場向けの生産カウンターと計算ツールを、実際のAppleデバイスで確認するための任意参加のテストです。
+
+- iPhoneテストにはiOS 17以降のiPhoneが必要です。
+- WatchテストはiPhoneとペアリングしたwatchOS 10以降のApple Watchがある場合に参加できます。
+- iPadテストはiPadOS 17以降のiPadと、連携先のiPhoneがある場合に参加できます。
+- すべての入力には架空のホーム名・品名・数量を使い、職場や顧客の実データは入力しないでください。
+- Factory Tools Proの購入・復元確認はAppleのTestFlightサンドボックスで行うため、実際の請求は発生しません。
+- 参加は任意です。テスト手順に沿って確認し、気づいた問題はTestFlightのフィードバックから送ってください。パスワード、認証コード、ペアリングコード、実際の生産記録は送らないでください。
+
+参加に同意いただいた方へ、AppleのTestFlight招待をお送りします。利用できる端末の種類（iPhone、Apple Watch、iPad）を教えてください。
+
+### English
+
+We are looking for volunteers to test Factory Tools through TestFlight. This optional beta test checks a production counter and manufacturing calculators on real Apple devices.
+
+- The iPhone test requires an iPhone running iOS 17 or later.
+- The Watch test is available if you have an Apple Watch running watchOS 10 or later, paired with an iPhone.
+- The iPad test is available if you have an iPad running iPadOS 17 or later and an iPhone to pair with.
+- Use invented home names, item names, and quantities. Do not enter real workplace, customer, or production data.
+- Factory Tools Pro purchase and restore checks use Apple's TestFlight sandbox and do not create a real charge.
+- Participation is optional. Follow the checklist and send issues through TestFlight feedback. Do not send passwords, verification codes, pairing codes, or real production records.
+
+After you agree to participate, we will send Apple's TestFlight invitation. Please tell us which devices you can test: iPhone, Apple Watch, and/or iPad.
+
 ## Prepare a test build
 
 1. Complete the [release preflight](RELEASE_READINESS_AUDIT.md#release-preflight-evidence) and the signed-upload setup in [APPLE_GITHUB_RELEASE_SETUP.md](APPLE_GITHUB_RELEASE_SETUP.md). These require Apple Developer membership, publisher-owned contact and URL values, and App Store Connect credentials.
