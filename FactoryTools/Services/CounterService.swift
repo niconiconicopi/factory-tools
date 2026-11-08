@@ -111,7 +111,6 @@ struct CounterService {
     ) throws -> CounterCommandApplyResult {
         guard target >= 0 else { throw CounterServiceError.invalidTarget }
         guard session.targetCount != target else { return try recordNoChange(command, to: session) }
-        let previousTarget = session.targetCount
         let receipt = CounterCommandReceipt(
             id: command.id,
             sessionID: session.id,
@@ -126,7 +125,6 @@ struct CounterService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
-            session.targetCount = previousTarget
             throw error
         }
         return .applied
@@ -143,7 +141,6 @@ struct CounterService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
-            session.targetCount = previousTarget
             throw error
         }
     }
@@ -178,8 +175,6 @@ struct CounterService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
-            session.currentCount -= appliedDelta
-            session.nextEventSequence = previousSequence
             throw error
         }
         return .applied
