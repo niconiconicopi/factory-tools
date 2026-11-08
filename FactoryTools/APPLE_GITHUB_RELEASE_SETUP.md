@@ -19,10 +19,10 @@ Appleは、App Store Connect APIキーを使った `xcodebuild` のヘッドレ�
 1. Apple Developer Program登録と、公開者名義の確定。
 2. App Store Connect上のアプリ記録。iPhoneアプリの明示Bundle IDを登録します。
 3. `factorytools.pro.lifetime` の非消費型IAP、¥980の日本基準価格、販売地域、Family Sharingオフの設定。
-4. App Store ConnectのチームAPIキーと、Xcodeが署名に使える権限。鍵の `.p8` ファイルは一度しかダウンロードできないため、公開リポジトリやチャットへ置かず保管します。
+4. App Store Connect APIをまだ有効にしていない場合は、Account Holderとして利用申請します。Appleによる確認後、**Team API Key**を作成し、Xcodeの自動署名が使える **Admin** 権限を選びます。チームキーはアカウント内の全アプリに適用されるため、このプロジェクト専用の秘密として管理してください。Key IDとIssuer IDも控えます。`.p8` 秘密鍵は一度しかダウンロードできないため、安全な保管場所に保存し、公開リポジトリやチャットへ置かないでください。
 5. プライバシーとサポートページを公開し、インターネットから到達できるHTTPS URLを決めます。
 
-Appleの自動署名では、XcodeがアプリとWatchの配布プロビジョニングを管理します。プロビジョニングプロファイルや証明書をGitへ登録する方式は採用していません。[App Storeプロファイルと自動署名](https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile)
+Appleの自動署名では、XcodeがアプリとWatchの配布プロビジョニングを管理します。Appleは `xcodebuild` のAPIキー認証を使ったヘッドレス自動署名を案内しており、クラウド配布署名はAdminまたはAccount Holderの権限を必要とします。個人登録では公開者本人がAccount Holderです。このワークフローでは Team API Key を用いるため、Admin権限を選ぶ手順にしています。プロビジョニングプロファイルや証明書をGitへ登録する方式は採用していません。[Xcode 13のAPIキー署名機能](https://developer.apple.com/documentation/xcode-release-notes/xcode-13-release-notes)、[App Store Connect APIキーの作成と権限](https://developer.apple.com/help/app-store-connect/get-started/app-store-connect-api)、[App Storeプロファイルと自動署名](https://developer.apple.com/help/account/provisioning-profiles/create-an-app-store-provisioning-profile)
 
 ## GitHubリポジトリへ登録する値
 
