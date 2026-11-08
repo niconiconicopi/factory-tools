@@ -4,13 +4,14 @@
 
 ## Current Apple process
 
-App Store Connect requires an age rating. Its questionnaire covers in-app controls, app capabilities, and content frequencies; its answers determine global and region-specific ratings. Apple added questions about social-media capabilities in July 2026. Do not skip those questions for the first release.
+App Store Connect requires an age rating. Its questionnaire covers in-app controls, app capabilities, and content frequencies; its answers determine global and region-specific ratings. Apple added social-media capability questions in July 2026. Starting November 16, 2026, the questionnaire will also include Shared Location and Dating and Relationships descriptors. Apple requires these declarations when submitting an app or changing its age-rating questionnaire; all apps must complete them by January 12, 2027. Factory Tools' first submission should include these new answers if the questionnaire presents them.
 
 References:
 
 - [Set an app age rating](https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating)
 - [Age ratings values and definitions](https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/)
 - [App Store Connect release notes: social-media age-rating questions](https://developer.apple.com/help/app-store-connect/release-notes/)
+- [Upcoming Shared Location and Dating and Relationships age-rating descriptors](https://developer.apple.com/news/?id=yxkh08us)
 
 ## Proposed responses from the current source
 
@@ -24,6 +25,8 @@ These are recommendations based on the current iPhone, Watch, and iPad source. A
 | User-generated content | No | User production records and exports are private operational data, not content broadly distributed as the app's intended experience. |
 | Social media | No | There is no social feed, public profile, recommendation surface, like, comment, or social sharing feature. |
 | Social media disabled for users under 13 | No / Not applicable | The app has no social-media capability and does not use an age-range API. |
+| Shared Location (available from November 16, 2026) | No | The app does not access or share a person's real-world location. Local pairing exchanges counter data only between the user's own nearby devices; it is not a location-sharing feature. |
+| Dating and Relationships (available from November 16, 2026) | No | The app has no dating or relationship-matching features and no virtual companion that engages in romantic or sexual content. |
 | Messaging and chat | No | Watch and paired iPad exchanges carry counter commands and snapshots between the user's own devices; Watch can also send Cycle Time captures to its paired iPhone. The app has no user-to-user message, chat, or public-post feature. |
 | Advertising | No | The app contains no ads or paid promotion. |
 | Profanity or crude humor | None | No such language or humor is part of the app. |

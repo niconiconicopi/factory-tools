@@ -4733,8 +4733,12 @@ def main() -> int:
     age_rating_review = (ROOT / "FactoryTools" / "APP_STORE_AGE_RATING_REVIEW.md").read_text(encoding="utf-8")
     require("Watch can also send Cycle Time captures" in age_rating_review
             and "direct Watch Cycle Time capture" in age_rating_review
-            and "final App Store Connect declaration" in age_rating_review,
-            "age-rating evidence must describe Watch Cycle Time while retaining publisher attestation as a release gate")
+            and "final App Store Connect declaration" in age_rating_review
+            and "Shared Location (available from November 16, 2026)" in age_rating_review
+            and "Dating and Relationships (available from November 16, 2026)" in age_rating_review
+            and "January 12, 2027" in age_rating_review
+            and "https://developer.apple.com/news/?id=yxkh08us" in age_rating_review,
+            "age-rating evidence must describe Watch Cycle Time, new 2026 location/relationship fields, and publisher attestation")
     xcode_cloud_runbook = (ROOT / "FactoryTools" / "XCODE_CLOUD_RUNBOOK.md").read_text(encoding="utf-8")
     require("25 Xcode Cloud compute hours per month" in xcode_cloud_runbook
             and "do not buy an additional Xcode Cloud subscription" in xcode_cloud_runbook
