@@ -7,9 +7,7 @@
     }
   ],
   "defaultOptions": {
-    "storeKitConfiguration": {
-      "identifier": "FactoryTools/Resources/FactoryToolsPro.storekit"
-    },
+    "storeKitConfiguration": "FactoryTools/Resources/FactoryToolsPro.storekit",
     "targetForVariableExpansion": {
       "containerPath": "container:FactoryTools.xcodeproj",
       "identifier": "E00000000000000000000010",

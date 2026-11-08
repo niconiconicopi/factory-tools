@@ -128,9 +128,10 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         self.assertEqual(plan_reference.get("reference"), "container:FactoryTools.xcodeproj/FactoryToolsStoreKit.xctestplan")
         self.assertEqual(plan_reference.get("default"), "YES")
         self.assertEqual(
-            plan["defaultOptions"]["storeKitConfiguration"]["identifier"],
+            plan["defaultOptions"]["storeKitConfiguration"],
             "FactoryTools/Resources/FactoryToolsPro.storekit",
         )
+        self.assertIsInstance(plan["defaultOptions"]["storeKitConfiguration"], str)
         self.assertEqual(plan["defaultOptions"]["targetForVariableExpansion"]["identifier"], "E00000000000000000000010")
         self.assertEqual(plan["testTargets"][0]["target"]["identifier"], "E00000000000000000000011")
 
