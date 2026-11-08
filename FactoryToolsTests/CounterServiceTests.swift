@@ -3799,6 +3799,11 @@ final class CounterServiceTests: XCTestCase {
         }
     }
 
+    func testHostedTestsMarkTheAppContainerForInMemoryStorage() {
+        XCTAssertEqual(ProcessInfo.processInfo.environment["FACTORYTOOLS_HOSTED_TESTS"], "1")
+        XCTAssertTrue(FactoryToolsApp.isRunningHostedTests)
+    }
+
     func testBootstrapServiceCreatesHomeAndSettingsOnlyOnce() throws {
         let container = try makeContainer()
         let context = ModelContext(container)

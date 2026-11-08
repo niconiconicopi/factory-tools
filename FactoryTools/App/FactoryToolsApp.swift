@@ -94,7 +94,7 @@ struct FactoryToolsApp: App {
         let localConfiguration = ModelConfiguration(
             "FactoryTools",
             schema: schema,
-            isStoredInMemoryOnly: screenshotLanguage != nil,
+            isStoredInMemoryOnly: screenshotLanguage != nil || Self.isRunningHostedTests,
             cloudKitDatabase: .none
         )
         let container = try ModelContainer(
@@ -112,6 +112,13 @@ struct FactoryToolsApp: App {
         }
         #endif
         return container
+    }
+
+    static var isRunningHostedTests: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return environment["FACTORYTOOLS_HOSTED_TESTS"] == "1"
+            || environment["XCTestConfigurationFilePath"] != nil
+            || environment["XCInjectBundleInto"] != nil
     }
 
     private func retryStoreInitialization() {
