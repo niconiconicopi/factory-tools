@@ -414,7 +414,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(len(launches), 2)
         self.assertEqual(len(readiness_checks), 2)
         self.assertEqual(len(verifier_arguments), 2)
-        self.assertEqual(verifier_arguments[1][-4:], ["286", "300", "8", "--counter-row"])
+        self.assertEqual(verifier_arguments[1][-6:], ["286", "300", "8", "--language", "ja-JP", "--counter-row"])
 
     def test_takt_time_capture_retries_blank_first_render_without_home_readiness_polling(self) -> None:
         import capture_simulator_screenshots
@@ -465,7 +465,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(len(verifier_arguments), 2)
         self.assertEqual(
             verifier_arguments[1][-5:],
-            ["27000", "450", "60", "Net production time", "Customer demand"],
+            ["60", "Net production time", "Customer demand", "--language", "en-US"],
         )
         readiness.assert_not_called()
 
@@ -536,7 +536,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         asset_plan = (root / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
 
         self.assertIn('"cycle-time": ("120", "30")', capture_script)
+        self.assertIn('"--language", "ja-JP" if japanese else "en-US"', capture_script)
         self.assertNotIn('"cycle-time": ("120", "4", "30")', capture_script)
+        self.assertIn('request.recognitionLanguages = [recognitionLanguage]', home_verifier)
         self.assertIn("#if targetEnvironment(simulator)", app_source)
         self.assertIn('HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)', app_source)
         self.assertIn('arguments.contains("--factorytools-screenshot-demo")', app_source)

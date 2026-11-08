@@ -2,14 +2,21 @@ import Foundation
 import Vision
 
 guard CommandLine.arguments.count >= 3 else {
-    fputs("Usage: verify_simulator_home_screenshot.swift <image> <required-value>... [--counter-row]\n", stderr)
+    fputs("Usage: verify_simulator_home_screenshot.swift <image> <required-value>... [--language <locale>] [--counter-row]\n", stderr)
     exit(2)
 }
 
 let imageURL = URL(fileURLWithPath: CommandLine.arguments[1])
 let verifierArguments = Array(CommandLine.arguments.dropFirst(2))
 let requiresCounterRow = verifierArguments.contains("--counter-row")
-let expectedValues = verifierArguments.filter { $0 != "--counter-row" }
+let languageOptionIndex = verifierArguments.firstIndex(of: "--language")
+let recognitionLanguage = languageOptionIndex.flatMap { index in
+    verifierArguments.indices.contains(index + 1) ? verifierArguments[index + 1] : nil
+}
+let excludedArgumentIndices = Set([languageOptionIndex, languageOptionIndex.flatMap { verifierArguments.indices.contains($0 + 1) ? $0 + 1 : nil }].compactMap { $0 })
+let expectedValues = verifierArguments.enumerated().compactMap { index, argument in
+    argument == "--counter-row" || excludedArgumentIndices.contains(index) ? nil : argument
+}
 guard !expectedValues.isEmpty else {
     fputs("At least one required visible value must be supplied.\n", stderr)
     exit(2)
@@ -17,6 +24,9 @@ guard !expectedValues.isEmpty else {
 let request = VNRecognizeTextRequest()
 request.recognitionLevel = .accurate
 request.usesLanguageCorrection = false
+if let recognitionLanguage {
+    request.recognitionLanguages = [recognitionLanguage]
+}
 
 do {
     try VNImageRequestHandler(url: imageURL).perform([request])

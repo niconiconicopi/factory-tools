@@ -236,6 +236,7 @@ def capture_language(
             expected_values += SCENARIO_EXPECTED_LABELS.get(scenario, {}).get(language, ())
             verification_arguments = [
                 "swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values,
+                "--language", "ja-JP" if japanese else "en-US",
             ]
             if scenario in COUNTER_ROW_SCENARIOS:
                 verification_arguments.append("--counter-row")
