@@ -3822,8 +3822,14 @@ final class CounterServiceTests: XCTestCase {
         }
     }
 
-    func testHostedTestsMarkTheAppContainerForInMemoryStorage() {
+    func testHostedTestsReuseAStableStoreOutsideTemporaryStorage() throws {
         XCTAssertTrue(FactoryToolsApp.isRunningHostedTests)
+        let first = try FactoryToolsApp.hostedTestModelContainer()
+        let second = try FactoryToolsApp.hostedTestModelContainer()
+
+        XCTAssertTrue(first === second)
+        let storeURL = try XCTUnwrap(first.configurations.first?.url)
+        XCTAssertFalse(storeURL.path.hasPrefix(FileManager.default.temporaryDirectory.path))
     }
 
     func testBootstrapServiceCreatesHomeAndSettingsOnlyOnce() throws {

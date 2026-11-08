@@ -36,6 +36,7 @@ enum ScreenshotDemoScenario: String, CaseIterable {
 
 @main
 struct FactoryToolsApp: App {
+    private static var hostedTestContainer: ModelContainer?
     @StateObject private var proPurchases = ProPurchaseManager.shared
     @State private var container: ModelContainer?
     @State private var showingRetryError = false
@@ -90,11 +91,15 @@ struct FactoryToolsApp: App {
         screenshotLanguage: AppLanguage? = nil,
         screenshotScenario: ScreenshotDemoScenario? = nil
     ) throws -> ModelContainer {
+        if screenshotLanguage == nil, isRunningHostedTests {
+            return try hostedTestModelContainer()
+        }
+
         let schema = Schema(versionedSchema: FactoryToolsSchemaV1.self)
         let localConfiguration = ModelConfiguration(
             "FactoryTools",
             schema: schema,
-            isStoredInMemoryOnly: screenshotLanguage != nil || Self.isRunningHostedTests,
+            isStoredInMemoryOnly: screenshotLanguage != nil,
             cloudKitDatabase: .none
         )
         let container = try ModelContainer(
@@ -111,6 +116,39 @@ struct FactoryToolsApp: App {
             )
         }
         #endif
+        return container
+    }
+
+    static func hostedTestModelContainer() throws -> ModelContainer {
+        if let hostedTestContainer {
+            return hostedTestContainer
+        }
+
+        let schema = Schema(versionedSchema: FactoryToolsSchemaV1.self)
+        let supportDirectory = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        let testStoreDirectory = supportDirectory
+            .appendingPathComponent("FactoryToolsHostedTests-\(ProcessInfo.processInfo.processIdentifier)", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: testStoreDirectory,
+            withIntermediateDirectories: true
+        )
+        let configuration = ModelConfiguration(
+            "FactoryToolsHostedTests",
+            schema: schema,
+            url: testStoreDirectory.appendingPathComponent("FactoryTools.store"),
+            cloudKitDatabase: .none
+        )
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: FactoryToolsMigrationPlan.self,
+            configurations: [configuration]
+        )
+        hostedTestContainer = container
         return container
     }
 
