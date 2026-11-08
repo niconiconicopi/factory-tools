@@ -56,7 +56,7 @@ Capture the actual signed iPhone Settings screen with the configured non-consuma
 
 ## Capture and upload checklist
 
-- Retrieve the `factory-tools-app-store-iphone-product-page`, `factory-tools-iphone-counter-card-size-evidence`, `factory-tools-app-store-ipad-product-page`, and `factory-tools-app-store-watch-home` artifacts from successful runs 42444845017 and 42444845036. The dedicated counter artifact contains six Japanese/English S/M/L captures; the iPhone artifact also contains the home and Pro preview captures. Review every localized image for visible values and controls before accepting it. These hosted Simulator images are diagnostic and still need publisher acceptance and signed-release replacements.
+- Retrieve the `factory-tools-app-store-iphone-product-page`, `factory-tools-iphone-counter-card-size-evidence`, `factory-tools-app-store-ipad-product-page`, and `factory-tools-app-store-watch-home` artifacts from iPhone/iPad run 42444845017 and Watch screenshot run 42432729530. The dedicated counter artifact contains six Japanese/English S/M/L captures; the iPhone artifact also contains the home and Pro preview captures. Review every localized image for visible values and controls before accepting it. These hosted Simulator images are diagnostic and still need publisher acceptance and signed-release replacements.
 - The established iPhone home and Pro preview filenames are `iphone-home-ja.jpg`, `iphone-home-en.jpg`, `iphone-pro-purchase-ja.jpg`, and `iphone-pro-purchase-en.jpg`.
 - Create synthetic home, counter, history, defect, and calculator data in the release build.
 - Capture iPhone, iPad, and Watch screens at the chosen Apple-listed sizes.
