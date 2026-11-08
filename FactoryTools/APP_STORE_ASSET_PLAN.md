@@ -54,7 +54,7 @@ Capture the actual signed iPhone Settings screen with the configured non-consuma
 
 ## Capture and upload checklist
 
-- Retrieve the `factory-tools-app-store-iphone-product-page` artifact and every other localized iPhone, iPad, and Watch artifact from the latest successful Apple native CI run; confirm each screen shows its required values and controls before accepting it. The Pro preview is available as `iphone-pro-purchase-ja.jpg` and `iphone-pro-purchase-en.jpg` in the iPhone product-page artifact from run 42425249516.
+- Retrieve the `factory-tools-app-store-iphone-product-page` artifact and every other localized iPhone, iPad, and Watch artifact from the latest successful Apple native CI run; confirm each screen shows its required values and controls before accepting it. The home captures are `iphone-home-ja.jpg` and `iphone-home-en.jpg`; the Pro preview is `iphone-pro-purchase-ja.jpg` and `iphone-pro-purchase-en.jpg` in the iPhone product-page artifact from run 42425249516.
 - Create synthetic home, counter, history, defect, and calculator data in the release build.
 - Capture iPhone, iPad, and Watch screens at the chosen Apple-listed sizes.
 - For submissions starting April 2027, include iPhone Duo outer- and inner-display screenshots in addition to the currently required Dynamic Island and 13-inch iPad screenshots.

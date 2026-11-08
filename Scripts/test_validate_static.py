@@ -532,7 +532,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('exit "$failed"', workflow)
         self.assertIn("--scenarios home counter-quick-add cycle-time takt-time defect-counter counter-history pro-purchase", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
-        self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
+        self.assertIn("iphone-home-ja.jpg", asset_plan)
         self.assertIn("Prepare 13-inch iPad Simulator before release screenshot captures", workflow)
         self.assertLess(
             workflow.index("Prepare 13-inch iPad Simulator before release screenshot captures"),

@@ -153,6 +153,62 @@ final class CounterServiceTests: XCTestCase {
         XCTAssertEqual(deletedHomeSession.currentCount, 0)
     }
 
+    func testLatePeerCommandForDeletedHomeCannotApplyToSameNamedReplacement() throws {
+        let container = try makeContainer()
+        let context = ModelContext(container)
+        let remainingHome = HomeProfile(name: "Production", sortOrder: 0)
+        let deletedHome = HomeProfile(name: "Packaging", sortOrder: 1)
+        let deletedSession = ProductionSession(
+            homeProfileID: deletedHome.id,
+            toolID: ToolID.productionCounter.rawValue,
+            name: "Production count"
+        )
+        let deletedCard = ToolCard(
+            homeProfileID: deletedHome.id,
+            toolID: .productionCounter,
+            sortOrder: 0,
+            productionSessionID: deletedSession.id
+        )
+        context.insert(remainingHome)
+        context.insert(deletedHome)
+        context.insert(AppSettings(selectedHomeProfileID: deletedHome.id))
+        context.insert(deletedSession)
+        context.insert(deletedCard)
+        try context.save()
+
+        let delayedCommand = CounterCommand(sessionID: deletedSession.id, operation: .increment)
+        try HomeProfileService(modelContext: context).deleteHome(deletedHome.id)
+        let replacementHome = try HomeProfileService(modelContext: context).createHome(
+            named: "Packaging",
+            isPro: true
+        )
+        let counterDefinition = try XCTUnwrap(ToolRegistry.definition(for: .productionCounter))
+        let replacementCard = try HomeToolService(modelContext: context).add(
+            counterDefinition,
+            to: replacementHome.id,
+            locale: Locale(identifier: "en")
+        )
+        let replacementSessionID = try XCTUnwrap(replacementCard.productionSessionID)
+        let replacementSession = try XCTUnwrap(
+            context.fetch(FetchDescriptor<ProductionSession>()).first { $0.id == replacementSessionID }
+        )
+
+        XCTAssertNotEqual(replacementHome.id, deletedHome.id)
+        XCTAssertNotEqual(replacementSessionID, deletedSession.id)
+
+        let result = try WatchCommandProcessor(modelContext: context).process(
+            delayedCommand,
+            allowNonWatchSessions: true,
+            isPro: true
+        )
+
+        XCTAssertEqual(result.acknowledgement.status, .rejected)
+        XCTAssertNil(result.session)
+        XCTAssertEqual(replacementSession.currentCount, 0)
+        XCTAssertTrue(try context.fetch(FetchDescriptor<CountEvent>()).isEmpty)
+        XCTAssertTrue(try context.fetch(FetchDescriptor<CounterCommandReceipt>()).isEmpty)
+    }
+
     func testBackupIncludesEveryStoredModelAndIsDeterministicWithoutMutation() throws {
         let container = try makeContainer()
         let context = ModelContext(container)

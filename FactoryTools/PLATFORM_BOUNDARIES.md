@@ -79,7 +79,7 @@ The existing command envelope carries a unique ID and an explicit Undo event ID.
 3. A command for a missing/deleted session is rejected; callers must resolve the persisted session by ID before applying it.
 4. Undo carries the event ID observed by the sender. If it is no longer the latest undoable event, reject it as stale and synchronize current history; do not silently undo a different event.
 5. Acknowledged no-op commands remain deduplicated, as current `CounterCommandReceipt` already supports.
-6. Deleting a home/session must invalidate pending commands for that identity. A deletion marker or generation is needed if late delivery could otherwise outlive the deleted receipt/session records.
+6. Deleting a home/session invalidates commands addressed to that session ID. Home deletion removes its sessions, events, receipts, and cards transactionally. A late command resolves by its persisted session ID, so it is rejected without a snapshot when that session no longer exists; the peer outbox then discards commands for that unavailable session while preserving other sessions. Recreating a home with the same display name creates new home/session IDs, and backup import remaps IDs. The regression test `testLatePeerCommandForDeletedHomeCannotApplyToSameNamedReplacement` covers delete, same-name recreation, and late delivery. V1 therefore does not need a tombstone or generation marker; revisit this if a future restore/replacement flow intentionally reuses deleted IDs.
 
 ### Command replay and compatibility
 
