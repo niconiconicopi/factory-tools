@@ -393,6 +393,52 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(len(verifier_arguments), 2)
         self.assertEqual(verifier_arguments[1][-4:], ["286", "300", "8", "--counter-row"])
 
+    def test_takt_time_capture_retries_blank_first_render_without_home_readiness_polling(self) -> None:
+        import capture_simulator_screenshots
+
+        launches: list[list[str]] = []
+        captures = 0
+        verifier_arguments: list[list[str]] = []
+
+        def capture_command(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            nonlocal captures
+            if arguments[:3] == ["xcrun", "simctl", "launch"]:
+                launches.append(arguments)
+            if "screenshot" in arguments:
+                captures += 1
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                verifier_arguments.append(arguments)
+                if len(verifier_arguments) == 1:
+                    raise subprocess.CalledProcessError(
+                        1, arguments, stderr="Missing values: 27000, 450, 60. Recognized text: blank screen."
+                    )
+                return subprocess.CompletedProcess(arguments, 0, stdout="27000, 450, 60 visible", stderr="")
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-takt-time-en.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=capture_command), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data") as readiness, \
+                    patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(1206, 2622)), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                dimensions = capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=False, platform="iPhone", scenario="takt-time",
+                )
+
+            self.assertTrue(output_path.is_file())
+            self.assertEqual(output_path.read_bytes()[:2], b"\xff\xd8")
+
+        self.assertEqual(dimensions, (1206, 2622))
+        self.assertEqual(len(launches), 2)
+        self.assertEqual(captures, 2)
+        self.assertEqual(len(verifier_arguments), 2)
+        self.assertEqual(verifier_arguments[1][-3:], ["27000", "450", "60"])
+        readiness.assert_not_called()
+
     def test_home_readiness_does_not_combine_state_from_different_log_lines(self) -> None:
         split_output = subprocess.CompletedProcess(
             args=[], returncode=0,
@@ -505,7 +551,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("def clear_capture_outputs", capture_script)
         self.assertIn("Simulator readiness logs were unavailable; the final image OCR will decide capture readiness.", capture_script)
         self.assertIn('"log", "show", "--last", "2m"', capture_script)
-        self.assertIn("HOME_SCREENSHOT_ATTEMPTS = 3", capture_script)
+        self.assertIn("SCREENSHOT_CAPTURE_ATTEMPTS = 3", capture_script)
         self.assertIn("HOME_RENDER_SETTLE_SECONDS = 3", capture_script)
         self.assertIn('language = "ja" if japanese else "en"', capture_script)
         self.assertIn("wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)", capture_script)

@@ -48,7 +48,7 @@ SCENARIO_EXPECTED_VALUES = {
 COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
-HOME_SCREENSHOT_ATTEMPTS = 3
+SCREENSHOT_CAPTURE_ATTEMPTS = 3
 HOME_RENDER_SETTLE_SECONDS = 3
 HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
 
@@ -181,7 +181,7 @@ def capture_language(
         language_arguments.append("--factorytools-screenshot-japanese")
     language_arguments.append(f"--factorytools-screenshot-{scenario}")
     temporary_png = output_path.with_suffix(".png")
-    attempts = HOME_SCREENSHOT_ATTEMPTS if scenario in DEMO_READY_SCENARIOS else 1
+    attempts = SCREENSHOT_CAPTURE_ATTEMPTS
     for attempt in range(1, attempts + 1):
         capture_id = uuid.uuid4().hex
         capture_arguments = [f"--factorytools-screenshot-capture-id={capture_id}"]
