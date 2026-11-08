@@ -3,6 +3,29 @@ import XCTest
 import FactoryToolsCore
 @testable import FactoryTools
 
+private enum ReadOnlyTestStoreDirectory {
+    private static let cleanStaleDirectories: Void = {
+        let root = FileManager.default.temporaryDirectory
+        guard let directories = try? FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else { return }
+
+        for directory in directories where directory.lastPathComponent.hasPrefix("FactoryToolsReadOnly-") {
+            try? FileManager.default.removeItem(at: directory)
+        }
+    }()
+
+    static func create() throws -> URL {
+        _ = cleanStaleDirectories
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FactoryToolsReadOnly-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
+}
+
 @MainActor
 final class CounterServiceTests: XCTestCase {
     func testVersionedSchemaV1DefinesAllPersistedModelsAndMigrationPlan() throws {
@@ -5100,10 +5123,7 @@ final class CounterServiceTests: XCTestCase {
             return container
         }
 
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("FactoryToolsReadOnly-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        let directory = try ReadOnlyTestStoreDirectory.create()
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let configurationName = UUID().uuidString
         let writable = ModelConfiguration(configurationName, schema: schema, url: storeURL, cloudKitDatabase: .none)
@@ -6913,10 +6933,7 @@ final class ToolRegistryTests: XCTestCase {
             return container
         }
 
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("FactoryToolsReadOnly-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        let directory = try ReadOnlyTestStoreDirectory.create()
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let configurationName = UUID().uuidString
         let writable = ModelConfiguration(configurationName, schema: schema, url: storeURL, cloudKitDatabase: .none)

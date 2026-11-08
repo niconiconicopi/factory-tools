@@ -800,6 +800,16 @@ jobs:
 
 
 class SwiftRuntimeSafetySourceTests(unittest.TestCase):
+    def test_read_only_swiftdata_test_stores_survive_until_host_process_exit(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "FactoryToolsTests" / "CounterServiceTests.swift").read_text(encoding="utf-8")
+
+        self.assertIn("private enum ReadOnlyTestStoreDirectory", source)
+        self.assertIn("private static let cleanStaleDirectories", source)
+        self.assertIn('directory.lastPathComponent.hasPrefix("FactoryToolsReadOnly-")', source)
+        self.assertIn("let directory = try ReadOnlyTestStoreDirectory.create()", source)
+        self.assertNotIn("addTeardownBlock { try? FileManager.default.removeItem(at: directory) }", source)
+
     def test_safe_optional_and_throwing_paths_are_allowed(self) -> None:
         source = """func decode<T: Decodable>(_ type: T.Type, data: Data) throws -> T {
     try JSONDecoder().decode(type, from: data)
