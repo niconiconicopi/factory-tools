@@ -2020,6 +2020,7 @@ def main() -> int:
             and 'Text("/ \\(formattedCount(session.targetCount))")' in peer_counter_view
             and '.accessibilityLabel("counter.currentCount")' in peer_counter_view
             and '.accessibilityLabel("counter.goal")' in peer_counter_view
+            and '.foregroundStyle(theme.accentForeground)' in peer_counter_view
             and 'value.formatted(.number.locale(locale))' in peer_counter_view,
             "the iPad counter dashboard must localize pending/count/target numbers and expose count and target labels to VoiceOver")
     counter_outbox_path = ROOT / "FactoryToolsCore" / "CounterCommandOutbox.swift"

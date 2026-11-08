@@ -179,6 +179,7 @@ struct PeerCounterView: View {
                 } label: {
                     Label("counter.plusOne", systemImage: "plus")
                         .font(theme.actionFont)
+                        .foregroundStyle(theme.accentForeground)
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .buttonStyle(.borderedProminent)

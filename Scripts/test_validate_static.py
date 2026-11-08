@@ -562,6 +562,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("defaultSessionNameToolID: .productionCounter", peer_view)
         self.assertIn('case .connected: "peer.status.connected"', peer_view)
         self.assertIn('case .offline: "peer.status.reconnecting"', peer_view)
+        self.assertIn('.foregroundStyle(theme.accentForeground)', peer_view)
         self.assertIn("guard screenshotDemoMode == nil else { return }", peer_view)
         self.assertIn("guard screenshotDemoScenario == nil else { return }", bootstrap_view)
         self.assertIn("guard screenshotDemoScenario == nil,", bootstrap_view)
