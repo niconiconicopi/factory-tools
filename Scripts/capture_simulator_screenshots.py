@@ -19,6 +19,9 @@ SCREENSHOT_SCENARIOS = (
     "takt-time",
     "defect-counter",
     "counter-history",
+    "counter-size-small",
+    "counter-size-medium",
+    "counter-size-large",
     "pro-purchase",
     "ipad-dashboard",
     "ipad-offline",
@@ -27,10 +30,13 @@ DEMO_READY_SCENARIOS = {
     "home",
     "counter-quick-add",
     "defect-counter",
+    "counter-size-small",
+    "counter-size-medium",
+    "counter-size-large",
     "ipad-dashboard",
     "ipad-offline",
 }
-COUNTER_ROW_SCENARIOS = DEMO_READY_SCENARIOS
+COUNTER_ROW_SCENARIOS = DEMO_READY_SCENARIOS - {"counter-size-small"}
 SCENARIO_EXPECTED_VALUES = {
     "home": ("286", "300"),
     "counter-quick-add": ("286", "300", "10"),
@@ -41,6 +47,9 @@ SCENARIO_EXPECTED_VALUES = {
     "takt-time": ("27000", "450", "60"),
     "defect-counter": ("286", "300", "8"),
     "counter-history": ("286", "200"),
+    "counter-size-small": ("286",),
+    "counter-size-medium": ("286", "300"),
+    "counter-size-large": ("286", "300"),
     "pro-purchase": ("980",),
     "ipad-dashboard": ("286", "300"),
     "ipad-offline": ("286", "300"),

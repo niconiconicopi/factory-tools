@@ -364,7 +364,9 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
         "shared Core XCTest": "-scheme FactoryToolsCore",
         "Watch Simulator build": "-scheme FactoryToolsWatch",
-        "screenshot capture failures fail the native workflow": "Require iPhone and iPad screenshot captures",
+        "iPhone, iPad, and S/M/L card screenshot failures fail the native workflow": "Require iPhone, iPad, and card-size screenshot captures",
+        "bilingual S/M/L counter screenshots are included in the required gate": "--scenarios counter-size-small counter-size-medium counter-size-large",
+        "S/M/L screenshot artifact is retained for review": "factory-tools-iphone-counter-card-size-evidence",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
         "archive verifies Watch app in the PlugIns bundle directory": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
     }

@@ -10,6 +10,9 @@ enum ScreenshotDemoScenario: String, CaseIterable {
     case taktTime = "takt-time"
     case defectCounter = "defect-counter"
     case counterHistory = "counter-history"
+    case counterSizeSmall = "counter-size-small"
+    case counterSizeMedium = "counter-size-medium"
+    case counterSizeLarge = "counter-size-large"
     case proPurchase = "pro-purchase"
     case ipadDashboard = "ipad-dashboard"
     case ipadOffline = "ipad-offline"
@@ -151,6 +154,17 @@ struct FactoryToolsApp: App {
             production.nextEventSequence = 5
             addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
             insertUndoHistoryDemoEvents(for: production, context: context)
+        case .counterSizeSmall, .counterSizeMedium, .counterSizeLarge:
+            let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
+            let size: ToolCardSize
+            switch scenario {
+            case .counterSizeSmall: size = .small
+            case .counterSizeMedium: size = .medium
+            case .counterSizeLarge: size = .large
+            default: return
+            }
+            addCounterCard(production, home: home, sortOrder: 0, size: size, context: context)
+            insertEvents(for: production, deltas: [200, 80, 6], context: context)
         case .cycleTime:
             context.insert(ToolCard(homeProfileID: home.id, toolID: .cycleTime, size: .large, sortOrder: 0))
             let referenceDate = Date(timeIntervalSinceNow: -86_400 * 2)
