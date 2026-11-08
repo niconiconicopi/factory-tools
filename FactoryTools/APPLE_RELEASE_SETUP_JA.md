@@ -10,6 +10,8 @@ Apple公式はApple Developer Programへの登録をWebとDeveloperアプリの�
 
 署名付きビルドとApp Store Connectへのアップロードは、登録後に既存のGitHub Actions手動ワークフローで実行する設計です。Xcode Cloudの初回設定に必要なMac/Xcodeとは別経路なので、Factory Toolsの提出用ビルドのためにMacを購入・レンタルする計画はありません。[GitHub Actionsからのアップロード手順](APPLE_GITHUB_RELEASE_SETUP.md)
 
+発行者やテスターがiPhone・Watch・iPadを持っていなくても、登録後にTestFlightで外部テスターへ配布し、手持ちの実機で確認してもらう方法があります。テスター募集の手順、日英の確認項目、失敗時の報告方法は[TestFlight実機テスト計画](TESTFLIGHT_FIELD_TEST_PLAN.md)にまとめました。TestFlightの購入テストはサンドボックスで行われ、実際の請求はありません。Apple Developer登録、App Store Connect設定、および最初の外部テスト用ビルドの審査は必要です。[TestFlightの外部テスター招待](https://developer.apple.com/help/app-store-connect/test-a-beta-version/invite-external-testers)、[TestFlightでのIAPテスト](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testing-subscriptions-and-in-app-purchases-in-testflight/)
+
 Appleの年会費免除は、一定の条件を満たす非営利団体、認定教育機関、政府機関向けです。個人・個人事業主は対象外で、免除申請者は有料アプリ契約に署名しておらず、アプリでデジタル商品・サービスを販売していない必要があります。Factory Tools Proを買い切りアプリ内購入として販売する計画とは両立しないため、このプロジェクトでは免除を見込まず、年会費を必要な公開コストとして扱います。[Appleの年会費免除条件](https://developer.apple.com/help/account/membership/fee-waivers)
 
 このプロジェクトでは、登録と支払いは**無償でできる実装・文書・ソース検証を終えた後の最後の有料準備段階**に置きます。登録前でも、ソース作業、製品仕様の確定、公開文面の準備、Windows上の静的検証は進められます。Team IDの取得、App Store Connectの商品設定、署名付き提出は登録後の段階です。年会費は年ごとの更新費用であり、Developerアプリで加入したメンバーシップは自動更新です。更新を望まない場合は更新日の少なくとも1日前に解約し、支払い済みの年会費は返金されない点も含めて判断してください。[年会費・更新の説明](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
