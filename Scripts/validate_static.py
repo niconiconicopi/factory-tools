@@ -4769,6 +4769,10 @@ def main() -> int:
             and "記録はWatch内で確認応答を待っています" in support_page
             and "Watch Cycle Time sample does not appear" in support_page
             and "remains on Watch until acknowledged" in support_page
+            and "返金の可否はAppleが判断します" in support_page
+            and "https://support.apple.com/ja-jp/118223" in support_page
+            and "Apple handles billing and refund requests and decides refund eligibility" in support_page
+            and "https://support.apple.com/en-us/118223" in support_page
             and "アプリを削除する前にiPhoneの設定でペアリングコードを削除" in support_page
             and "remove the pairing code in iPhone Settings before deleting the app" in support_page
             and "iPadの未送信操作は旧コード用のキューに残り" in support_page

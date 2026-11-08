@@ -21,7 +21,7 @@ Factory Toolsをご利用いただきありがとうございます。お問い�
 - 発生した操作と、表示されたメッセージ
 - 再現する場合は、その手順
 
-購入・請求については、購入に使ったApple Accountの情報や支払い情報をメールに記載しないでください。請求処理はAppleが行います。購入済みのProが表示されない場合は、アプリの「設定」から「購入を復元」をお試しください。
+購入・請求については、購入に使ったApple Accountの情報や支払い情報をメールに記載しないでください。請求と返金申請はAppleが扱います。返金の可否はAppleが判断します。[Appleの返金申請ページ](https://support.apple.com/ja-jp/118223)をご利用ください。購入済みのProが表示されない場合は、アプリの「設定」から「購入を復元」をお試しください。
 
 ### データと端末連携
 
@@ -56,7 +56,7 @@ Thank you for using Factory Tools. Contact us at:
 - The action you took and any message shown
 - Steps to reproduce the issue, if available
 
-Do not include your Apple Account credentials, payment details, pairing code, or production records in an email. Apple handles billing. If a Pro purchase does not appear, try **Restore Purchases** in the app's Settings.
+Do not include your Apple Account credentials, payment details, pairing code, or production records in an email. Apple handles billing and refund requests and decides refund eligibility. Use [Apple's refund request page](https://support.apple.com/en-us/118223). If a Pro purchase does not appear, try **Restore Purchases** in the app's Settings.
 
 ### Data and device connections
 
