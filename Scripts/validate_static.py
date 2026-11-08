@@ -420,6 +420,37 @@ def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
     return errors
 
 
+def apple_sdk27_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the manually dispatched, free Xcode 27 forward-compatibility checks."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "pinned checkout major version": "uses: actions/checkout@v7",
+        "checkout credential persistence disabled": "persist-credentials: false",
+        "public or manually confirmed private-run job condition": "if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')",
+        "hosted Xcode 27 runner": "runs-on: xcode-27",
+        "bounded forward-check job": "timeout-minutes: 150",
+        "iOS, iPadOS and watchOS SDK 27 verification": "Expected SDK 27 or newer",
+        "source checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
+        "Core contract tests": "-scheme FactoryToolsCore",
+        "iPhone Simulator tests": "name: Test iPhone app and hosted regression suite",
+        "iPad Simulator tests": "name: Test iPad app and hosted regression suite",
+        "Watch Debug and Release builds": "Build Watch Debug and Release targets",
+        "unsigned app archive": "Archive unsigned iPhone app with embedded Watch target",
+        "embedded Watch app verification": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
+        "headless StoreKit test isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+        errors.append("both app-hosted simulator runs must isolate the known headless StoreKitTest failure")
+    if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
+        errors.append("SDK 27 forward checks must be manually dispatched only")
+    if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
+        errors.append("SDK 27 forward checks must not access repository secrets")
+    return errors
+
+
 def apple_upload_workflow_contract_errors(source: str) -> list[str]:
     """Guard the manually confirmed, API-key authenticated App Store upload workflow."""
     requirements = {
@@ -910,6 +941,13 @@ def main() -> int:
             ERRORS.append(f"Apple StoreKit integration workflow contract: {workflow_issue}")
     else:
         ERRORS.append("Apple local StoreKit integration workflow is missing")
+    sdk27_workflow_path = ROOT / ".github" / "workflows" / "apple-sdk27-forward-checks.yml"
+    if sdk27_workflow_path.is_file():
+        sdk27_workflow_source = sdk27_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_sdk27_workflow_contract_errors(sdk27_workflow_source):
+            ERRORS.append(f"Apple SDK 27 forward workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple SDK 27 forward verification workflow is missing")
     upload_workflow_path = ROOT / ".github" / "workflows" / "apple-app-store-upload.yml"
     if upload_workflow_path.is_file():
         upload_workflow_source = upload_workflow_path.read_text(encoding="utf-8")

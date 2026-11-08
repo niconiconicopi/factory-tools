@@ -1,0 +1,105 @@
+name: Apple SDK 27 forward checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable_private_macos_runner:
+        description: Confirm FACTORYTOOLS_PRIVATE_MACOS_CI is enabled only after a no-overage billing guard is verified.
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  forward-checks:
+    if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
+    runs-on: xcode-27
+    timeout-minutes: 150
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Verify Xcode and SDK 27 availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          iphone_sdk="$(xcrun --sdk iphoneos --show-sdk-version)"
+          ipad_sdk="$(xcrun --sdk iphonesimulator --show-sdk-version)"
+          watch_sdk="$(xcrun --sdk watchos --show-sdk-version)"
+          printf 'iOS SDK: %s\niOS Simulator SDK: %s\nwatchOS SDK: %s\n' "$iphone_sdk" "$ipad_sdk" "$watch_sdk"
+          for sdk_version in "$iphone_sdk" "$ipad_sdk" "$watch_sdk"; do
+            if [[ "${sdk_version%%.*}" -lt 27 ]]; then
+              echo "Expected SDK 27 or newer, found $sdk_version." >&2
+              exit 1
+            fi
+          done
+
+      - name: Run repository and source checks
+        run: |
+          python3 -B -m unittest discover -s Scripts -p 'test_*.py'
+          python3 Scripts/validate_static.py
+          python3 Scripts/audit_source_hygiene.py
+          python3 Scripts/generate_public_site.py --check
+
+      - name: Test shared Core contracts
+        run: >-
+          xcodebuild test
+          -project FactoryTools.xcodeproj
+          -scheme FactoryToolsCore
+          -destination 'platform=macOS'
+          -derivedDataPath "$RUNNER_TEMP/FactoryToolsSDK27DerivedData"
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Test iPhone app and hosted regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((d["udid"] for devices in data["devices"].values() for d in devices if d["isAvailable"] and d["name"].startswith("iPhone")), ""))')"
+          test -n "$simulator_id"
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsSDK27DerivedData" \
+            -parallel-testing-enabled NO \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Test iPad app and hosted regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          simulator_id="$(xcrun simctl list devices available --json | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next((d["udid"] for devices in data["devices"].values() for d in devices if d["isAvailable"] and "13-inch" in d["name"] and d["name"].startswith("iPad")), ""))')"
+          test -n "$simulator_id"
+          xcodebuild test \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination "platform=iOS Simulator,id=$simulator_id" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsSDK27DerivedData" \
+            -parallel-testing-enabled NO \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Build Watch Debug and Release targets
+        run: |
+          xcodebuild build -project FactoryTools.xcodeproj -scheme FactoryToolsWatch -configuration Debug -destination 'generic/platform=watchOS Simulator' -derivedDataPath "$RUNNER_TEMP/FactoryToolsSDK27DerivedData" CODE_SIGNING_ALLOWED=NO
+          xcodebuild build -project FactoryTools.xcodeproj -scheme FactoryToolsWatch -configuration Release -destination 'generic/platform=watchOS Simulator' -derivedDataPath "$RUNNER_TEMP/FactoryToolsSDK27DerivedData" CODE_SIGNING_ALLOWED=NO INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES
+
+      - name: Archive unsigned iPhone app with embedded Watch target
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive_path="$RUNNER_TEMP/FactoryToolsSDK27.xcarchive"
+          xcodebuild archive \
+            -project FactoryTools.xcodeproj \
+            -scheme FactoryTools \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$archive_path" \
+            -derivedDataPath "$RUNNER_TEMP/FactoryToolsSDK27DerivedData" \
+            CODE_SIGNING_ALLOWED=NO
+          test -d "$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app"
