@@ -47,7 +47,7 @@ Apple Developer Programには個人登録と組織登録があります。これ
 | App Store表示言語 | 顧客に見えるストア上のアプリ名・説明文の基本言語 | 英語を基本言語にし、日本語のローカライズを追加する。アプリ内は日本語・英語に対応済み | 方針決定済み。App Store Connectで設定 |
 | 公開対象の国・地域 | Factory ToolsとPro購入を利用可能にするApp Storeの国・地域 | V1は日本に加え、Appleが配信を認める全地域で公開する。英語をApp Storeの基本言語、日本語を追加ローカライズにし、アプリとPro商品で全配信可能地域を選ぶ。Appleが追加する将来の地域は、価格・法令確認後に別途追加する | 方針決定済み。App Store Connectで設定・確認 |
 | 対応プラットフォーム | アプリをダウンロード可能にするApple端末 | V1はiPhone、iPad、ペアリングしたApple Watch。未検証のMacとVision Proへの互換配信はオフにする | App Store ConnectのMac／Vision Pro互換配信をオフにし、設定を確認 |
-| EU Digital Services Actの販売者ステータス | EU向けにApp Storeで配信する際の販売者／非販売者の申告 | 公開者本人が事業活動に照らして判定し、App Store Connectで申告する。販売者の場合、AppleがEU向け商品ページに表示する連絡先を検証する。[Appleの公式要件](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/) | 未申告。公開者の法的判断と、Appleが求める掲載連絡先の確認が必要 |
+| EU Digital Services Actの販売者ステータス | App Store ConnectでEU向けの販売者／非販売者を申告する項目 | Appleの案内では、EUで配信しない場合も販売者ステータスの申告が必要。個人登録であることだけでは判定できず、公開者本人が活動内容から判断する。販売者の場合は、住所または私書箱、電話番号、メールアドレスをEU向け商品ページに表示し、本人確認し、支払い口座情報も登録する。[Appleの公式要件](https://developer.apple.com/help/app-store-connect/manage-compliance-information/manage-european-union-digital-services-act-trader-requirements/) | 未申告。公開者の法的判断と、Appleが求める掲載連絡先・支払い情報の確認が必要 |
 | App Storeの主カテゴリ | App Storeでアプリを探すときの主な分類 | 工場の生産・現場業務を支援するため「ビジネス」を選ぶ。V1では副カテゴリを追加しない | 選定済み。登録時に確認 |
 | Family Sharing | 家族のApple AccountにもPro購入を共有するか | Version 1ではオフ。オンにすると購入者が共有を許可した場合に購入者以外の最大5人が使える。人数を開発者が設定する機能ではなく、Appleのファミリーグループに従う。App Store Connectでオンにした後はオフに戻せない | 方針確定。App Store Connectでもオフを確認 |
 
@@ -67,7 +67,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
 3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。現在のローカル検証は94件のPythonテスト、静的構造検査（Swift 67ファイル・XCTestソース284件・日英431文字列）、公開ページ生成確認、秘密情報検査を通過しています。静的ソース上のアプリ側のテストメソッドは236件、Coreテストは48件です。最新push commit `0258ae5` は [Apple native checks run 42441852739](https://github.com/niconiconicopi/factory-tools/actions/runs/42441852739) でiPhoneとiPadのアプリテストが各235件通過し、英日Release画面撮影、必須スクリーンショット検査も通過しました。前回失敗した英語Takt Time画面は、OCRに失敗した初回撮影から最大3回再撮影する処理により成功しています。[Watch/archive run 42441852751](https://github.com/niconiconicopi/factory-tools/actions/runs/42441852751) も成功し、Watchビルド・共有Coreテスト・Watch入り未署名archiveを確認しました。SDK 27 forward-check run 42438704276 はアプリ／XcodeプロジェクトのSwift変更前のrevision `a050e18` で成功しており、今回のコミットはスクリーンショット補助スクリプトと文書のみです。StoreKit実購入テストはheadless Simulatorで商品読込ができず通常CIから外しています。Apple Developer Technical Supportは関連するCLI Simulator問題を既知として回答しており、後日のXcode更新で再検証が必要です（[Apple Developer Forums](https://developer.apple.com/forums/thread/826971)）。これらは無料macOS runnerを使ったSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入の確認ではありません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
 4. 準備が整った最後の有料段階でApple Developer Programに登録する。登録を進めるかは公開者が判断し、費用の発生する操作は無断で行わない。
-5. 登録後にTeam IDを確認し、署名を設定する。App Store Connectで商品、価格、Family Sharing、アプリ情報を登録し、EU公開前にDSA販売者ステータスと掲載連絡先を申告・確認する。
+5. 登録後にTeam IDを確認し、署名を設定する。App Store Connectで商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。
 7. 署名済みアプリの購入画面で日本向け¥980を確認し、購入・復元、Watch/iPad連携を確認する。
 8. 年齢評価、プライバシー、輸出コンプライアンスの質問に回答し、必要なスクリーンショットとWatch情報を揃えて提出する。
