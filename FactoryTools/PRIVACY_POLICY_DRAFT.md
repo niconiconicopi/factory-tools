@@ -4,7 +4,7 @@
 
 **Publisher / 運営者:** `[Publisher's legal name / 発行者の正式名称]`  
 **Effective date / 発効日:** `[YYYY-MM-DD]`  
-**Privacy contact / 個人情報に関する連絡先:** `[Public contact email or contact page / 公開連絡先メールアドレスまたは問い合わせページ]`
+**Privacy contact / 個人情報に関する連絡先:** `azalea.fortask@outlook.jp`
 
 ## 日本語
 
