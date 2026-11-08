@@ -1,11 +1,11 @@
 # App Review Notes — Factory Tools
 
-**Draft only.** Verify the instructions against the signed submission build. Replace the contact placeholder before submission. Do not add credentials; the app has no account or sign-in flow.
+**Draft only.** Verify the instructions against the signed submission build. The supplied support address below passed a receipt test; confirm it will be monitored throughout App Review and add the publisher's reviewer name and any required phone number before submission. Do not add credentials; the app has no account or sign-in flow.
 
 ## Review contact
 
-- Contact: **[Publisher review contact]**
-- Email: **[Monitored review contact email]**
+- Contact: **[Publisher review contact name]**
+- Email: **azalea.fortask@outlook.jp** (publisher-supplied support address; receipt test confirmed; monitoring during review must be confirmed)
 
 ## App access
 
@@ -76,7 +76,7 @@ The non-consumable Factory Tools Pro product is submitted with the iOS version. 
 
 ## Before submission
 
-- Replace the review contact and email with publisher-owned, monitored details.
+- Confirm `azalea.fortask@outlook.jp` will be monitored during review, then replace the reviewer name placeholder and add any contact details App Store Connect requires.
 - Confirm the sandbox product is available and both purchase and restore unlock the expected Pro feature set.
 - Confirm the Pro purchase screen and product metadata match the single non-consumable product.
 - Confirm the Watch/iPad steps against the submitted targets and actual release build.
