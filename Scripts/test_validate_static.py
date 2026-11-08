@@ -1,10 +1,12 @@
 import io
+import json
 import os
 import struct
 import subprocess
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
@@ -113,7 +115,24 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
 
         self.assertEqual(apple_storekit_workflow_contract_errors(workflow), [])
         self.assertIn("runs-on: xcode-27", workflow)
+        self.assertIn("-scheme FactoryToolsStoreKit", workflow)
         self.assertIn("xcrun simctl list runtimes", workflow)
+
+    def test_dedicated_storekit_test_plan_targets_app_and_local_configuration(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        scheme = ET.parse(root / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryToolsStoreKit.xcscheme").getroot()
+        plan = json.loads((root / "FactoryTools.xcodeproj" / "FactoryToolsStoreKit.xctestplan").read_text(encoding="utf-8"))
+
+        plan_reference = scheme.find("./TestAction/TestPlans/TestPlanReference")
+        self.assertIsNotNone(plan_reference)
+        self.assertEqual(plan_reference.get("reference"), "container:FactoryTools.xcodeproj/FactoryToolsStoreKit.xctestplan")
+        self.assertEqual(plan_reference.get("default"), "YES")
+        self.assertEqual(
+            plan["defaultOptions"]["storeKitConfiguration"]["identifier"],
+            "FactoryTools/Resources/FactoryToolsPro.storekit",
+        )
+        self.assertEqual(plan["defaultOptions"]["targetForVariableExpansion"]["identifier"], "E00000000000000000000010")
+        self.assertEqual(plan["testTargets"][0]["target"]["identifier"], "E00000000000000000000011")
 
     def test_storekit_probe_rejects_automatic_triggers_and_secrets(self) -> None:
         source = """on:

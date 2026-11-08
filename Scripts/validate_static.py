@@ -407,6 +407,7 @@ def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
         "public or manually confirmed private-run job condition": "if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')",
         "hosted Xcode 27 macOS runner": "runs-on: xcode-27",
         "bounded StoreKit probe": "timeout-minutes: 30",
+        "dedicated StoreKit test plan scheme": "-scheme FactoryToolsStoreKit",
         "focused local StoreKit purchase test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "simulator signing enabled for StoreKit integration": "CODE_SIGNING_ALLOWED=YES",
         "ad-hoc simulator identity avoids publisher signing account": "CODE_SIGN_IDENTITY=-",

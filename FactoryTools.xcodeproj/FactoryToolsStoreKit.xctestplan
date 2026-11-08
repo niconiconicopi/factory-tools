@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "id": "8E7A4691-20B4-49CE-8D7B-A3C5BB5B2A45",
+      "name": "StoreKit CLI",
+      "options": {}
+    }
+  ],
+  "defaultOptions": {
+    "storeKitConfiguration": {
+      "identifier": "FactoryTools/Resources/FactoryToolsPro.storekit"
+    },
+    "targetForVariableExpansion": {
+      "containerPath": "container:FactoryTools.xcodeproj",
+      "identifier": "E00000000000000000000010",
+      "name": "FactoryTools"
+    }
+  },
+  "testTargets": [
+    {
+      "parallelizable": false,
+      "target": {
+        "containerPath": "container:FactoryTools.xcodeproj",
+        "identifier": "E00000000000000000000011",
+        "name": "FactoryToolsTests"
+      }
+    }
+  ],
+  "version": 1
+}
