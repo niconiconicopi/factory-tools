@@ -5,6 +5,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 import xml.etree.ElementTree as ET
 from contextlib import redirect_stdout
@@ -654,6 +655,13 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Capture bilingual 13-inch iPad product-page screenshots from Release Simulator build", workflow)
         self.assertIn("--scenarios ipad-dashboard ipad-offline", workflow)
         self.assertIn("factory-tools-app-store-ipad-product-page", workflow)
+
+    def test_watch_archive_privacy_manifest_check_script_is_valid_python(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8")
+        script = workflow.split('python3 - "$manifest" <<\'PY\'\n', 1)[1].split("\n          PY\n", 1)[0]
+
+        compile(textwrap.dedent(script), "<watch-archive-privacy-manifest-check>", "exec")
 
     def test_ci_captures_bilingual_release_watch_screenshots_with_simulator_only_data(self) -> None:
         root = Path(__file__).resolve().parents[1]
