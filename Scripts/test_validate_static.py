@@ -534,6 +534,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("private var peerDashboardSheetDetents: Set<PresentationDetent>", home_view)
         self.assertIn("screenshotDemoScenario?.peerCounterScreenshotMode == nil ? [.medium, .large] : [.large]", home_view)
         peer_view = (root / "FactoryTools" / "Features" / "Counter" / "PeerCounterView.swift").read_text(encoding="utf-8")
+        self.assertIn('homeName: "Production"', peer_view)
+        self.assertIn("homeNameIsDefault: true", peer_view)
         self.assertIn('case .connected: "peer.status.connected"', peer_view)
         self.assertIn('case .offline: "peer.status.reconnecting"', peer_view)
         self.assertIn("guard screenshotDemoMode == nil else { return }", peer_view)

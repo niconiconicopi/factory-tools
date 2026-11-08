@@ -62,14 +62,14 @@ struct PeerCounterView: View {
         WatchCounterSessionSnapshot(
             sessionID: UUID(),
             homeProfileID: UUID(),
-            homeName: "Assembly",
+            homeName: "Production",
             toolID: .productionCounter,
             sessionName: "Line A",
             currentCount: 286,
             targetCount: 300,
             latestUndoableEventID: UUID(),
             defaultSessionNameToolID: nil,
-            homeNameIsDefault: false
+            homeNameIsDefault: true
         )
     ]
 #endif
