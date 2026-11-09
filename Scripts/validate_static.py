@@ -3125,6 +3125,7 @@ def main() -> int:
     device_privacy_details = strings.get("settings.privacy.details.devices.body", {}).get("localizations", {})
     local_privacy_en = local_privacy_details.get("en", {}).get("stringUnit", {}).get("value", "")
     local_privacy_ja = local_privacy_details.get("ja", {}).get("stringUnit", {}).get("value", "")
+    export_privacy = strings.get("settings.privacy.details.export.body", {}).get("localizations", {})
     local_summary = strings.get("settings.privacy.localStorageDescription", {}).get("localizations", {})
     deletion_privacy = strings.get("settings.privacy.details.delete.body", {}).get("localizations", {})
     require("Apple may include app data in iPhone or iPad backups" in local_privacy_en
@@ -3137,11 +3138,13 @@ def main() -> int:
             and "Appleの既存バックアップには" in deletion_privacy.get("ja", {}).get("stringUnit", {}).get("value", "")
             and "Apple Watch also stores active Cycle Time timer state" in local_privacy_en
             and "Apple Watchは計測中のサイクルタイム状態" in local_privacy_ja
+            and "Exports do not include unsent Watch or iPad commands or an active Watch timer" in export_privacy.get("en", {}).get("stringUnit", {}).get("value", "")
+            and "アプリを削除または再インストールする前に、端末間の保留中データを同期" in export_privacy.get("ja", {}).get("stringUnit", {}).get("value", "")
             and "Apple Watch also sends Cycle Time samples directly to iPhone" in device_privacy_details.get("en", {}).get("stringUnit", {}).get("value", "")
             and "Apple Watchからはサイクルタイム記録もiPhoneへ直接送信" in device_privacy_details.get("ja", {}).get("stringUnit", {}).get("value", "")
             and "While Pro is active, the iPhone sends the home name, production count, and target" in device_privacy_details.get("en", {}).get("stringUnit", {}).get("value", "")
             and "Pro利用中は、Watch表示を有効にした生産進捗カードのホーム名・生産数・目標数も" in device_privacy_details.get("ja", {}).get("stringUnit", {}).get("value", ""),
-            "in-app privacy details must disclose Watch transfers and Apple-managed device backup behavior in Japanese and English")
+            "in-app privacy details must disclose Watch transfers, Apple-managed backups, and queued-data export limits in Japanese and English")
     require('Section("settings.support")' in settings_view
             and 'object(forInfoDictionaryKey: "FactoryToolsSupportURL")' in settings_view
             and 'Link(destination: supportURL)' in settings_view
