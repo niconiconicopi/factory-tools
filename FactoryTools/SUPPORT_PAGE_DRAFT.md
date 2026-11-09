@@ -27,6 +27,8 @@ Factory Toolsをご利用いただきありがとうございます。お問い�
 
 生産記録、設定、履歴は端末内に保存されます。AppleのiCloudまたはコンピュータバックアップを有効にしている場合、アプリデータが端末バックアップに含まれることがありますが、Factory Toolsはそのバックアップを管理しません。アプリを削除する前に、必要なデータをバックアップとして書き出してください。書き出した記録やペアリングコードは、問い合わせメールへ添付しないでください。問い合わせでは、問題の手順と画面に表示された内容を説明してください。
 
+JSONバックアップにも履歴CSVにも、Watch／iPadからの未送信操作やWatchの計測中タイマーは含まれません。アプリを削除または再インストールする前に、Watch／iPadを接続して保留中の操作が同期されたことを確認してください。Watchで計測中の場合は、必要に応じて記録を送信し、iPhone側に反映されたことを確認してください。
+
 WatchやiPadとの連携が止まった場合は、両方のアプリを開き、iPhone側のFactory Toolsを起動した状態で再接続してください。iPadの連携は近距離のローカル通信を使います。ペアリングコードの作り直しや削除をすると接続が停止します。iPadの未送信操作は旧コード用のキューに残り、新しいコードへは移動しません。再接続や再送信が必要になる可能性がある場合は、変更・削除の前に旧コードを安全な場所に控えてください。コード作り直し後は、iPhone設定の「保存済みの64桁コードでペアリングを復元」に旧コードを入力し、iPadにも同じコードを設定すると再送できます。ペアリングコードは接続用の秘密情報として扱い、公開の場所へ掲載しないでください。ペアリングを終了するときは、アプリを削除する前にiPhoneの設定でペアリングコードを削除してください。Keychainの項目はアプリを削除しても残る場合があります。
 
 Watchにカウンター操作が送信待ちの間は、iPhoneでホームを切り替える前に同期が終わるまで待ってください。切り替えた後に旧ホーム宛ての操作が拒否された場合は、そのホームのカウンター値を確認し、未反映の操作だけを入力し直してください。
@@ -61,6 +63,8 @@ Do not include your Apple Account credentials, payment details, pairing code, or
 ### Data and device connections
 
 Production records, settings, and history are stored on your device. Apple device backups may include app data when iCloud or computer backup is enabled; Factory Tools does not manage those backups. Export a backup before deleting the app if you need to keep your data. Do not attach production records or a pairing code to a support email. Describe the steps and the message shown instead.
+
+Neither JSON backups nor history CSV exports include unsent Watch or iPad commands or an active Watch timer. Before deleting or reinstalling the app, reconnect Watch and iPad and confirm that pending commands have synced. If a Watch timer is active, save it when needed and confirm that it appears on iPhone.
 
 If Watch or iPad communication stops, open both apps and keep Factory Tools open on the iPhone while reconnecting. iPad communication uses a nearby local connection. Replacing or removing the pairing code stops the connection. Unsent iPad commands remain in the queue for the old code and are not moved to a new code. Keep a secure copy of the old code before replacing or removing it if you may need to reconnect or resume sending. After replacing it, enter the saved code in iPhone Settings under **Enter an existing 64-character code to restore pairing**, then set the same code on iPad to resume sending. Treat the pairing code as a secret and do not post it publicly. To end pairing, remove the pairing code in iPhone Settings before deleting the app; a Keychain item may remain after app removal.
 

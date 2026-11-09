@@ -29,6 +29,7 @@
 <p>利用者がJSONバックアップまたはCSVを書き出すと、システムの共有機能で利用者が選んだ保存先や送信先にファイルを渡せます。その後の保存先における取り扱いは、そのサービスのプライバシー条件に従います。</p>
 <h3>保存と削除</h3>
 <p>アプリのデータは各端末に保存され、開発者が管理する保管期間はありません。iPhone/iPadのiCloudバックアップまたはコンピュータバックアップを利用している場合、Appleの端末バックアップにアプリデータが含まれることがあります。Apple Watchのバックアップはペアリング済みiPhoneのバックアップに含まれます。バックアップの設定、管理、削除はAppleのシステムに従います。ホームを削除すると、そのホームに属するカウンターと履歴などのデータもアプリから削除されますが、既存の端末バックアップには更新または削除まで以前のデータが残る場合があります。サイクルタイムとOEEの記録は各画面の削除操作で削除できます。設定からペアリングコードも削除できます。ペアリングを終了するときは、アプリを削除する前に設定からコードを削除してください。AppleのKeychain項目はアプリ削除後も残る場合があるためです。エクスポートしたファイルは利用者が選んだ保存先で管理・削除してください。</p>
+<p>JSONバックアップにもCSV書き出しにも、WatchやiPadからの未送信操作とWatchの計測中タイマーは含まれません。アプリを削除する前に、端末間の保留中データを同期してください。</p>
 <h3>子どものプライバシー</h3>
 <p>Factory Toolsは利用者の情報を開発者へ収集する機能を設けていません。対象年齢や地域に関する問い合わせは、上記の連絡先へお送りください。</p>
 <h3>変更と問い合わせ</h3>
@@ -46,6 +47,7 @@
 <p>When you export a JSON backup or CSV file, the system share sheet lets you choose where to save or send it. The destination&#x27;s own privacy terms govern how it handles the file after you share it.</p>
 <h3>Storage and deletion</h3>
 <p>App data is stored on your devices, and the developer does not set a retention period for locally stored data. If you enable iCloud or computer backups for iPhone or iPad, Apple device backups may include app data. Apple Watch backups are included with the paired iPhone backup. Apple manages backup settings, retention, and deletion. Deleting a home removes its counters, history, and associated data from the app, but earlier copies may remain in existing device backups until those backups are updated or deleted. Cycle Time and OEE records can be deleted from their screens. You can also remove a pairing code in Settings. If you are ending pairing, remove the code in Settings before deleting the app; Apple Keychain items may remain after app removal. Manage and delete exported files at the location you chose.</p>
+<p>Neither JSON backups nor CSV exports include unsent Watch or iPad commands or an active Watch timer. Sync pending device data before deleting the app.</p>
 <p>Apple explains <a href="https://support.apple.com/en-us/108770" target="_blank" rel="noopener noreferrer">what iCloud Backup includes</a> and <a href="https://support.apple.com/en-us/108358" target="_blank" rel="noopener noreferrer">how Apple Watch backups work</a>.</p>
 <h3>Children&#x27;s privacy</h3>
 <p>Factory Tools has no feature that collects a user&#x27;s information for the developer. For questions about age suitability or regional requirements, contact us using the details above.</p>

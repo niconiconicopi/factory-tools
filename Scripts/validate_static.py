@@ -4776,6 +4776,7 @@ def main() -> int:
             and "WatchConnectivity" in privacy_inventory
             and "local peer connection" in privacy_inventory
             and "35F9.1" in privacy_inventory
+            and "neither includes pending Watch/iPad delivery queues or an active Watch Cycle Time timer" in privacy_inventory
             and "App Store Connect privacy questionnaire" in privacy_inventory,
             "privacy inventory must cover local Watch timer state and Cycle Time transfer alongside its data posture, manifest reason, and publisher review gate")
     privacy_review = (ROOT / "FactoryTools" / "APP_STORE_PRIVACY_REVIEW.md").read_text(encoding="utf-8")
@@ -4819,7 +4820,9 @@ def main() -> int:
             and "counter commands and Cycle Time samples directly with Apple Watch" in privacy_policy
             and "the home name, production count, and target for Watch-enabled Production Progress cards" in privacy_policy
             and "Keychain項目はアプリ削除後も残る場合がある" in privacy_policy
-            and "Keychain items may remain after app removal" in privacy_policy,
+            and "Keychain items may remain after app removal" in privacy_policy
+            and "JSONバックアップにもCSV書き出しにも、WatchやiPadからの未送信操作とWatchの計測中タイマーは含まれません" in privacy_policy
+            and "Neither JSON backups nor CSV exports include unsent Watch or iPad commands or an active Watch timer" in privacy_policy,
             "privacy policy draft must match Watch and iPad data flows and explain pairing-secret removal in both languages")
     support_page = (ROOT / "FactoryTools" / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
     require("Watchでサイクルタイムを「停止して記録」した後" in support_page
@@ -4837,7 +4840,9 @@ def main() -> int:
             and "旧コードを安全な場所に控えてください" in support_page
             and "secure copy of the old code" in support_page
             and "保存済みの64桁コードでペアリングを復元" in support_page
-            and "Enter an existing 64-character code to restore pairing" in support_page,
+            and "Enter an existing 64-character code to restore pairing" in support_page
+            and "JSONバックアップにも履歴CSVにも、Watch／iPadからの未送信操作やWatchの計測中タイマーは含まれません" in support_page
+            and "Neither JSON backups nor history CSV exports include unsent Watch or iPad commands or an active Watch timer" in support_page,
             "bilingual support draft must explain offline Watch recovery and per-pairing iPad queue behavior")
     user_guide = (ROOT / "FactoryTools" / "USER_GUIDE.md").read_text(encoding="utf-8")
     require("アプリ削除前に設定から削除してください" in user_guide

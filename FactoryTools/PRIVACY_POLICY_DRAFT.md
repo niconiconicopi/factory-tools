@@ -30,6 +30,8 @@ Proの買い切り購入と支払いはAppleのApp Storeが処理します。ア
 
 アプリのデータは各端末に保存され、開発者が管理する保管期間はありません。iPhone/iPadのiCloudバックアップまたはコンピュータバックアップを利用している場合、Appleの端末バックアップにアプリデータが含まれることがあります。Apple Watchのバックアップはペアリング済みiPhoneのバックアップに含まれます。バックアップの設定、管理、削除はAppleのシステムに従います。ホームを削除すると、そのホームに属するカウンターと履歴などのデータもアプリから削除されますが、既存の端末バックアップには更新または削除まで以前のデータが残る場合があります。サイクルタイムとOEEの記録は各画面の削除操作で削除できます。設定からペアリングコードも削除できます。ペアリングを終了するときは、アプリを削除する前に設定からコードを削除してください。AppleのKeychain項目はアプリ削除後も残る場合があるためです。エクスポートしたファイルは利用者が選んだ保存先で管理・削除してください。
 
+JSONバックアップにもCSV書き出しにも、WatchやiPadからの未送信操作とWatchの計測中タイマーは含まれません。アプリを削除する前に、端末間の保留中データを同期してください。
+
 ### 子どものプライバシー
 
 Factory Toolsは利用者の情報を開発者へ収集する機能を設けていません。対象年齢や地域に関する問い合わせは、上記の連絡先へお送りください。
@@ -65,6 +67,8 @@ When you export a JSON backup or CSV file, the system share sheet lets you choos
 ### Storage and deletion
 
 App data is stored on your devices, and the developer does not set a retention period for locally stored data. If you enable iCloud or computer backups for iPhone or iPad, Apple device backups may include app data. Apple Watch backups are included with the paired iPhone backup. Apple manages backup settings, retention, and deletion. Deleting a home removes its counters, history, and associated data from the app, but earlier copies may remain in existing device backups until those backups are updated or deleted. Cycle Time and OEE records can be deleted from their screens. You can also remove a pairing code in Settings. If you are ending pairing, remove the code in Settings before deleting the app; Apple Keychain items may remain after app removal. Manage and delete exported files at the location you chose.
+
+Neither JSON backups nor CSV exports include unsent Watch or iPad commands or an active Watch timer. Sync pending device data before deleting the app.
 
 Apple explains [what iCloud Backup includes](https://support.apple.com/en-us/108770) and [how Apple Watch backups work](https://support.apple.com/en-us/108358).
 
