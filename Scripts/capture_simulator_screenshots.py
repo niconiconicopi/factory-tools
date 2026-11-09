@@ -50,7 +50,7 @@ SCENARIO_EXPECTED_VALUES = {
     "counter-size-small": ("286",),
     "counter-size-medium": ("286", "300"),
     "counter-size-large": ("286", "300"),
-    "pro-purchase": ("980",),
+    "pro-purchase": (),
     "ipad-dashboard": ("286", "300"),
     "ipad-offline": ("286", "300"),
 }
@@ -62,6 +62,10 @@ SCENARIO_EXPECTED_LABELS = {
     "takt-time": {
         "en": ("Net production time", "Customer demand"),
         "ja": ("正味稼働時間", "顧客需要数"),
+    },
+    "pro-purchase": {
+        "en": ("Price varies by region",),
+        "ja": ("980",),
     },
 }
 COMMAND_TIMEOUT_SECONDS = 900

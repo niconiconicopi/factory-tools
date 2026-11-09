@@ -36,8 +36,8 @@ while argumentIndex < verifierArguments.count {
         argumentIndex += 1
     }
 }
-guard !expectedValues.isEmpty else {
-    fputs("At least one required visible value must be supplied.\n", stderr)
+guard !expectedValues.isEmpty || !requiredLabels.isEmpty else {
+    fputs("At least one required visible value or label must be supplied.\n", stderr)
     exit(2)
 }
 let recognitionLanguages = recognitionLanguage == "ja-JP"
