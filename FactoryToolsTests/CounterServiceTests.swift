@@ -30,12 +30,12 @@ private enum ReadOnlyTestStoreDirectory {
 final class CounterServiceTests: XCTestCase {
     private var temporaryStoreDirectories: [URL] = []
 
-    override func tearDown() throws {
+    override func tearDown() {
         for directory in temporaryStoreDirectories {
             try? FileManager.default.removeItem(at: directory)
         }
         temporaryStoreDirectories.removeAll()
-        try super.tearDown()
+        super.tearDown()
     }
 
     private func makeTemporaryStoreDirectory() throws -> URL {
@@ -5144,12 +5144,12 @@ final class CounterServiceTests: XCTestCase {
 final class ToolRegistryTests: XCTestCase {
     private var temporaryStoreDirectories: [URL] = []
 
-    override func tearDown() throws {
+    override func tearDown() {
         for directory in temporaryStoreDirectories {
             try? FileManager.default.removeItem(at: directory)
         }
         temporaryStoreDirectories.removeAll()
-        try super.tearDown()
+        super.tearDown()
     }
 
     private func makeTemporaryStoreDirectory() throws -> URL {
