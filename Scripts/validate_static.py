@@ -2254,6 +2254,7 @@ def main() -> int:
         purchase_price_view,
         flags=re.DOTALL,
     )
+    screenshot_preview_price_localizations = strings.get("pro.screenshotPreview.price", {}).get("localizations", {})
     storekit_sources = [path for path in source_files if re.search(
         r"^\s*import\s+StoreKit\b|RevenueCat|Purchases\.shared",
         path.read_text(encoding="utf-8"),
@@ -2289,6 +2290,9 @@ def main() -> int:
             and 'XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro.lifetime"))' in core_contract_tests
             and "hasResolvedEntitlement = true" in purchase_manager
             and "Text(product.displayPrice)" in purchase_price_view
+            and 'Text("pro.screenshotPreview.price")' in purchase_price_view
+            and screenshot_preview_price_localizations.get("en", {}).get("stringUnit", {}).get("value") == "Price varies by region"
+            and screenshot_preview_price_localizations.get("ja", {}).get("stringUnit", {}).get("value") == "¥980"
             and "¥980" not in production_purchase_price_view
             and not re.search(r"RevenueCat|Purchases\.shared", purchase_manager),
             "StoreKit must stay in the first-party one-time Pro manager and show the StoreKit-localized regional price rather than a hard-coded yen amount")

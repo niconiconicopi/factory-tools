@@ -358,7 +358,7 @@ struct AppSettingsView: View {
                 HStack {
                     Label("pro.purchase", systemImage: "cart")
                     Spacer()
-                    Text("¥980")
+                    Text("pro.screenshotPreview.price")
                 }
             }
             .allowsHitTesting(false)

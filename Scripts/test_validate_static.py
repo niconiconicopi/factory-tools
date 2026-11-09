@@ -562,7 +562,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('case ipadOffline = "ipad-offline"', app_source)
         self.assertIn("screenshotProPurchasePreview: screenshotDemoScenario == .proPurchase", home_view)
         self.assertIn("private var proPurchaseScreenshotPreviewSection", settings_view)
-        self.assertIn('Text("¥980")', settings_view)
+        self.assertIn('Text("pro.screenshotPreview.price")', settings_view)
         self.assertIn(".allowsHitTesting(false)", settings_view)
         self.assertIn("PeerCounterView(screenshotDemoMode:", home_view)
         self.assertIn(".presentationDetents(peerDashboardSheetDetents)", home_view)
