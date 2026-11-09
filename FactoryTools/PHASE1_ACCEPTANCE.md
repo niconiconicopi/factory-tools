@@ -2,6 +2,8 @@
 
 This checklist maps the agreed iPhone Phase 1 goal to the current source and regression coverage. App-source commit `78c70d0` passed the iPhone/iPad app-hosted test suites, bilingual Release screenshots, dedicated bilingual S/M/L counter-card captures, and the required screenshot gate in [native run 42512047420](https://github.com/niconiconicopi/factory-tools/actions/runs/42512047420). [Watch/archive run 42512047381](https://github.com/niconiconicopi/factory-tools/actions/runs/42512047381) passed Watch, shared Core, bilingual Watch capture, and unsigned archive checks. The latest iPhone run also verifies the hosted app's SwiftData store is retained outside the temporary directory. Simulator evidence does not establish physical-device behavior.
 
+The latest app-source revision `1ebf1e4` passed iPhone/iPad XCTest and the bilingual iPhone/iPad plus S/M/L screenshot gates in [native run 42614863032](https://github.com/niconiconicopi/factory-tools/actions/runs/42614863032); [Watch/archive run 42614863012](https://github.com/niconiconicopi/factory-tools/actions/runs/42614863012) passed shared Core, Watch, and archive verification. English and Japanese Pro-preview prices both passed screenshot OCR. Physical Apple-device behavior remains unverified.
+
 | Acceptance item | Implementation | Regression evidence | Source status |
 |---|---|---|---|
 | Launch into an Industrial Dark custom home | `AppBootstrapView`, `ThemeManager`, `HomeView`, `HomeProfile` | `testBootstrapServiceCreatesHomeAndSettingsOnlyOnce`, `testThemeManagerResolvesIndustrialDarkTypographyAndBorderTokens` | Implemented |
