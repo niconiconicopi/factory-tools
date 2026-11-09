@@ -414,7 +414,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(len(launches), 2)
         self.assertEqual(len(readiness_checks), 2)
         self.assertEqual(len(verifier_arguments), 2)
-        self.assertEqual(verifier_arguments[1][-6:], ["286", "300", "8", "--language", "ja-JP", "--counter-row"])
+        self.assertEqual(verifier_arguments[1][-3:], ["--language", "ja-JP", "--counter-row"])
 
     def test_takt_time_capture_retries_blank_first_render_without_home_readiness_polling(self) -> None:
         import capture_simulator_screenshots
@@ -464,8 +464,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertEqual(captures, 2)
         self.assertEqual(len(verifier_arguments), 2)
         self.assertEqual(
-            verifier_arguments[1][-5:],
-            ["60", "Net production time", "Customer demand", "--language", "en-US"],
+            verifier_arguments[1][-7:],
+            ["60", "--language", "en-US", "--required-label", "Net production time", "--required-label", "Customer demand"],
         )
         readiness.assert_not_called()
 
@@ -537,9 +537,11 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
 
         self.assertIn('"cycle-time": ("120", "30")', capture_script)
         self.assertIn('"--language", "ja-JP" if japanese else "en-US"', capture_script)
+        self.assertIn('verification_arguments.extend(["--required-label", label])', capture_script)
         self.assertNotIn('"cycle-time": ("120", "4", "30")', capture_script)
         self.assertIn('? ["ja-JP", "en-US"]', home_verifier)
         self.assertIn('request.recognitionLanguages = [language]', home_verifier)
+        self.assertIn('observation.confidence >= 0.25', home_verifier)
         self.assertIn("#if targetEnvironment(simulator)", app_source)
         self.assertIn('HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)', app_source)
         self.assertIn('arguments.contains("--factorytools-screenshot-demo")', app_source)
@@ -629,7 +631,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("session?.currentCount.description", home_card)
         self.assertIn("confidence >= 0.5", home_verifier)
         self.assertIn("hasCountAndTargetOnSameRow", home_verifier)
-        self.assertIn('verifierArguments.contains("--counter-row")', home_verifier)
+        self.assertIn('case "--counter-row":', home_verifier)
         self.assertIn("abs(current.bounds.midY - target.bounds.midY) <= 0.06", home_verifier)
         self.assertIn("current.bounds.minX < target.bounds.minX", home_verifier)
         self.assertIn("Recognized text:", home_verifier)

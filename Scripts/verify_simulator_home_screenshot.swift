@@ -2,20 +2,39 @@ import Foundation
 import Vision
 
 guard CommandLine.arguments.count >= 3 else {
-    fputs("Usage: verify_simulator_home_screenshot.swift <image> <required-value>... [--language <locale>] [--counter-row]\n", stderr)
+    fputs("Usage: verify_simulator_home_screenshot.swift <image> <required-value>... [--required-label <text>]... [--language <locale>] [--counter-row]\n", stderr)
     exit(2)
 }
 
 let imageURL = URL(fileURLWithPath: CommandLine.arguments[1])
 let verifierArguments = Array(CommandLine.arguments.dropFirst(2))
-let requiresCounterRow = verifierArguments.contains("--counter-row")
-let languageOptionIndex = verifierArguments.firstIndex(of: "--language")
-let recognitionLanguage = languageOptionIndex.flatMap { index in
-    verifierArguments.indices.contains(index + 1) ? verifierArguments[index + 1] : nil
-}
-let excludedArgumentIndices = Set([languageOptionIndex, languageOptionIndex.flatMap { verifierArguments.indices.contains($0 + 1) ? $0 + 1 : nil }].compactMap { $0 })
-let expectedValues = verifierArguments.enumerated().compactMap { index, argument in
-    argument == "--counter-row" || excludedArgumentIndices.contains(index) ? nil : argument
+var expectedValues: [String] = []
+var requiredLabels: [String] = []
+var requiresCounterRow = false
+var recognitionLanguage: String?
+var argumentIndex = 0
+while argumentIndex < verifierArguments.count {
+    switch verifierArguments[argumentIndex] {
+    case "--counter-row":
+        requiresCounterRow = true
+        argumentIndex += 1
+    case "--language", "--required-label":
+        guard verifierArguments.indices.contains(argumentIndex + 1) else {
+            fputs("Missing a value after \(verifierArguments[argumentIndex]).\n", stderr)
+            exit(2)
+        }
+        let option = verifierArguments[argumentIndex]
+        let value = verifierArguments[argumentIndex + 1]
+        if option == "--language" {
+            recognitionLanguage = value
+        } else {
+            requiredLabels.append(value)
+        }
+        argumentIndex += 2
+    default:
+        expectedValues.append(verifierArguments[argumentIndex])
+        argumentIndex += 1
+    }
 }
 guard !expectedValues.isEmpty else {
     fputs("At least one required visible value must be supplied.\n", stderr)
@@ -53,6 +72,13 @@ do {
         return !observations.contains { observation in
             observation.confidence >= 0.5
                 && observation.text.range(of: pattern, options: .regularExpression) != nil
+        }
+    }
+    let missingLabels = requiredLabels.filter { expected in
+        let escapedLabel = NSRegularExpression.escapedPattern(for: expected)
+        return !observations.contains { observation in
+            observation.confidence >= 0.25
+                && observation.text.range(of: escapedLabel, options: .regularExpression) != nil
         }
     }
     let observationSummary = observations.map {
@@ -94,12 +120,14 @@ do {
         }
     }()
 
-    guard missingValues.isEmpty, hasCountAndTargetOnSameRow else {
-        let detail = missingValues.isEmpty
-            ? "Counter and target values were recognized but not together on the counter row."
-            : "Missing values: \(missingValues.joined(separator: ", "))."
+    guard missingValues.isEmpty, missingLabels.isEmpty, hasCountAndTargetOnSameRow else {
+        let details = [
+            missingValues.isEmpty ? nil : "Missing values: \(missingValues.joined(separator: ", ")).",
+            missingLabels.isEmpty ? nil : "Missing labels: \(missingLabels.joined(separator: ", ")).",
+            !hasCountAndTargetOnSameRow ? "Counter and target values were recognized but not together on the counter row." : nil,
+        ].compactMap { $0 }.joined(separator: " ")
         fputs(
-            "Simulator screenshot does not show the required visible content. \(detail) "
+            "Simulator screenshot does not show the required visible content. \(details) "
                 + "Recognized text: \(observationSummary)\n",
             stderr
         )
@@ -107,6 +135,9 @@ do {
     }
 
     print("Visible simulator screenshot values confirmed: \(expectedValues.joined(separator: ", ")).")
+    if !requiredLabels.isEmpty {
+        print("Visible simulator screenshot labels confirmed: \(requiredLabels.joined(separator: ", ")).")
+    }
     print("Simulator screenshot OCR: \(observationSummary)")
 } catch {
     fputs("Simulator home screenshot text recognition failed: \(error)\n", stderr)

@@ -28,6 +28,24 @@ private enum ReadOnlyTestStoreDirectory {
 
 @MainActor
 final class CounterServiceTests: XCTestCase {
+    private var temporaryStoreDirectories: [URL] = []
+
+    override func tearDown() throws {
+        for directory in temporaryStoreDirectories {
+            try? FileManager.default.removeItem(at: directory)
+        }
+        temporaryStoreDirectories.removeAll()
+        try super.tearDown()
+    }
+
+    private func makeTemporaryStoreDirectory() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FactoryToolsTestStore-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        temporaryStoreDirectories.append(directory)
+        return directory
+    }
+
     func testVersionedSchemaV1DefinesAllPersistedModelsAndMigrationPlan() throws {
         XCTAssertEqual(FactoryToolsSchemaV1.versionIdentifier, Schema.Version(1, 0, 0))
         XCTAssertEqual(FactoryToolsSchemaV1.models.count, 8)
@@ -471,9 +489,7 @@ final class CounterServiceTests: XCTestCase {
         XCTAssertTrue(upgradedLegacyBackup.events.allSatisfy { $0.payloadSignature == nil })
         XCTAssertTrue(upgradedLegacyBackup.commandReceipts.allSatisfy { $0.payloadSignature == nil })
         let sourceEvents = try sourceContext.fetch(FetchDescriptor<CountEvent>()).sorted { $0.sequence < $1.sequence }
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([
             HomeProfile.self, ToolCard.self, ProductionSession.self, CountEvent.self,
@@ -2505,9 +2521,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testNoChangeCommandReceiptPreventsReplayAfterStoreReopen() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("CounterReceipt.store")
         let schema = Schema([ProductionSession.self, CountEvent.self, CounterCommandReceipt.self])
@@ -2568,9 +2582,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testPersistentStoreAddsHistoryAndReceiptModelsWithoutLosingExistingCounterData() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("SchemaUpgrade.store")
         let previousSchema = Schema([
@@ -3100,9 +3112,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testCounterSaveFailuresPreserveFileBackedCountAndCommandHistory() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([HomeProfile.self, ProductionSession.self, CountEvent.self, CounterCommandReceipt.self, AppSettings.self])
@@ -3382,9 +3392,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testFactoryToolsJourneySurvivesReopenAndBackupCopy() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([
@@ -3576,9 +3584,7 @@ final class CounterServiceTests: XCTestCase {
             FactoryToolsBackupService(modelContext: sourceContext).makeJSON()
         )
 
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
         let storeURL = directory.appendingPathComponent("ImportedFactory.store")
         let schema = Schema([
             HomeProfile.self, ToolCard.self, ProductionSession.self, CountEvent.self,
@@ -3699,9 +3705,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testPersistentStoreRestoresCustomHomeCardsCounterAndLanguage() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([HomeProfile.self, ToolCard.self, ProductionSession.self, CountEvent.self, AppSettings.self, CycleTimeSample.self, OEERun.self, CounterCommandReceipt.self])
@@ -3986,9 +3990,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testBootstrapRepairSaveFailurePreservesPersistedLegacyState() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([HomeProfile.self, ToolCard.self, ProductionSession.self, AppSettings.self])
@@ -4413,9 +4415,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testHomeProfileSaveFailuresPreservePersistedSelectionNamesAndOrder() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([
@@ -4470,9 +4470,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testHomeDeleteSaveFailurePreservesPersistedHomesAndRelatedData() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([
@@ -4561,9 +4559,7 @@ final class CounterServiceTests: XCTestCase {
     }
 
     func testCardAndPresetSaveFailuresPreservePersistedDataAndRollbackNewRecords() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([
@@ -5146,6 +5142,24 @@ final class CounterServiceTests: XCTestCase {
 
 @MainActor
 final class ToolRegistryTests: XCTestCase {
+    private var temporaryStoreDirectories: [URL] = []
+
+    override func tearDown() throws {
+        for directory in temporaryStoreDirectories {
+            try? FileManager.default.removeItem(at: directory)
+        }
+        temporaryStoreDirectories.removeAll()
+        try super.tearDown()
+    }
+
+    private func makeTemporaryStoreDirectory() throws -> URL {
+        let directory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("FactoryToolsTestStore-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        temporaryStoreDirectories.append(directory)
+        return directory
+    }
+
     func testToolAccessAssignmentsMatchTheApprovedVersionOneBoundary() throws {
         let expected: [ToolID: FeatureAccessTier] = [
             .productionCounter: .free,
@@ -5932,9 +5946,7 @@ final class ToolRegistryTests: XCTestCase {
     }
 
     func testPersistentStoreRestoresOEERunHistory() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([HomeProfile.self, OEERun.self])
@@ -6240,9 +6252,7 @@ final class ToolRegistryTests: XCTestCase {
     }
 
     func testHistorySaveAndDeleteFailuresPreserveFileBackedRecords() throws {
-        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: directory) }
+        let directory = try makeTemporaryStoreDirectory()
 
         let storeURL = directory.appendingPathComponent("FactoryTools.store")
         let schema = Schema([HomeProfile.self, CycleTimeSample.self, OEERun.self])
