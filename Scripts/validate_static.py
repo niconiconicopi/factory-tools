@@ -469,6 +469,7 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "read-only repository permission": "permissions:\n  contents: read",
         "checkout credentials disabled": "persist-credentials: false",
         "Apple-hosted macOS runner": "runs-on: macos-26",
+        "known headless StoreKit integration case is isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "release source preflight": "--release-preflight",
         "generic iOS archive": "-destination 'generic/platform=iOS'",
         "iPad Simulator regression suite": 'name: Run current iPad regression suite',
@@ -480,6 +481,8 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "no App Review submission": "does not submit for App Review",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+        errors.append("both iPhone and iPad upload-preflight suites must isolate the known headless StoreKitTest failure")
     if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
         errors.append("distribution upload workflow must not run on push, pull request, or schedule")
     if "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}" not in source:

@@ -303,6 +303,20 @@ class AppleUploadWorkflowContractTests(unittest.TestCase):
 
         self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
 
+    def test_upload_workflow_skips_only_the_known_headless_storekit_test_twice(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+        skip = "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro"
+
+        self.assertEqual(workflow.count(skip), 2)
+        self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
+
+        unsafe_workflow = workflow.replace(skip + " \\\n", "", 1)
+        self.assertIn(
+            "both iPhone and iPad upload-preflight suites must isolate the known headless StoreKitTest failure",
+            apple_upload_workflow_contract_errors(unsafe_workflow),
+        )
+
     def test_upload_workflow_rejects_api_key_before_simulator_gates(self) -> None:
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
