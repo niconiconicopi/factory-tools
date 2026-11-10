@@ -164,6 +164,9 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         let validClientReady = expectation(description: "valid client TLS handshake completed")
         var retainedWires: [LocalPeerWireConnection] = []
         var activeServerWire: LocalPeerWireConnection?
+        var acceptedPeerCount = 0
+        var firstPeerAcceptedAt: Date?
+        var firstPeerFailureElapsed: TimeInterval?
         var stalledClient: NWConnection?
         var validClient: NWConnection?
 
@@ -179,7 +182,8 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
                     connection.cancel()
                     return
                 }
-                let isFirstPeer = activeServerWire == nil
+                let isFirstPeer = acceptedPeerCount == 0
+                acceptedPeerCount += 1
                 let wire = LocalPeerWireConnection(
                     connection: connection,
                     queue: callbackQueue,
@@ -188,7 +192,10 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
                     switch event {
                     case .failed(let connectionID) where activeServerWire?.id == connectionID:
                         activeServerWire = nil
-                        if isFirstPeer { firstPeerTimedOut.fulfill() }
+                        if isFirstPeer {
+                            firstPeerFailureElapsed = firstPeerAcceptedAt.map { Date().timeIntervalSince($0) }
+                            firstPeerTimedOut.fulfill()
+                        }
                     case .ready(_) where !isFirstPeer:
                         authenticatedServerPeerReady.fulfill()
                     default:
@@ -197,6 +204,7 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
                 }
                 retainedWires.append(wire)
                 activeServerWire = wire
+                if isFirstPeer { firstPeerAcceptedAt = Date() }
                 wire.start()
                 if isFirstPeer { firstPeerAccepted.fulfill() }
             }
@@ -215,6 +223,11 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         stalledClient = stalled
         stalled.start(queue: callbackQueue)
         await fulfillment(of: [firstPeerAccepted, firstPeerTimedOut], timeout: 10)
+        XCTAssertGreaterThanOrEqual(
+            firstPeerFailureElapsed ?? 0,
+            0.2,
+            "the unestablished peer should be released by the timeout, not an immediate socket failure"
+        )
         XCTAssertNil(activeServerWire, "the authority slot must be released before accepting the next peer")
         stalled.cancel()
         stalledClient = nil
