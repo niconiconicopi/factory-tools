@@ -4134,24 +4134,16 @@ def main() -> int:
     platform_boundaries = (ROOT / "FactoryTools" / "PLATFORM_BOUNDARIES.md").read_text(encoding="utf-8")
     product_decisions = (ROOT / "FactoryTools" / "PRODUCT_DECISIONS.md").read_text(encoding="utf-8")
     release_setup_guide = (ROOT / "FactoryTools" / "APPLE_RELEASE_SETUP_JA.md").read_text(encoding="utf-8")
-    hosted_app_test_count = sum(
-        len(re.findall(r"\bfunc\s+test\w+\s*\(", path.read_text(encoding="utf-8")))
-        for path in (ROOT / "FactoryToolsTests").rglob("*.swift")
-    )
-    shared_core_test_count = sum(
-        len(re.findall(r"\bfunc\s+test\w+\s*\(", path.read_text(encoding="utf-8")))
-        for path in (ROOT / "FactoryToolsCoreTests").rglob("*.swift")
-    )
     release_setup_run_ids = set(re.findall(
         r"https://github\.com/niconiconicopi/factory-tools/actions/runs/(\d+)",
         release_setup_guide,
     ))
-    require(f"アプリ側のテストメソッドは{hosted_app_test_count}件" in release_setup_guide
-            and f"iPhoneとiPadのアプリテストが各{hosted_app_test_count - 1}件" in release_setup_guide
-            and f"Coreテストは{shared_core_test_count}件" in release_setup_guide
-            and len(release_setup_run_ids) >= 2
+    localized_string_count = len(strings) + len(watch_strings)
+    require(f"XCTestソース{test_case_count}件" in release_setup_guide
+            and f"日英{localized_string_count}文字列" in release_setup_guide
+            and {"42622558878", "42622558924"}.issubset(release_setup_run_ids)
             and "41244759649" not in release_setup_guide,
-            "Japanese Apple release setup guide must cite hosted simulator/Core runs and current test counts")
+            "Japanese Apple release setup guide must cite the latest hosted runs and current source counts")
     registered_tool_count = registry.count("ToolDefinition(")
     require(f"{test_case_count} XCTest methods across app and Core targets" in roadmap,
             "the roadmap's XCTest source count must match the current test inventory")
