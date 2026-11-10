@@ -6,7 +6,7 @@
 
 ## 公開にかかるApple登録料
 
-App Storeで一般公開するにはApple Developer Programのメンバーシップが必要で、Appleの案内では年99米ドルまたは現地通貨の同等額です。これはアプリ開発用APIやSDKの料金とは別ですが、公開を続けるための年会費です。Developerアプリから登録する場合は、解約するまで毎年自動更新されます。日本円の金額と支払い条件は、登録画面に表示された内容で確認してください。登録・支払いはまだ行われていません。費用を含めて公開するかは公開者が判断します。[Appleの登録料と支払い条件](https://developer.apple.com/jp/help/account/membership/program-enrollment)
+App Storeで一般公開するにはApple Developer Programのメンバーシップが必要で、Appleの案内では年99米ドルまたは現地通貨の同等額です。これはアプリ開発用APIやSDKの料金とは別ですが、公開を続けるための年会費です。Developerアプリから登録する場合は、解約するまで毎年自動更新されます。日本円の金額と支払い条件は、登録画面に表示された内容で確認してください。Webで個人登録してクレジットカード払いを選ぶ場合は、Appleは本人名義のカードを使うよう案内しています。別名義のカードでは登録が遅れ、本人確認書類を求められることがあります。登録・支払いはまだ行われていません。費用を含めて公開するかは公開者が判断します。[Appleの登録料と支払い条件](https://developer.apple.com/jp/help/account/membership/program-enrollment)
 
 Apple公式はApple Developer Programへの登録をWebとDeveloperアプリの両方で受け付けています。そのためMacがなくても、WindowsのブラウザーからWeb登録を開始できます。Apple Accountの2ファクタ認証と、地域で定められた成人年齢が必要です。個人登録では本人の法的氏名がApp Storeの販売者名になります。登録で本人確認や追加手続きが表示された場合はAppleの画面の案内に従い、本人確認書類や認証情報をこのチャットへ送らないでください。アプリから登録する方法を選ぶ場合は、パスコード等を設定したiPhone/iPadまたは対応Mac、最新のDeveloperアプリ、iCloudへのサインインが必要です。年会費の購入は、無償の準備を終えて公開者が最終判断するまで行いません。[Apple Developer Programの登録方法](https://developer.apple.com/help/account/membership/program-enrollment/)、[Developerアプリでの登録要件](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
 
