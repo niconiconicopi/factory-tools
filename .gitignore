@@ -15,6 +15,12 @@
 *.dSYM/
 .DS_Store
 
+# Downloaded GitHub Actions diagnostics and their local capture logs.
+/FactoryTools-artifacts-*/
+/FactoryTools-diag-*/
+/FactoryTools-preview-ci-*/
+/FactoryTools-storekit-run.log
+
 # Signing credentials and provisioning material must never enter source control.
 *.p8
 *.p12

@@ -92,6 +92,10 @@ class PublicSiteDraftTests(unittest.TestCase):
             "*.xcresult/",
             "*.app/",
             "/FactoryTools/SitePublicationCandidate/",
+            "/FactoryTools-artifacts-*/",
+            "/FactoryTools-diag-*/",
+            "/FactoryTools-preview-ci-*/",
+            "/FactoryTools-storekit-run.log",
         ):
             self.assertIn(expected, ignore_source)
         self.assertNotIn("/FactoryTools/\n", ignore_source)
