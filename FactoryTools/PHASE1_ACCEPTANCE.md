@@ -4,6 +4,8 @@ This checklist maps the agreed iPhone Phase 1 goal to the current source and reg
 
 Commit `5b59411` adds a workflow-only guard that skips the known headless `SKTestSession` case during native CI and signed-upload preflight while retaining the manager regression tests. This commit is local and has not received hosted verification because GitHub DNS is currently unavailable. The change does not establish real StoreKit purchase or restore behavior.
 
+The current local source also gives iPhone/iPad peer connections a 15-second TLS establishment deadline. A new loopback XCTest leaves a peer handshake incomplete, confirms it times out, then confirms a correctly paired peer can connect. This latest source change still needs hosted Apple build/test verification.
+
 | Acceptance item | Implementation | Regression evidence | Source status |
 |---|---|---|---|
 | Launch into an Industrial Dark custom home | `AppBootstrapView`, `ThemeManager`, `HomeView`, `HomeProfile` | `testBootstrapServiceCreatesHomeAndSettingsOnlyOnce`, `testThemeManagerResolvesIndustrialDarkTypographyAndBorderTokens` | Implemented |
@@ -16,9 +18,9 @@ Commit `5b59411` adds a workflow-only guard that skips the known headless `SKTes
 
 ## Verification on this workspace
 
-- `python Scripts/validate_static.py`: the latest recorded pass inspects 67 Swift files, 285 XCTest methods, and 432 Japanese/English strings, plus resources, target membership, privacy manifest, and architecture contracts. These static checks do not compile or run Swift tests.
+- `python Scripts/validate_static.py`: the current source inspection covers 67 Swift files, 286 XCTest methods, and 432 Japanese/English strings, plus resources, target membership, privacy manifest, and architecture contracts. These static checks do not compile or run Swift tests.
 - `python -B -m unittest discover -s Scripts -p "test_*.py"`: all 99 verifier self-tests passed at commit `5b59411`, including guards for the headless StoreKit test exclusion in both native workflows.
-- The latest hosted iPhone/iPad and Watch/archive gates are runs 42622558878 and 42622558924 on app-source commit `de69674`. The separate signed-release purchase screenshot and publisher acceptance remain distribution tasks; commit `5b59411` is not hosted-verified yet.
+- The latest hosted iPhone/iPad and Watch/archive gates are runs 42622558878 and 42622558924 on app-source commit `de69674` (285 XCTest methods at that revision). The signed-release purchase screenshot and publisher acceptance remain distribution tasks; the local source changes after that revision are still awaiting hosted verification.
 - This Windows workspace still cannot run Apple's build tools or simulate interaction with physical devices. The simulator results are hosted CI evidence, not physical-device verification.
 
 ## Remaining gates

@@ -1,7 +1,11 @@
 # Factory Tools Release Readiness Audit
 
-Audit date: 2026-11-09
+Audit date: 2026-11-10
 Purpose: track evidence for the first public iPhone, Apple Watch, and iPad release. A source-level pass is not evidence of a successful Apple-platform build or App Review approval.
+
+## Latest verification update (2026-11-10)
+
+- A source audit found a local-network recovery gap: the existing mismatched TLS-PSK test documents that Network.framework may keep retrying a failed handshake without reporting `.failed` to the listener-side connection. Since the iPhone accepted only one peer at a time, a stalled handshake could hold the slot and reject the correctly paired iPad. `LocalPeerWireConnection` now expires an unestablished connection after 15 seconds, cancels the timeout once ready, and cancels the connection after failure. A new loopback XCTest holds a TCP connection without completing TLS, verifies timeout, then proves a correctly paired TLS peer can connect. Local verification passes all 99 Python tests, static checks (67 Swift files, 286 XCTest methods, 432 bilingual strings), generated-page comparison, source hygiene, and `git diff --check`. This Windows workspace has no Apple build toolchain, so the new XCTest has not been compiled or run here. The latest hosted Apple runs are still on app-source revision `de69674`; GitHub DNS currently prevents pushing the new source for hosted verification.
 
 ## Latest verification update (2026-11-09)
 

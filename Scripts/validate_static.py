@@ -2089,6 +2089,14 @@ def main() -> int:
             and "clientReady.wait(timeout: .now() + 10), .timedOut" in peer_outbox_tests
             and "handshakeRejected" not in peer_outbox_tests,
             "the local peer TLS-PSK tests must round-trip versioned frames, verify matching-key readiness, and reject mismatched peers without relying on listener-side failure delivery")
+    require("private let handshakeTimeout: Duration" in local_peer_transport
+            and "handshakeTimeoutTask = Task" in local_peer_transport
+            and "try await Task.sleep(for: handshakeTimeout)" in local_peer_transport
+            and "self.didBecomeReady = true" in local_peer_transport
+            and "self.handshakeTimeoutTask?.cancel()" in local_peer_transport
+            and "testStalledPeerHandshakeTimesOutAndAllowsAValidPeerToConnect" in peer_outbox_tests
+            and "firstPeerTimedOut" in peer_outbox_tests,
+            "a stalled TLS peer must time out, release the single-peer slot, and allow a correctly paired peer to connect")
     require(not re.search(r"\bimport\s+(?:Network|CFNetwork|FoundationNetworking|WebKit|SafariServices)\b", other_swift)
             and "import Network" in local_peer_transport
             and "NWListener" in local_peer_transport

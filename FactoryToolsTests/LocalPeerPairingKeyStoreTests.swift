@@ -150,6 +150,73 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
         XCTAssertFalse(connected, "a TLS-PSK peer with a different pairing key must not become ready")
     }
 
+    @MainActor
+    func testStalledPeerHandshakeTimesOutAndAllowsAValidPeerToConnect() async throws {
+        let pairingKey = Data(repeating: 0x5a, count: 32)
+        let listenerParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: pairingKey))
+        let clientParameters = try XCTUnwrap(LocalPeerTLSParameters.make(pairingKey: pairingKey))
+        let listener = try NWListener(using: listenerParameters)
+        let callbackQueue = DispatchQueue(label: "FactoryToolsTests.LocalPeerTLS.Timeout")
+        let listenerReady = expectation(description: "TLS listener ready")
+        let firstPeerAccepted = expectation(description: "stalled TCP peer accepted")
+        let firstPeerTimedOut = expectation(description: "stalled TLS handshake timed out")
+        let authenticatedServerPeerReady = expectation(description: "valid peer connected after timeout")
+        let validClientReady = expectation(description: "valid client TLS handshake completed")
+        var retainedWires: [LocalPeerWireConnection] = []
+        var stalledClient: NWConnection?
+        var validClient: NWConnection?
+
+        listener.stateUpdateHandler = { state in
+            if case .ready = state { listenerReady.fulfill() }
+        }
+        listener.newConnectionHandler = { connection in
+            Task { @MainActor in
+                let isFirstPeer = retainedWires.isEmpty
+                let wire = LocalPeerWireConnection(
+                    connection: connection,
+                    queue: callbackQueue,
+                    handshakeTimeout: .milliseconds(250)
+                ) { event in
+                    switch event {
+                    case .failed(_) where isFirstPeer:
+                        firstPeerTimedOut.fulfill()
+                    case .ready(_) where !isFirstPeer:
+                        authenticatedServerPeerReady.fulfill()
+                    default:
+                        break
+                    }
+                }
+                retainedWires.append(wire)
+                wire.start()
+                if isFirstPeer { firstPeerAccepted.fulfill() }
+            }
+        }
+        listener.start(queue: callbackQueue)
+        defer {
+            listener.cancel()
+            stalledClient?.cancel()
+            validClient?.cancel()
+            retainedWires.forEach { $0.cancel() }
+        }
+
+        await fulfillment(of: [listenerReady], timeout: 10)
+        let endpoint = NWEndpoint.hostPort(host: "127.0.0.1", port: try XCTUnwrap(listener.port))
+        let stalled = NWConnection(to: endpoint, using: .tcp)
+        stalledClient = stalled
+        stalled.start(queue: callbackQueue)
+        await fulfillment(of: [firstPeerAccepted, firstPeerTimedOut], timeout: 10)
+        stalled.cancel()
+        stalledClient = nil
+
+        let valid = NWConnection(to: endpoint, using: clientParameters)
+        validClient = valid
+        valid.stateUpdateHandler = { state in
+            if case .ready = state { validClientReady.fulfill() }
+        }
+        valid.start(queue: callbackQueue)
+        await fulfillment(of: [authenticatedServerPeerReady, validClientReady], timeout: 10)
+    }
+
     func testPairingCodeDecodesThirtyTwoBytes() throws {
         let key = try LocalPeerPairingKeyStore.keyData(from: String(repeating: "a5", count: 32))
 

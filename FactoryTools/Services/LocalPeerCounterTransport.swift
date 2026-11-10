@@ -562,30 +562,54 @@ private enum LocalPeerCounterTransportError: Error {
 }
 
 @MainActor
-private final class LocalPeerWireConnection {
+final class LocalPeerWireConnection {
     let id = UUID()
     private let connection: NWConnection
     private let queue: DispatchQueue
     private let onEvent: (LocalPeerWireEvent) -> Void
+    private let handshakeTimeout: Duration
     private var decoder = CounterPeerFrameDecoder()
     private var isCancelled = false
+    private var didBecomeReady = false
+    private var handshakeTimeoutTask: Task<Void, Never>?
 
-    init(connection: NWConnection, queue: DispatchQueue, onEvent: @escaping (LocalPeerWireEvent) -> Void) {
+    init(
+        connection: NWConnection,
+        queue: DispatchQueue,
+        handshakeTimeout: Duration = .seconds(15),
+        onEvent: @escaping (LocalPeerWireEvent) -> Void
+    ) {
         self.connection = connection
         self.queue = queue
+        self.handshakeTimeout = handshakeTimeout
         self.onEvent = onEvent
     }
 
     func start() {
+        let handshakeTimeout = handshakeTimeout
+        handshakeTimeoutTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: handshakeTimeout)
+            } catch {
+                return
+            }
+            guard let self, !Task.isCancelled, !self.isCancelled, !self.didBecomeReady else { return }
+            self.onEvent(.failed(self.id))
+            self.cancel()
+        }
         connection.stateUpdateHandler = { [weak self] state in
             Task { @MainActor in
-                guard let self else { return }
+                guard let self, !self.isCancelled else { return }
                 switch state {
                 case .ready:
+                    self.didBecomeReady = true
+                    self.handshakeTimeoutTask?.cancel()
+                    self.handshakeTimeoutTask = nil
                     self.onEvent(.ready(self.id))
                     self.receiveNext()
                 case .failed, .cancelled:
                     self.onEvent(.failed(self.id))
+                    self.cancel()
                 default:
                     break
                 }
@@ -601,6 +625,7 @@ private final class LocalPeerWireConnection {
             Task { @MainActor in
                 guard let self else { return }
                 self.onEvent(.failed(self.id))
+                self.cancel()
             }
         })
     }
@@ -608,6 +633,8 @@ private final class LocalPeerWireConnection {
     func cancel() {
         guard !isCancelled else { return }
         isCancelled = true
+        handshakeTimeoutTask?.cancel()
+        handshakeTimeoutTask = nil
         connection.cancel()
     }
 
@@ -638,7 +665,7 @@ private final class LocalPeerWireConnection {
 }
 
 @MainActor
-private enum LocalPeerWireEvent {
+enum LocalPeerWireEvent {
     case ready(UUID)
     case message(UUID, CounterPeerMessage)
     case failed(UUID)
