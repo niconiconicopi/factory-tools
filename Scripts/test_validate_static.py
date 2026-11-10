@@ -850,6 +850,17 @@ jobs:
 
 
 class SwiftRuntimeSafetySourceTests(unittest.TestCase):
+    def test_writable_swiftdata_test_stores_survive_until_host_process_exit(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "FactoryToolsTests" / "CounterServiceTests.swift").read_text(encoding="utf-8")
+
+        self.assertIn("private enum TestStoreDirectory", source)
+        self.assertIn("private static let cleanStaleDirectories", source)
+        self.assertIn('directory.lastPathComponent.hasPrefix("FactoryToolsTestStore-")', source)
+        self.assertIn("try TestStoreDirectory.create()", source)
+        self.assertNotIn("private var temporaryStoreDirectories", source)
+        self.assertNotIn("try? FileManager.default.removeItem(at: directory)", source[source.index("final class CounterServiceTests"):])
+
     def test_read_only_swiftdata_test_stores_survive_until_host_process_exit(self) -> None:
         root = Path(__file__).resolve().parents[1]
         source = (root / "FactoryToolsTests" / "CounterServiceTests.swift").read_text(encoding="utf-8")

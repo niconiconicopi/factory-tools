@@ -26,24 +26,36 @@ private enum ReadOnlyTestStoreDirectory {
     }
 }
 
-@MainActor
-final class CounterServiceTests: XCTestCase {
-    private var temporaryStoreDirectories: [URL] = []
+private enum TestStoreDirectory {
+    private static let cleanStaleDirectories: Void = {
+        let root = FileManager.default.temporaryDirectory
+        guard let directories = try? FileManager.default.contentsOfDirectory(
+            at: root,
+            includingPropertiesForKeys: nil,
+            options: [.skipsHiddenFiles]
+        ) else { return }
 
-    override func tearDown() {
-        for directory in temporaryStoreDirectories {
+        for directory in directories where directory.lastPathComponent.hasPrefix("FactoryToolsTestStore-") {
             try? FileManager.default.removeItem(at: directory)
         }
-        temporaryStoreDirectories.removeAll()
-        super.tearDown()
-    }
+    }()
 
-    private func makeTemporaryStoreDirectory() throws -> URL {
+    static func create() throws -> URL {
+        // SwiftData/CoreData connections can outlive an XCTest method. Keep each
+        // store directory until the test host exits instead of unlinking files
+        // while SQLite may still have them open.
+        _ = cleanStaleDirectories
         let directory = FileManager.default.temporaryDirectory
             .appendingPathComponent("FactoryToolsTestStore-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        temporaryStoreDirectories.append(directory)
         return directory
+    }
+}
+
+@MainActor
+final class CounterServiceTests: XCTestCase {
+    private func makeTemporaryStoreDirectory() throws -> URL {
+        try TestStoreDirectory.create()
     }
 
     func testVersionedSchemaV1DefinesAllPersistedModelsAndMigrationPlan() throws {
@@ -5142,22 +5154,8 @@ final class CounterServiceTests: XCTestCase {
 
 @MainActor
 final class ToolRegistryTests: XCTestCase {
-    private var temporaryStoreDirectories: [URL] = []
-
-    override func tearDown() {
-        for directory in temporaryStoreDirectories {
-            try? FileManager.default.removeItem(at: directory)
-        }
-        temporaryStoreDirectories.removeAll()
-        super.tearDown()
-    }
-
     private func makeTemporaryStoreDirectory() throws -> URL {
-        let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("FactoryToolsTestStore-\(UUID().uuidString)", isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        temporaryStoreDirectories.append(directory)
-        return directory
+        try TestStoreDirectory.create()
     }
 
     func testToolAccessAssignmentsMatchTheApprovedVersionOneBoundary() throws {
