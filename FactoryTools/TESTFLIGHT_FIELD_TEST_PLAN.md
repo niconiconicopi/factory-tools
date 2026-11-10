@@ -87,8 +87,9 @@ For each item, mark **Pass**, **Fail**, or **Not tested**. For a failure, includ
 - [ ] Try Box Calculator and Unit Converter with a valid example and an invalid/incomplete example.
 - [ ] Record production and defects on the same home. Confirm the defect count and defect-rate result update, including the zero-production state.
 - [ ] As a Free tester, confirm tools/features marked Pro show the purchase route and do not write Pro-only data.
-- [ ] If the Pro sandbox test is enabled for this build, purchase Factory Tools Pro. Confirm the sandbox purchase unlocks the agreed Pro features. TestFlight sandbox purchases do not incur a real charge.
-- [ ] Restore the sandbox purchase and confirm entitlement returns. The publisher separately verifies that Family Sharing is off in App Store Connect.
+- [ ] If the Pro sandbox test is enabled for this build, purchase Factory Tools Pro. Confirm the sandbox purchase unlocks the agreed Pro features on iPhone. TestFlight sandbox purchases do not incur a real charge.
+- [ ] On the same Apple Account, install the beta on another supported device and use **Restore Purchases**. Confirm the same lifetime Pro entitlement returns without asking you to purchase a second time.
+- [ ] If your App Store storefront is outside Japan, record the displayed Pro price and storefront currency. Do not include payment details. The publisher separately verifies that Family Sharing is off in App Store Connect.
 
 ### Accessibility and recovery
 
@@ -102,6 +103,7 @@ Use a paired Watch included in the build. Record the Watch model and watchOS ver
 
 - [ ] Open the Watch app and confirm the displayed language follows the iPhone setting.
 - [ ] Use +1 and −1 online. Confirm the iPhone count and Watch count converge to the same value.
+- [ ] Confirm basic counter controls and Cycle Time remain available without Pro. With Pro active and a Watch-enabled Production Progress card on the selected home, confirm the Watch shows the matching count and target as read-only information.
 - [ ] Turn off connectivity or move out of range. Queue a count action; reconnect and confirm it is applied once, with no duplicate count.
 - [ ] Start, pause/resume, and save a one-unit Cycle Time capture. Confirm it reaches iPhone history once; repeat while offline and confirm it arrives after reconnection.
 - [ ] Restart the Watch app while an action is pending. Confirm it is retained or safely reports a recoverable error rather than disappearing silently.
@@ -111,6 +113,7 @@ Use a paired Watch included in the build. Record the Watch model and watchOS ver
 Use an iPhone authority and iPad on the same local network. Allow the local-network prompt only when intentionally pairing these devices.
 
 - [ ] Pair the iPad with the intended iPhone and confirm the dashboard shows the current count and target.
+- [ ] Confirm basic iPad counter controls work without Pro. With Pro active on the same Apple Account, confirm the Pro-assigned iPad features shown by this build unlock after entitlement refresh or Restore Purchases.
 - [ ] Send +1, −1, Quick Add, Undo, and target changes from iPad. Confirm the iPhone remains authoritative and both screens converge.
 - [ ] Disconnect the local network, queue an action, then reconnect. Confirm it is acknowledged once and the pending count clears.
 - [ ] Change or remove the pairing code while commands are pending. Confirm the app explains the consequence and preserves the old queue until the tester explicitly chooses how to handle it.
@@ -119,5 +122,13 @@ Use an iPhone authority and iPad on the same local network. Allow the local-netw
 ## Triage and exit criteria
 
 Collect feedback by build and device group. Treat data loss, duplicate counter events, a Pro entitlement granted to the wrong account, a stuck purchase state, or a pairing queue sent to the wrong iPhone as release-blocking. Fix confirmed issues, upload a new build, and rerun the affected checklist. Keep any section without a qualified tester visibly marked **not tested** in the release audit.
+
+Use this minimal result record for each tester; a tester code can be a random label such as `T01` and must not identify the person.
+
+| Tester code | App version/build | Device model and OS | Storefront / displayed Pro price | iPhone | Watch | iPad | Issue reference / notes |
+|---|---|---|---|---|---|---|---|
+|  |  |  |  | Pass / Fail / Not tested | Pass / Fail / Not tested | Pass / Fail / Not tested |  |
+
+Record only the storefront and price shown by the App Store sheet, never the Apple Account, receipt, payment method, address, or other personal details. Attach screenshots only when they contain synthetic app data and no account or payment information.
 
 TestFlight is a no-additional-charge route for these beta transactions, but Apple Developer membership and App Store Connect setup are still required. A TestFlight pass is not proof of App Review acceptance or a substitute for completing App Store Connect's privacy, export, age-rating, price, region, and Family Sharing settings.
