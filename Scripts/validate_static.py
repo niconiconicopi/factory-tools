@@ -2095,7 +2095,9 @@ def main() -> int:
             and "self.didBecomeReady = true" in local_peer_transport
             and "self.handshakeTimeoutTask?.cancel()" in local_peer_transport
             and "testStalledPeerHandshakeTimesOutAndAllowsAValidPeerToConnect" in peer_outbox_tests
-            and "firstPeerTimedOut" in peer_outbox_tests,
+            and "firstPeerTimedOut" in peer_outbox_tests
+            and "CounterPeerConnectionPolicy.shouldAcceptIncomingConnection(" in peer_outbox_tests
+            and "XCTAssertNil(activeServerWire" in peer_outbox_tests,
             "a stalled TLS peer must time out, release the single-peer slot, and allow a correctly paired peer to connect")
     require(not re.search(r"\bimport\s+(?:Network|CFNetwork|FoundationNetworking|WebKit|SafariServices)\b", other_swift)
             and "import Network" in local_peer_transport
