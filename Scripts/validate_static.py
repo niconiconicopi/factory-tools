@@ -4812,11 +4812,13 @@ def main() -> int:
             and "does not claim that Xcode Cloud is configured" in xcode_cloud_runbook,
             "Xcode Cloud guidance must keep the included compute limit, no-Mac bootstrap limitation, and initial Xcode/repository setup gate explicit")
     asset_plan = (ROOT / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
-    require("all app submissions beginning April 2027" in asset_plan
+    require("apps submitted starting April 2027 need iPhone Duo screenshots" in asset_plan
             and "1398 × 2034 (outer)" in asset_plan
             and "2007 × 2853 (inner)" in asset_plan
-            and "the screenshot-specification page associates the requirement with apps using the iOS 27.1 SDK or later" in asset_plan
-            and "https://developer.apple.com/news/?id=kkphp5qo" in asset_plan,
+            and "The current screenshot specification separately says screenshots are required starting then for apps using the iOS 27.1 SDK or later." in asset_plan
+            and "Apple's September 9, 2026 submission notice sets the general iOS/iPadOS SDK minimum for that period at version 27, not 27.1." in asset_plan
+            and "https://developer.apple.com/news/?id=kkphp5qo" in asset_plan
+            and "https://developer.apple.com/news/?id=k1mtkt1k" in asset_plan,
             "store asset plan must include current iPhone Duo timing and both display sizes for April 2027 submissions")
     privacy_policy = (ROOT / "FactoryTools" / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
     require("Apple Watchは計測中のサイクルタイム状態" in privacy_policy
