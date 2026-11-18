@@ -2,25 +2,25 @@
 
 迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
 
-**現在の状態:** Apple Developer／App Store Connectの値は未設定との認識。発行者は個人登録を選択済みですが、Apple Developer Programへの登録はまだです。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。App Store Connectの設定は未完了。
+**現在の状態（2026-11-19）:** 発行者からApple Developer Program登録完了の報告あり。Team IDを受領してXcodeプロジェクトの共有設定に追加済み。GitHub Actions変数とApp Store Connectは未設定。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。
 
 ## 公開にかかるApple登録料
 
-App Storeで一般公開するにはApple Developer Programのメンバーシップが必要で、Appleの案内では年99米ドルまたは現地通貨の同等額です。これはアプリ開発用APIやSDKの料金とは別ですが、公開を続けるための年会費です。Developerアプリから登録する場合は、解約するまで毎年自動更新されます。日本円の金額と支払い条件は、登録画面に表示された内容で確認してください。Webで個人登録してクレジットカード払いを選ぶ場合は、Appleは本人名義のカードを使うよう案内しています。別名義のカードでは登録が遅れ、本人確認書類を求められることがあります。登録・支払いはまだ行われていません。費用を含めて公開するかは公開者が判断します。[Appleの登録料と支払い条件](https://developer.apple.com/jp/help/account/membership/program-enrollment)
+App Storeで一般公開するためのApple Developer Program登録は完了したと発行者から報告を受けています（2026-11-18）。Appleの案内では会費は年99米ドルまたは現地通貨の同等額です。これはアプリ開発用APIやSDKの料金とは別の年会費です。更新日と請求額はAppleのアカウントページで確認してください。[Appleの登録料と支払い条件](https://developer.apple.com/jp/help/account/membership/program-enrollment)
 
-Apple公式はApple Developer Programへの登録をWebとDeveloperアプリの両方で受け付けています。そのためMacがなくても、WindowsのブラウザーからWeb登録を開始できます。Apple Accountの2ファクタ認証と、地域で定められた成人年齢が必要です。個人登録では本人の法的氏名がApp Storeの販売者名になります。登録で本人確認や追加手続きが表示された場合はAppleの画面の案内に従い、本人確認書類や認証情報をこのチャットへ送らないでください。アプリから登録する方法を選ぶ場合は、パスコード等を設定したiPhone/iPadまたは対応Mac、最新のDeveloperアプリ、iCloudへのサインインが必要です。年会費の購入は、無償の準備を終えて公開者が最終判断するまで行いません。[Apple Developer Programの登録方法](https://developer.apple.com/help/account/membership/program-enrollment/)、[Developerアプリでの登録要件](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
+Apple公式はApple Developer Programへの登録をWebとDeveloperアプリの両方で受け付けています。個人登録では本人の法的氏名がApp Storeの販売者名になります。本人確認書類や認証情報はAppleの画面だけに入力してください。アプリから登録する方法では、パスコード等を設定したiPhone/iPadまたは対応Mac、最新のDeveloperアプリ、iCloudへのサインインが必要です。[Apple Developer Programの登録方法](https://developer.apple.com/help/account/membership/program-enrollment/)、[Developerアプリでの登録要件](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
 
-署名付きビルドとApp Store Connectへのアップロードは、登録後に既存のGitHub Actions手動ワークフローで実行する設計です。Xcode Cloudの初回設定に必要なMac/Xcodeとは別経路なので、Factory Toolsの提出用ビルドのためにMacを購入・レンタルする計画はありません。[GitHub Actionsからのアップロード手順](APPLE_GITHUB_RELEASE_SETUP.md)
+署名付きビルドとApp Store Connectへのアップロードは、Team ID、App Store Connectアプリ記録、APIキーなどの設定後に既存のGitHub Actions手動ワークフローで実行する設計です。Xcode Cloudの初回設定に必要なMac/Xcodeとは別経路なので、Factory Toolsの提出用ビルドのためにMacを購入・レンタルする計画はありません。[GitHub Actionsからのアップロード手順](APPLE_GITHUB_RELEASE_SETUP.md)
 
 発行者やテスターがiPhone・Watch・iPadを持っていなくても、登録後にTestFlightで外部テスターへ配布し、手持ちの実機で確認してもらう方法があります。テスター募集の手順、日英の確認項目、失敗時の報告方法は[TestFlight実機テスト計画](TESTFLIGHT_FIELD_TEST_PLAN.md)にまとめました。TestFlightの購入テストはサンドボックスで行われ、実際の請求はありません。Apple Developer登録、App Store Connect設定、および最初の外部テスト用ビルドの審査は必要です。[TestFlightの外部テスター招待](https://developer.apple.com/help/app-store-connect/test-a-beta-version/invite-external-testers)、[TestFlightでのIAPテスト](https://developer.apple.com/help/app-store-connect/test-a-beta-version/testing-subscriptions-and-in-app-purchases-in-testflight/)
 
 Appleの年会費免除は、一定の条件を満たす非営利団体、認定教育機関、政府機関向けです。個人・個人事業主は対象外で、免除申請者は有料アプリ契約に署名しておらず、アプリでデジタル商品・サービスを販売していない必要があります。Factory Tools Proを買い切りアプリ内購入として販売する計画とは両立しないため、このプロジェクトでは免除を見込まず、年会費を必要な公開コストとして扱います。[Appleの年会費免除条件](https://developer.apple.com/help/account/membership/fee-waivers)
 
-このプロジェクトでは、登録と支払いは**無償でできる実装・文書・ソース検証を終えた後の最後の有料準備段階**に置きます。登録前でも、ソース作業、製品仕様の確定、公開文面の準備、Windows上の静的検証は進められます。Team IDの取得、App Store Connectの商品設定、署名付き提出は登録後の段階です。年会費は年ごとの更新費用であり、Developerアプリで加入したメンバーシップは自動更新です。更新を望まない場合は更新日の少なくとも1日前に解約し、支払い済みの年会費は返金されない点も含めて判断してください。[年会費・更新の説明](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
+発行者は2026-11-18にApple Developer Program登録完了を報告しました。次にTeam IDを確認し、その後App Store Connectの商品設定と署名付き提出を進めます。年会費は年ごとの更新費用であり、Developerアプリから加入した場合は自動更新です。更新を望まない場合は更新日の少なくとも1日前に解約し、支払い済みの年会費は返金されない点に注意してください。[年会費・更新の説明](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
 
 ## 決定済みの登録名義
 
-Apple Developer Programには個人登録と組織登録があります。これは表示名だけの選択ではなく、Appleとの契約者とApp Store上の販売者名に関わります。発行者は個人登録を選択済みです。登録・支払いは最後の有料準備として保留しています。
+Apple Developer Programには個人登録と組織登録があります。これは表示名だけの選択ではなく、Appleとの契約者とApp Store上の販売者名に関わります。発行者は個人登録を選択し、2026-11-18に登録完了を報告しました。個人の法的氏名がApp Storeの販売者名になります。
 
 | 登録区分 | Appleが案内する主な条件 | App Store上の表示 |
 |---|---|---|
@@ -48,12 +48,12 @@ Appleが示す判断材料は、アプリ内購入などの収益、消費者に
 
 | 項目 | かんたんな説明 | どこで決まるか | 今の状態 |
 |---|---|---|---|
-| Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 個人として登録する方針。登録は未実施。Appleの案内は年99米ドルまたは現地通貨額。円での請求額は登録画面で確認。加入は最後の有料準備として保留 |
+| Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 個人登録完了の報告あり（2026-11-18）。Team ID確認とApp Store Connect設定が次の作業 |
 | 公開者の登録区分・販売者名 | 個人名または法人等の法的名称のどちらをApp Store販売者として表示するか | 個人登録では本人の法的氏名がApp Storeの販売者名に表示される | 個人登録を選択済み。法的氏名はAppleの登録画面に入力。チャット・公開文面には入力しない |
 | Free／Proの機能境界 | どの機能を無料で使え、どの機能をPro購入で解放するか | Version 1の境界は決定済み。無料は基本ツール・基本不良記録・基本履歴・基本Watch/iPad操作・Industrial Dark。Proは独立した生産進捗、OEE、追加ホーム、詳細分析・専門ツール・高度なWatch機能・将来のProテーマ | 決定済み。公開前にアプリ表示とストア説明の一致を確認 |
-| Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 暫定候補 `com.niconiconicopi.factorytools` をDebug/Releaseに設定済み。Apple Developer登録後に利用可能性と発行者名義での登録可否を確認し、初回アップロード前に確定する |
+| Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 暫定候補 `com.niconiconicopi.factorytools` をDebug/Releaseに設定済み。Apple Developerで登録可能かを確認し、初回アップロード前に確定する |
 | App Store Connect SKU | 顧客には表示されない、App Store Connectでアプリを管理する内部番号 | 候補は `FACTORYTOOLS-IOS-001`。公開者のアカウント内で未使用かを確認してからアプリ記録を作成する | 候補を選定。アカウント内の未使用確認は未実施 |
-| Team ID | Apple Developer登録にひも付く10文字のチーム番号 | 登録後、Apple Developerアカウントの「Membership details」に表示される | 未設定。登録後に確認 |
+| Team ID | Apple Developer登録にひも付く10文字のチーム番号 | Apple Developerアカウントにサインインし、「Membership details」を開く | 発行者から値を受領しXcodeプロジェクトの共有設定へ追加済み。GitHub Actions変数 `APPLE_TEAM_ID` への設定は未完了 |
 | Pro商品ID | アプリ内で「Factory Tools Pro」を識別する内部番号。購入者に表示する価格とは別物 | 今の候補は `factorytools.pro.lifetime`。App Store Connectの商品を作るときにこの値を使う。保存後は変更できない | 候補をプロジェクトに設定済み。商品登録は未実施 |
 | プライバシーURL | アプリが扱うデータについて説明する公開ページの住所 | 内容と公開先を決めてWebで公開し、同じHTTPSアドレスをアプリとApp Store Connectに登録 | 未設定。公開ページが必要 |
 | サポートURL | 問い合わせや困ったときの案内を載せる公開ページの住所 | 連絡方法を用意し、問い合わせを受け取れるページをWebで公開 | メール窓口は `azalea.fortask@outlook.jp` に決定し、テストメール受信を確認。日英の下書きに反映済み。継続的な監視・日英返信の確認と公開ページ・URLは未完了 |
@@ -81,8 +81,8 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
 3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。2026-11-10時点のローカル検証は、Pythonテスト100件、静的構造検査（Swift 67ファイル・XCTestソース286件・日英432文字列）、公開ページ生成確認、秘密情報検査が通過しています。SwiftDataテスト用保存先の終了時削除競合を修正したリポジトリrevision `20882d3` は、[Apple native run 42819982935](https://github.com/niconiconicopi/factory-tools/actions/runs/42819982935) でiPhone・iPadそれぞれ237 XCTest、日英Release画面、S/M/Lカウンター画像、必須スクリーンショット検査に成功しました。[Watch/archive run 42819983047](https://github.com/niconiconicopi/factory-tools/actions/runs/42819983047) は共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面、Watch入り未署名archiveに成功しています。Apple Simulator画像26枚の寸法も確認し、レビュー用18枚のローカルギャラリーを更新しました。これらはSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入や復元の確認ではありません。StoreKit統合購入テストはheadless Simulatorで商品が取得できないため通常CIとアップロード前検証では実行せず、購入マネージャーの回帰テストを残しています。実購入と復元はApp Store Connect Sandboxでの確認待ちです。後続の文書更新commit `9ce4b06` はCI対象コードを変更していません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
-4. 準備が整った最後の有料段階でApple Developer Programに登録する。登録を進めるかは公開者が判断し、費用の発生する操作は無断で行わない。
-5. 登録後にTeam IDを確認し、署名を設定する。App Store Connectで商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
+4. Apple Developer Program登録は発行者から完了報告を受けている。Apple Developerアカウントの「Membership details」でTeam IDを確認し、GitHub Actionsに設定する。
+5. Bundle IDの利用可能性を確認してApp Store ConnectにアプリとPro商品を作成し、APIキーと署名設定を行う。商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。
 7. 署名済みアプリの購入画面で日本向け¥980を確認し、購入・復元、Watch/iPad連携を確認する。
 8. 年齢評価、プライバシー、輸出コンプライアンスの質問に回答し、必要なスクリーンショットとWatch情報を揃えて提出する。2027年4月以降の提出では、iPhone Duoの外側・内側ディスプレイ用スクリーンショットも必要です。

@@ -1,18 +1,18 @@
 # Xcode Cloud setup and cost boundary
 
-This plan describes Xcode Cloud as an optional no-extra-service-cost path after the publisher is ready for Apple enrollment. This document does not claim that Xcode Cloud is configured. Mac-free native checks already pass through the public GitHub Actions workflow described below.
+This plan describes Xcode Cloud as an optional path included with the publisher-reported Apple Developer membership. This document does not claim that Xcode Cloud is configured; Mac-free native checks already pass through the public GitHub Actions workflow described below.
 
 ## Included usage and cost control
 
 - Apple Developer Program membership includes **25 Xcode Cloud compute hours per month**. This allowance is part of membership; do not buy an additional Xcode Cloud subscription or add a paid build service.
 - Apple offers paid Xcode Cloud tiers above the included allowance. Check usage in App Store Connect and stop starting optional builds as the allowance gets close. Never enable an additional tier as a workaround.
-- The membership itself remains the last paid preparation step. This document does not authorize enrollment, a subscription, or a remote account connection.
+- The Apple Developer membership has been reported complete. This document does not authorize adding a paid Xcode Cloud tier or connecting accounts to Xcode Cloud; use the existing GitHub Actions path unless the publisher requests another route.
 
 Apple's current references: [Membership inclusions](https://developer.apple.com/programs/whats-included/), [Xcode Cloud plans](https://developer.apple.com/xcode-cloud/), and [Xcode Cloud in App Store Connect](https://developer.apple.com/help/app-store-connect/xcode-cloud/).
 
 ## Prerequisites Apple requires
 
-Xcode Cloud needs an active Apple Developer Program membership, an App Store Connect app record, a unique app Bundle ID, and a remote Git repository. The project already has the publisher-approved public repository [niconiconicopi/factory-tools](https://github.com/niconiconicopi/factory-tools). The publisher-owned Bundle ID, App Store Connect record, and Xcode Cloud workflow are not configured. Apple requires Xcode to create the first Xcode Cloud product/workflow. The App Store Connect API can create a workflow only for an existing Xcode Cloud product; its `ciProducts` API offers listing, reading, and deletion, but no product-creation endpoint. The API therefore does not remove the initial Xcode setup requirement. After the initial product/workflow exists, workflows and build reports can also be managed through App Store Connect.
+Xcode Cloud needs an active Apple Developer Program membership, an App Store Connect app record, a unique app Bundle ID, and a remote Git repository. The project already has the publisher-approved public repository [niconiconicopi/factory-tools](https://github.com/niconiconicopi/factory-tools). The publisher-owned Bundle ID, App Store Connect record, and Xcode Cloud workflow are not configured. Xcode Cloud requires Xcode to create the first Xcode Cloud product/workflow, so this optional route still needs temporary access to a compatible Mac. The App Store Connect API can create a workflow only for an existing Xcode Cloud product; its `ciProducts` API offers listing, reading, and deletion, but no product-creation endpoint. The API therefore does not remove the initial Xcode setup requirement. After the initial product/workflow exists, workflows and build reports can also be managed through App Store Connect.
 
 The first workflow therefore still requires temporary access to a compatible Mac running Xcode. Once it is connected, routine builds and tests can run in Apple's cloud without keeping a Mac available. This is a setup gate, not a reason to rent a paid Mac service.
 
@@ -20,7 +20,7 @@ See Apple's [Xcode Cloud project requirements](https://developer.apple.com/docum
 
 ## Workflow plan for Factory Tools
 
-1. After enrollment is deliberately completed, choose a publisher-owned Bundle ID, create the App Store Connect app record, run `python Scripts/audit_source_hygiene.py`, and put the reviewed project in a remote Git repository with access granted only to the Xcode Cloud integration. The scan checks for common private-key/token patterns without printing matched values; the root `.gitignore` is only a safeguard and does not replace this scan.
+1. Membership completion was reported on 2026-11-18. If Xcode Cloud is chosen later, first confirm the publisher-owned Bundle ID, create the App Store Connect app record, run `python Scripts/audit_source_hygiene.py`, and put the reviewed project in a remote Git repository with access granted only to the Xcode Cloud integration. The scan checks for common private-key/token patterns without printing matched values; the root `.gitignore` is only a safeguard and does not replace this scan.
 2. On Xcode, create the first Xcode Cloud workflow for the `FactoryTools` app. Run the shared `FactoryTools` scheme's Test action on an iOS Simulator; its testable is the app-hosted `FactoryToolsTests` bundle. Run the separate `FactoryToolsCore` scheme's Test action on macOS for the app-independent `FactoryToolsCoreTests` bundle.
 3. Add an iOS Simulator build for the `FactoryTools` scheme and a watchOS Simulator build for the `FactoryToolsWatch` scheme. The current Watch scheme has no test bundle, so it provides compile/build evidence only; app-side Watch receiver and shared Watch command/outbox behavior are covered by the app/Core test schemes, while paired-device behavior remains a signed-build release check. Keep archive and distribution actions disabled until the publisher's Bundle ID, Team ID, product metadata, and policy URLs are finalized.
 4. Run the existing Windows checks before pushing changes. Xcode Cloud should add native compile/XCTest evidence; it does not replace App Store Connect review or real paired-device behavior checks.

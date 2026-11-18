@@ -34,7 +34,7 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 | 名前 | 値 |
 |---|---|
-| `FACTORYTOOLS_APP_BUNDLE_ID` | 暫定候補 `com.niconiconicopi.factorytools`。Apple Developer登録後に利用可能性・登録可否を確認し、必要なら初回アップロード前に変更 |
+| `FACTORYTOOLS_APP_BUNDLE_ID` | 暫定候補 `com.niconiconicopi.factorytools`。Apple Developerアカウントで利用可能性・登録可否を確認し、必要なら初回アップロード前に変更 |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 | `FACTORYTOOLS_PRIVACY_POLICY_URL` | 公開済みプライバシーポリシーHTTPS URL |
 | `FACTORYTOOLS_SUPPORT_URL` | 連絡先を含む公開済みサポートHTTPS URL |

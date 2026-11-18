@@ -1250,7 +1250,7 @@ class ReleasePreflightTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("JP / JPY:980", result.stdout)
-        self.assertIn("3 project identity/configuration blocker(s)", result.stdout)
+        self.assertIn("2 project identity/configuration blocker(s)", result.stdout)
         self.assertIn("This count covers project settings only", result.stdout)
         self.assertNotIn("distribution blocker(s)", result.stdout)
         self.assertNotIn("base storefront price candidate", result.stdout)
