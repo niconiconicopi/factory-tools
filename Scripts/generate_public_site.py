@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import argparse
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from html import escape
+import os
 from pathlib import Path
 import re
 import sys
@@ -176,21 +177,38 @@ def html_page(*, title: str, source: str, draft_notice: str, publication_ready: 
 """
 
 
+def apply_publisher_name_to_support(privacy: str, support: str) -> str:
+    match = re.search(r"\*\*Publisher / 運営者:\*\*\s*`([^`]+)`", privacy)
+    if not match:
+        return support
+    publisher_name = match.group(1).strip()
+    if not publisher_name or "[" in publisher_name or "]" in publisher_name:
+        return support
+    return support.replace("[開発者名]", publisher_name).replace("[Developer name]", publisher_name)
+
+
+def apply_publication_date(privacy: str, publication_date: date | None = None) -> str:
+    marker = "**Effective date / 発効日:** `[YYYY-MM-DD]`"
+    if marker not in privacy:
+        return privacy
+    effective_date = publication_date or datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=9))).date()
+    return privacy.replace(marker, f"**Effective date / 発効日:** `{effective_date.isoformat()}`")
+
+
 def unresolved_publisher_fields(privacy: str, support: str) -> list[str]:
+    support = apply_publisher_name_to_support(privacy, support)
     fields = {
         "publisher legal name": "[Publisher's legal name / 発行者の正式名称]",
-        "privacy effective date": "[YYYY-MM-DD]",
         "privacy contact": "[Public contact email or contact page / 公開連絡先メールアドレスまたは問い合わせページ]",
-        "Japanese developer name": "[開発者名]",
         "Japanese support email": "[サポート用メールアドレス]",
-        "English developer name": "[Developer name]",
         "English support email": "[Monitored support email address]",
         "Japanese published privacy URL": "[公開済みプライバシーポリシーURL]",
         "English published privacy URL": "[Published privacy policy URL]",
     }
     source = privacy + "\n" + support
     issues = [label for label, placeholder in fields.items() if placeholder in source]
-    known_markers = set(fields.values())
+    inherited_name_markers = {"[開発者名]", "[Developer name]"}
+    known_markers = set(fields.values()) | inherited_name_markers | {"[YYYY-MM-DD]"}
     bracketed_values = re.findall(r"\[([^\]]+)\](?!\()", source)
     for value in bracketed_values:
         marker = f"[{value}]"
@@ -200,6 +218,8 @@ def unresolved_publisher_fields(privacy: str, support: str) -> list[str]:
 
 
 def publication_copy_issues(privacy: str, support: str) -> list[str]:
+    privacy = apply_publication_date(privacy)
+    support = apply_publisher_name_to_support(privacy, support)
     issues = unresolved_publisher_fields(privacy, support)
     if issues:
         return issues
@@ -266,10 +286,17 @@ def _valid_https_url(value: str | None) -> bool:
         return False
 
 
-def build_outputs(*, publication_ready: bool = False, privacy_source: str | None = None, support_source: str | None = None) -> dict[str, str]:
+def build_outputs(*, publication_ready: bool = False, privacy_source: str | None = None, support_source: str | None = None, publisher_legal_name: str | None = None) -> dict[str, str]:
     privacy = privacy_source if privacy_source is not None else (SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
     support = support_source if support_source is not None else (SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
     if publication_ready:
+        if publisher_legal_name:
+            name = publisher_legal_name.strip()
+            if any(character in name for character in ("`", "[", "]", "\r", "\n")):
+                raise ValueError("Publisher legal name contains unsupported formatting characters.")
+            privacy = privacy.replace("[Publisher's legal name / 発行者の正式名称]", name)
+        privacy = apply_publication_date(privacy)
+        support = apply_publisher_name_to_support(privacy, support)
         issues = publication_copy_issues(privacy, support)
         if issues:
             raise ValueError("Resolve publisher-page issues before generating publication pages: " + "; ".join(issues))
@@ -296,10 +323,10 @@ This folder is generated from the bilingual source drafts in the parent director
 
 ## Before publishing
 
-1. Complete the publisher name, monitored support/privacy contact, effective date, and privacy-policy link in `../PRIVACY_POLICY_DRAFT.md` and `../SUPPORT_PAGE_DRAFT.md`.
+1. Keep the legal-name field as a placeholder in the public source drafts. Before publishing, save the publisher's name as the repository Actions secret `FACTORYTOOLS_PUBLISHER_LEGAL_NAME`; the workflow injects it only into the publication candidate. The published page will display it. Complete monitored support/privacy contact and privacy-policy link in `../PRIVACY_POLICY_DRAFT.md` and `../SUPPORT_PAGE_DRAFT.md`. The publication candidate receives its effective date automatically on the day it is generated.
 2. Review both documents against the signed release build and the publisher's legal obligations. Update the supported platform/version information.
 3. Run `python Scripts/generate_public_site.py` from the workspace root, then `python Scripts/generate_public_site.py --check` to ensure these pages match the source drafts.
-4. After the publisher has completed that review, run `python Scripts/generate_public_site.py --publication-copy-reviewed` and `python Scripts/generate_public_site.py --publication-copy-reviewed --check`. This checks required names/contact fields, a real YYYY-MM-DD date, monitored email syntax, and one shared HTTPS privacy URL before writing a separate candidate without the draft banner or `noindex`. It does not publish the pages or verify contact ownership, URL ownership, or reachability.
+4. After the publisher has completed that review, run `python Scripts/generate_public_site.py --publication-copy-reviewed` and `python Scripts/generate_public_site.py --publication-copy-reviewed --check` with `FACTORYTOOLS_PUBLISHER_LEGAL_NAME` set in the local environment, or use the gated GitHub workflow which reads the Actions secret. This checks the injected name, remaining contact fields, a real effective date (stamped in Japan time when the candidate is generated), monitored email syntax, and one shared HTTPS privacy URL before writing a separate candidate without the draft banner or `noindex`. It does not publish the pages or verify contact ownership, URL ownership, or reachability.
 5. Publish the candidate folder on a publisher-controlled, stable HTTPS host, then configure the same privacy and support URLs in the app and App Store Connect. This repository includes a separately gated GitHub Pages deployment workflow; first set the repository's Pages source to **GitHub Actions**, then use it only after the owner approves the completed public copy.
 
 The repository is public, so GitHub Pages is available without a separate Pages hosting charge on GitHub Free. Keep the site limited to policy and support material: GitHub says Pages is not intended for a site primarily facilitating commercial transactions or SaaS. GitHub also logs visitor IP addresses for security. Review the host's processing and any required notice before publishing; this is separate from Factory Tools' on-device data handling. [GitHub Pages availability and source setup](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site), [GitHub Pages usage policy](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits), [GitHub Pages visitor logging](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
@@ -311,7 +338,8 @@ The repository is public, so GitHub Pages is available without a separate Pages 
 
 
 def write_outputs(*, check: bool, publication_ready: bool = False) -> bool:
-    outputs = build_outputs(publication_ready=publication_ready)
+    publisher_legal_name = os.environ.get("FACTORYTOOLS_PUBLISHER_LEGAL_NAME") if publication_ready else None
+    outputs = build_outputs(publication_ready=publication_ready, publisher_legal_name=publisher_legal_name)
     output_dir = PUBLICATION_DIR if publication_ready else OUTPUT_DIR
     if check:
         mismatches = [name for name, content in outputs.items() if not (output_dir / name).is_file() or (output_dir / name).read_text(encoding="utf-8") != content]

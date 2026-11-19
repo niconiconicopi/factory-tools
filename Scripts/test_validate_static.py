@@ -1203,7 +1203,7 @@ class PNGValidationTests(unittest.TestCase):
 
 
 class ReleasePreflightTests(unittest.TestCase):
-    def test_base_storefront_price_option_has_explicit_name(self) -> None:
+    def test_base_storefront_price_option_has_explicit_name_and_passes(self) -> None:
         script = Path(__file__).with_name("validate_static.py")
         for option in ("--candidate-base-storefront-price", "--candidate-pro-price"):
             with self.subTest(option=option):
@@ -1215,11 +1215,11 @@ class ReleasePreflightTests(unittest.TestCase):
                     check=False,
                 )
 
-                self.assertNotEqual(result.returncode, 0)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertNotIn("base storefront price candidate", result.stdout)
-                self.assertIn("BLOCKER:", result.stdout)
+                self.assertIn("candidate values passed source-level checks", result.stdout)
 
-    def test_release_preflight_reports_blockers_with_cp932_console_encoding(self) -> None:
+    def test_release_preflight_passes_with_cp932_console_encoding(self) -> None:
         script = Path(__file__).with_name("validate_static.py")
         environment = os.environ.copy()
         environment["PYTHONIOENCODING"] = "cp932"
@@ -1233,8 +1233,8 @@ class ReleasePreflightTests(unittest.TestCase):
             check=False,
         )
 
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("BLOCKER:", result.stdout)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("PASS: Debug and Release source identity/resource checks passed.", result.stdout)
         self.assertNotIn("UnicodeEncodeError", result.stderr)
         self.assertNotIn("Traceback", result.stderr)
 
@@ -1248,10 +1248,10 @@ class ReleasePreflightTests(unittest.TestCase):
             check=False,
         )
 
-        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("JP / JPY:980", result.stdout)
-        self.assertIn("2 project identity/configuration blocker(s)", result.stdout)
-        self.assertIn("This count covers project settings only", result.stdout)
+        self.assertIn("PASS: Debug and Release source identity/resource checks passed.", result.stdout)
+        self.assertIn("This is not a release approval", result.stdout)
         self.assertNotIn("distribution blocker(s)", result.stdout)
         self.assertNotIn("base storefront price candidate", result.stdout)
         self.assertNotIn("base storefront country/region candidate", result.stdout)

@@ -37,7 +37,7 @@ Watchでサイクルタイムを「停止して記録」した後、iPhoneの履
 
 ### プライバシー
 
-プライバシーについては **[公開済みプライバシーポリシーURL]** をご確認ください。
+プライバシーについては **https://niconiconicopi.github.io/factory-tools/privacy.html** をご確認ください。
 
 ---
 
@@ -74,7 +74,7 @@ If a Watch Cycle Time sample does not appear in iPhone history after **Stop & Sa
 
 ### Privacy
 
-Read our privacy policy at **[Published privacy policy URL]**.
+Read our privacy policy at **https://niconiconicopi.github.io/factory-tools/privacy.html**.
 
 ---
 

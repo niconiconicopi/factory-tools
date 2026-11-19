@@ -1187,8 +1187,8 @@ def main() -> int:
     require(len(project_build_settings) == 2
             and {name for name, _ in project_build_settings} == {"Debug", "Release"}
             and all(settings.get("FACTORYTOOLS_APP_BUNDLE_ID") == "com.niconiconicopi.factorytools" for _, settings in project_build_settings)
-            and all(settings.get("FACTORYTOOLS_PRIVACY_POLICY_URL") == "" for _, settings in project_build_settings)
-            and all(settings.get("FACTORYTOOLS_SUPPORT_URL") == "" for _, settings in project_build_settings)
+            and all(settings.get("FACTORYTOOLS_PRIVACY_POLICY_URL") == "https://niconiconicopi.github.io/factory-tools/privacy.html" for _, settings in project_build_settings)
+            and all(settings.get("FACTORYTOOLS_SUPPORT_URL") == "https://niconiconicopi.github.io/factory-tools/support.html" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_PRO_PRODUCT_ID") == "factorytools.pro.lifetime" for _, settings in project_build_settings)
             and all(settings.get("MARKETING_VERSION") == "1.0" for _, settings in project_build_settings)
             and all(settings.get("CURRENT_PROJECT_VERSION") == "1" for _, settings in project_build_settings)
@@ -1202,7 +1202,7 @@ def main() -> int:
                     and settings.get("INFOPLIST_KEY_CFBundleName") == "Factory Tools"
                     and settings.get("INFOPLIST_KEY_ITSAppUsesNonExemptEncryption") == "NO"
                     for _, settings in watch_build_settings),
-            "iPhone/Watch identity, display name, and version must stay aligned through shared project settings")
+            "iPhone/Watch identity, display name, version, and approved policy URLs must stay aligned through shared project settings")
     require(len(app_build_settings) == 2 and {name for name, _ in app_build_settings} == {"Debug", "Release"},
             "iPhone app must define Debug and Release build configurations")
     require(len(test_build_settings) == 2 and {name for name, _ in test_build_settings} == {"Debug", "Release"},

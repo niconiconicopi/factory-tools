@@ -18,7 +18,7 @@ Factory Toolsは、ホーム名、ツールの配置、設定、生産数、不�
 
 ### サポートメールでのお問い合わせ
 
-利用者がサポートへメールを送ると、返信先のメールアドレス、本文、利用者が記載・添付した情報を受け取ります。端末・OS・アプリのバージョン、操作内容、表示されたメッセージなど、問題の解決に必要な情報だけ記載してください。生産履歴、バックアップファイル、ペアリングコード、Apple Accountの認証情報、支払い情報は送らないでください。メールの内容は問い合わせへの返信と問題解決のために扱います。運営者は対応に必要な期間だけメールを保管し、不要になったら削除する方針です。メールサービスによる処理・保存は[Microsoft プライバシー ステートメント](https://www.microsoft.com/ja-jp/privacy/privacystatement)に従います。公開前に、運営者は実際のメール保管・削除方法がこの方針と一致することを確認します。
+利用者がサポートへメールを送ると、返信先のメールアドレス、本文、利用者が記載・添付した情報を受け取ります。端末・OS・アプリのバージョン、操作内容、表示されたメッセージなど、問題の解決に必要な情報だけ記載してください。生産履歴、バックアップファイル、ペアリングコード、Apple Accountの認証情報、支払い情報は送らないでください。メールの内容は問い合わせへの返信と問題解決のためだけに扱い、対応が完了したら削除します。メールサービスによる処理・保存は[Microsoft プライバシー ステートメント](https://www.microsoft.com/ja-jp/privacy/privacystatement)に従います。
 
 ### 収集、送信、第三者提供
 
@@ -66,7 +66,7 @@ The current app has no developer-operated server, account, external API, app-ope
 
 ### Support email
 
-If you email support, the publisher receives your reply address, message, and any information or attachments you choose to include. Include only details needed to resolve the issue, such as device, operating-system, or app version, the action taken, and any message shown. Do not send production history, backup files, pairing codes, Apple Account credentials, or payment information. The publisher uses the message to reply and resolve the support request, keeps it only as long as needed for that purpose, and deletes it when it is no longer needed. The support mailbox uses Microsoft's Outlook email service; Microsoft's processing and storage are described in the [Microsoft Privacy Statement](https://www.microsoft.com/en-us/privacy/privacystatement). The publisher must confirm that the actual mailbox-retention and deletion practice matches this statement before publishing.
+If you email support, the publisher receives your reply address, message, and any information or attachments you choose to include. Include only details needed to resolve the issue, such as device, operating-system, or app version, the action taken, and any message shown. Do not send production history, backup files, pairing codes, Apple Account credentials, or payment information. The publisher uses the message only to reply and resolve the support request, and deletes it after the request is resolved. The support mailbox uses Microsoft's Outlook email service; Microsoft's processing and storage are described in the [Microsoft Privacy Statement](https://www.microsoft.com/en-us/privacy/privacystatement).
 
 While connected, the app exchanges counter commands and Cycle Time samples directly with Apple Watch. The iPhone also sends the selected home's counter catalog and, while Pro is active, the home name, production count, and target for Watch-enabled Production Progress cards. The app exchanges counter commands and required session information with a paired iPad. These transfers support the device-to-device features and are not sent to a server operated by the developer or an outside provider.
 

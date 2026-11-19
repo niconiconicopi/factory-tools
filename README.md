@@ -21,6 +21,6 @@ Hosted simulator checks target GitHub's standard macOS 26 Apple silicon image an
 
 ## Repository status
 
-This is an in-development project. App Store publisher identity, signing, support and privacy URLs, and the store submission are not configured. If published, the source is intended for public review; no open-source license is included, so publication alone does not grant general reuse rights.
+This is an in-development project. The individual Apple Developer account and Team ID are reported set up; the publisher provided the public legal name, which must be stored as a GitHub Actions secret rather than in this public repository. Candidate GitHub Pages privacy and support URLs are set in Xcode, but the pages are still drafts and their public reachability is unverified. Signing credentials, App Store Connect products, and store submission are not configured. The repository is public for review; no open-source license is included, so publication alone does not grant general reuse rights.
 
 For the Japanese-language project guide, see [FactoryTools/README.md](FactoryTools/README.md).

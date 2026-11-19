@@ -2,7 +2,7 @@
 
 迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
 
-**現在の状態（2026-11-19）:** 発行者からApple Developer Program登録完了の報告あり。Team IDを受領してXcodeプロジェクトの共有設定に追加済み。GitHub Actions変数とApp Store Connectは未設定。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。
+**現在の状態（2026-11-20）:** 発行者からApple Developer Program登録完了の報告あり。Team IDを受領してXcodeプロジェクトの共有設定に追加済み。GitHub Actions変数とApp Store Connectは未設定。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。
 
 ## 公開にかかるApple登録料
 
