@@ -54,6 +54,14 @@ class PublicSiteDraftTests(unittest.TestCase):
         self.assertIn("Draft page", pages["privacy.html"])
         self.assertIn("Draft page", pages["support.html"])
 
+    def test_privacy_policy_discloses_support_email_handling(self) -> None:
+        privacy = generate_public_site.build_outputs()["privacy.html"]
+        self.assertIn("サポートメールでのお問い合わせ", privacy)
+        self.assertIn("Support email", privacy)
+        self.assertIn("reply address, message", privacy)
+        self.assertIn("https://www.microsoft.com/ja-jp/privacy/privacystatement", privacy)
+        self.assertIn("https://www.microsoft.com/en-us/privacy/privacystatement", privacy)
+
     def test_site_uses_only_local_assets_and_no_scripts(self) -> None:
         pages = generate_public_site.build_outputs()
         for name in ("index.html", "privacy.html", "support.html"):

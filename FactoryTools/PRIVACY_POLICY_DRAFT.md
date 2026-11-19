@@ -16,6 +16,10 @@
 
 Factory Toolsは、ホーム名、ツールの配置、設定、生産数、不良数、操作履歴、サイクルタイム、OEEの記録など、利用者が入力または作成したデータを機能の提供と履歴表示のために端末内に保存します。ペアリング機能を使う場合、接続用の秘密コードを端末のKeychainに保存します。Apple Watchは計測中のサイクルタイム状態と未送信のカウンター操作・サイクルタイム記録を端末内に保留し、iPadは未送信のカウンター操作を端末内に保留します。
 
+### サポートメールでのお問い合わせ
+
+利用者がサポートへメールを送ると、返信先のメールアドレス、本文、利用者が記載・添付した情報を受け取ります。端末・OS・アプリのバージョン、操作内容、表示されたメッセージなど、問題の解決に必要な情報だけ記載してください。生産履歴、バックアップファイル、ペアリングコード、Apple Accountの認証情報、支払い情報は送らないでください。メールの内容は問い合わせへの返信と問題解決のために扱います。運営者は対応に必要な期間だけメールを保管し、不要になったら削除する方針です。メールサービスによる処理・保存は[Microsoft プライバシー ステートメント](https://www.microsoft.com/ja-jp/privacy/privacystatement)に従います。公開前に、運営者は実際のメール保管・削除方法がこの方針と一致することを確認します。
+
 ### 収集、送信、第三者提供
 
 Proの買い切り購入と支払いはAppleのApp Storeが処理します。アプリはStoreKitを使って端末上で購入済みかを確認します。支払い方法、カード情報、Apple Accountの認証情報をアプリが取得したり、開発者へ送信したりすることはありません。
@@ -34,7 +38,7 @@ JSONバックアップにもCSV書き出しにも、WatchやiPadからの未送�
 
 ### 子どものプライバシー
 
-Factory Toolsは利用者の情報を開発者へ収集する機能を設けていません。対象年齢や地域に関する問い合わせは、上記の連絡先へお送りください。
+Factory Toolsアプリには、子どもの情報を開発者へ自動送信する機能はありません。子ども本人または保護者がサポートへメールを送る場合は、上記のメール取扱いが適用されます。対象年齢や地域に関する問い合わせは、保護者から上記の連絡先へお送りください。
 
 ### 変更と問い合わせ
 
@@ -60,6 +64,10 @@ Apple's App Store processes the one-time Pro purchase and payment. The app uses 
 
 The current app has no developer-operated server, account, external API, app-operated cloud storage or sync, advertising, analytics, tracking, or third-party SDK. Production data and StoreKit entitlement checks are not sent to the developer.
 
+### Support email
+
+If you email support, the publisher receives your reply address, message, and any information or attachments you choose to include. Include only details needed to resolve the issue, such as device, operating-system, or app version, the action taken, and any message shown. Do not send production history, backup files, pairing codes, Apple Account credentials, or payment information. The publisher uses the message to reply and resolve the support request, keeps it only as long as needed for that purpose, and deletes it when it is no longer needed. The support mailbox uses Microsoft's Outlook email service; Microsoft's processing and storage are described in the [Microsoft Privacy Statement](https://www.microsoft.com/en-us/privacy/privacystatement). The publisher must confirm that the actual mailbox-retention and deletion practice matches this statement before publishing.
+
 While connected, the app exchanges counter commands and Cycle Time samples directly with Apple Watch. The iPhone also sends the selected home's counter catalog and, while Pro is active, the home name, production count, and target for Watch-enabled Production Progress cards. The app exchanges counter commands and required session information with a paired iPad. These transfers support the device-to-device features and are not sent to a server operated by the developer or an outside provider.
 
 When you export a JSON backup or CSV file, the system share sheet lets you choose where to save or send it. The destination's own privacy terms govern how it handles the file after you share it.
@@ -74,7 +82,7 @@ Apple explains [what iCloud Backup includes](https://support.apple.com/en-us/108
 
 ### Children's privacy
 
-Factory Tools has no feature that collects a user's information for the developer. For questions about age suitability or regional requirements, contact us using the details above.
+The Factory Tools app does not automatically send children's information to the developer. If a child or parent/guardian emails support, the support-email handling described above applies. For questions about age suitability or regional requirements, a parent or guardian may contact us using the details above.
 
 ### Changes and contact
 
