@@ -35,7 +35,7 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 | 名前 | 値 |
 |---|---|
 | `FACTORYTOOLS_APP_BUNDLE_ID` | 暫定候補 `com.niconiconicopi.factorytools`。Apple Developerアカウントで利用可能性・登録可否を確認し、必要なら初回アップロード前に変更 |
-| `APPLE_TEAM_ID` | Apple Developer Team ID |
+| `APPLE_TEAM_ID` | 任意の上書き値。通常は空欄でよく、Xcodeプロジェクトに登録済みのTeam IDをワークフローが自動使用 |
 | `FACTORYTOOLS_PRIVACY_POLICY_URL` | 公開済みプライバシーポリシーHTTPS URL |
 | `FACTORYTOOLS_SUPPORT_URL` | 連絡先を含む公開済みサポートHTTPS URL |
 | `FACTORYTOOLS_PRO_PRODUCT_ID` | `factorytools.pro.lifetime` |
@@ -51,7 +51,7 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 `.p8` の内容やパスワード、認証情報をこのチャット、Issue、コミット、Actionsログに貼らないでください。ワークフローはその秘密値を一時ファイルへ書き、Xcodeコマンドの後にGitHub runnerの破棄領域とともに消します。
 
-発行者名を登録するときは、GitHubの `Settings → Secrets and variables → Actions → New repository secret` を開きます。**Name** に `FACTORYTOOLS_PUBLISHER_LEGAL_NAME`、**Secret** にApple Developer Programの個人登録で使った法的氏名を入力して保存してください。これは公開リポジトリのファイルには書かれません。公開ワークフローでサイトを公開すると、そのサイト上では表示されます。
+発行者名を登録するときは、GitHubの `Settings → Secrets and variables → Actions → New repository secret` を開きます。**Name** に `FACTORYTOOLS_PUBLISHER_LEGAL_NAME`、**Secret** にApple Developer Programの個人登録で使った法的氏名を入力して保存してください。これは公開リポジトリのファイルには書かれません。公開ワークフローでサイトを公開すると、そのサイト上では表示されます。氏名はこのチャットへ送る必要はありません。
 
 ## 手動アップロード
 

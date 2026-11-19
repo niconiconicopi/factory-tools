@@ -2,7 +2,7 @@
 
 迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
 
-**現在の状態（2026-11-20）:** 発行者からApple Developer Program登録完了の報告あり。Team IDを受領してXcodeプロジェクトの共有設定に追加済み。GitHub Actions変数とApp Store Connectは未設定。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。
+**現在の状態（2026-11-20）:** 発行者からApple Developer Program登録完了の報告あり。Team IDを受領してXcodeプロジェクトの共有設定に追加済み。GitHub Actionsではこの値を自動使用するため、Team ID変数の登録は通常不要です。App Store Connectは未設定。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。
 
 ## 公開にかかるApple登録料
 
@@ -53,7 +53,7 @@ Appleが示す判断材料は、アプリ内購入などの収益、消費者に
 | Free／Proの機能境界 | どの機能を無料で使え、どの機能をPro購入で解放するか | Version 1の境界は決定済み。無料は基本ツール・基本不良記録・基本履歴・基本Watch/iPad操作・Industrial Dark。Proは独立した生産進捗、OEE、追加ホーム、詳細分析・専門ツール・高度なWatch機能・将来のProテーマ | 決定済み。公開前にアプリ表示とストア説明の一致を確認 |
 | Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 暫定候補 `com.niconiconicopi.factorytools` をDebug/Releaseに設定済み。Apple Developerで登録可能かを確認し、初回アップロード前に確定する |
 | App Store Connect SKU | 顧客には表示されない、App Store Connectでアプリを管理する内部番号 | 候補は `FACTORYTOOLS-IOS-001`。公開者のアカウント内で未使用かを確認してからアプリ記録を作成する | 候補を選定。アカウント内の未使用確認は未実施 |
-| Team ID | Apple Developer登録にひも付く10文字のチーム番号 | Apple Developerアカウントにサインインし、「Membership details」を開く | 発行者から値を受領しXcodeプロジェクトの共有設定へ追加済み。GitHub Actions変数 `APPLE_TEAM_ID` への設定は未完了 |
+| Team ID | Apple Developer登録にひも付く10文字のチーム番号 | Apple Developerアカウントにサインインし、「Membership details」を開く | 発行者から値を受領しXcodeプロジェクトの共有設定へ追加済み。アップロード時はそこから自動取得。別アカウントを使う場合のみGitHub Actions変数で上書き |
 | Pro商品ID | アプリ内で「Factory Tools Pro」を識別する内部番号。購入者に表示する価格とは別物 | 今の候補は `factorytools.pro.lifetime`。App Store Connectの商品を作るときにこの値を使う。保存後は変更できない | 候補をプロジェクトに設定済み。商品登録は未実施 |
 | プライバシーURL | アプリが扱うデータについて説明する公開ページの住所 | 内容と公開先を決めてWebで公開し、同じHTTPSアドレスをアプリとApp Store Connectに登録 | 未設定。公開ページが必要 |
 | サポートURL | 問い合わせや困ったときの案内を載せる公開ページの住所 | 連絡方法を用意し、問い合わせを受け取れるページをWebで公開 | メール窓口は `azalea.fortask@outlook.jp` に決定し、テストメール受信を確認。日英の下書きに反映済み。継続的な監視・日英返信の確認と公開ページ・URLは未完了 |
@@ -81,7 +81,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
 3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。2026-11-10時点のローカル検証は、Pythonテスト100件、静的構造検査（Swift 67ファイル・XCTestソース286件・日英432文字列）、公開ページ生成確認、秘密情報検査が通過しています。SwiftDataテスト用保存先の終了時削除競合を修正したリポジトリrevision `20882d3` は、[Apple native run 42819982935](https://github.com/niconiconicopi/factory-tools/actions/runs/42819982935) でiPhone・iPadそれぞれ237 XCTest、日英Release画面、S/M/Lカウンター画像、必須スクリーンショット検査に成功しました。[Watch/archive run 42819983047](https://github.com/niconiconicopi/factory-tools/actions/runs/42819983047) は共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面、Watch入り未署名archiveに成功しています。Apple Simulator画像26枚の寸法も確認し、レビュー用18枚のローカルギャラリーを更新しました。これらはSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入や復元の確認ではありません。StoreKit統合購入テストはheadless Simulatorで商品が取得できないため通常CIとアップロード前検証では実行せず、購入マネージャーの回帰テストを残しています。実購入と復元はApp Store Connect Sandboxでの確認待ちです。後続の文書更新commit `9ce4b06` はCI対象コードを変更していません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
-4. Apple Developer Program登録は発行者から完了報告を受けている。Apple Developerアカウントの「Membership details」でTeam IDを確認し、GitHub Actionsに設定する。
+4. Apple Developer Program登録は発行者から完了報告を受けており、Team IDもXcodeプロジェクトへ設定済み。通常はGitHub Actionsへの重複登録は不要です。
 5. Bundle IDの利用可能性を確認してApp Store ConnectにアプリとPro商品を作成し、APIキーと署名設定を行う。商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。
 7. 署名済みアプリの購入画面で日本向け¥980を確認し、購入・復元、Watch/iPad連携を確認する。

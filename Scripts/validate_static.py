@@ -373,6 +373,26 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "archive verifies required elapsed-time privacy reason": '"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])',
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    for step_name in (
+        "Test iPhone and app-hosted regression suite",
+        "Test iPad and app-hosted regression suite",
+    ):
+        start = source.find(f"      - name: {step_name}\n")
+        next_step = source.find("\n      - name:", start + 1) if start >= 0 else -1
+        block = source[start:next_step if next_step >= 0 else len(source)] if start >= 0 else ""
+        if "timeout-minutes: 60" not in block:
+            errors.append(f"{step_name} must have a 60-minute timeout and diagnostic follow-up")
+        device = "iPhone" if step_name.startswith("Test iPhone") else "iPad"
+        diagnostics_name = f"Upload {device} XCTest diagnostics"
+        diagnostics_start = source.find(f"      - name: {diagnostics_name}\n")
+        diagnostics_end = source.find("\n      - name:", diagnostics_start + 1) if diagnostics_start >= 0 else -1
+        diagnostics_block = (
+            source[diagnostics_start:diagnostics_end if diagnostics_end >= 0 else len(source)]
+            if diagnostics_start >= 0
+            else ""
+        )
+        if "if: failure()" not in diagnostics_block or "actions/upload-artifact@" not in diagnostics_block:
+            errors.append(f"{step_name} must upload XCTest diagnostics after timeout or failure")
     if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
         errors.append("both app-hosted CI test runs must isolate the known headless StoreKitTest failure")
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
@@ -481,6 +501,12 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "no App Review submission": "does not submit for App Review",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if (
+        "name: Resolve Apple team ID" not in source
+        or "FactoryTools.xcodeproj/project.pbxproj" not in source
+        or "DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM" not in source
+    ):
+        errors.append("Team ID must fall back to the shared Xcode project setting")
     if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
         errors.append("both iPhone and iPad upload-preflight suites must isolate the known headless StoreKitTest failure")
     if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):

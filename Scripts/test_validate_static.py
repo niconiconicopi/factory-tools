@@ -1,6 +1,7 @@
 import io
 import json
 import os
+import re
 import struct
 import subprocess
 import sys
@@ -67,6 +68,28 @@ class AppleWorkflowContractTests(unittest.TestCase):
         )
 
         self.assertEqual(apple_workflow_contract_errors(workflow), [])
+
+    def test_native_xctest_steps_are_bounded_to_produce_diagnostics(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow_path = root / ".github" / "workflows" / "apple-native-checks.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+
+        for step_name in (
+            "Test iPhone and app-hosted regression suite",
+            "Test iPad and app-hosted regression suite",
+        ):
+            start = workflow.index(f"      - name: {step_name}\n")
+            next_step = workflow.find("\n      - name:", start + 1)
+            block = workflow[start:next_step if next_step >= 0 else len(workflow)]
+            self.assertIn("timeout-minutes: 60", block)
+
+        missing_timeout = workflow.replace("        timeout-minutes: 60\n", "", 1)
+        self.assertTrue(any("Test iPhone and app-hosted regression suite must have a 60-minute timeout" in error
+                            for error in apple_workflow_contract_errors(missing_timeout)))
+
+        missing_diagnostics = workflow.replace("      - name: Upload iPad XCTest diagnostics\n        if: failure()\n", "", 1)
+        self.assertTrue(any("Test iPad and app-hosted regression suite must upload XCTest diagnostics" in error
+                            for error in apple_workflow_contract_errors(missing_diagnostics)))
 
     def test_workflow_rejects_private_runner_or_secret_access(self) -> None:
         source = """if: github.event.repository.visibility == 'private'
@@ -302,6 +325,22 @@ class AppleUploadWorkflowContractTests(unittest.TestCase):
         workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
 
         self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
+
+    def test_upload_workflow_reads_team_id_from_project_when_override_is_empty(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+        start = workflow.index("      - name: Resolve Apple team ID")
+        end = workflow.index("      - name: Show Apple toolchain", start)
+        step = workflow[start:end]
+
+        self.assertIn('if [[ -z "${DEVELOPMENT_TEAM:-}" ]]', step)
+        self.assertIn('FactoryTools.xcodeproj/project.pbxproj', step)
+        self.assertIn('r"(?m)\\bDEVELOPMENT_TEAM\\s*=\\s*([A-Z0-9]{10})\\s*;"', step)
+        self.assertIn('echo "DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM" >> "$GITHUB_ENV"', step)
+
+        project = (root / "FactoryTools.xcodeproj" / "project.pbxproj").read_text(encoding="utf-8")
+        project_team_ids = set(re.findall(r"(?m)\bDEVELOPMENT_TEAM\s*=\s*([A-Z0-9]{10})\s*;", project))
+        self.assertEqual(len(project_team_ids), 1)
 
     def test_upload_workflow_skips_only_the_known_headless_storekit_test_twice(self) -> None:
         root = Path(__file__).resolve().parents[1]

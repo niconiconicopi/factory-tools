@@ -40,6 +40,7 @@ jobs:
           python3 Scripts/generate_public_site.py --check
 
       - name: Test iPhone and app-hosted regression suite
+        timeout-minutes: 60
         shell: bash
         run: |
           set -euo pipefail
@@ -228,6 +229,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Test iPad and app-hosted regression suite
+        timeout-minutes: 60
         shell: bash
         run: |
           set -euo pipefail

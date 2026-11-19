@@ -22,7 +22,7 @@ Apple Developer Program登録完了の報告を受け、Team IDを受領してXc
 ## 登録後にまず確認
 
 - [x] Apple DeveloperアカウントのTeam ID（10文字）をXcodeプロジェクトへ設定する。パスワードや本人確認情報は共有しない。
-- [ ] GitHub Actionsリポジトリ変数 `APPLE_TEAM_ID` を設定する。これは署名アップロード用で、秘密鍵やAPIキーとは分けて管理する。
+- [x] Team IDはXcodeプロジェクトへ設定済み。署名アップロード時にワークフローがそこから読み込むため、GitHub変数 `APPLE_TEAM_ID` の登録は通常不要。Apple Developerアカウントを変更した場合だけ上書き値を設定する。
 - [ ] Account HolderとしてApp Store Connect API利用を申請し、署名用Team API Keyを作成する。`.p8`秘密鍵はGitHubの指定secretへ直接登録し、チャットには送らない。
 
 ## 登録後にApple側で行うこと
