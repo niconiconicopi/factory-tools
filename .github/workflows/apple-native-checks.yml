@@ -307,6 +307,7 @@ jobs:
             outcome="${capture#*:}"
             if [[ "$outcome" != "success" ]]; then
               echo "$device screenshot capture did not succeed (outcome: $outcome)." >&2
+              echo "::error title=Required screenshot capture failed::${device} screenshot capture did not succeed (outcome: ${outcome})."
               failed=1
             fi
           done

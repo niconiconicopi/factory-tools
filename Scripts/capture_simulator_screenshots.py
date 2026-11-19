@@ -71,8 +71,9 @@ SCENARIO_EXPECTED_LABELS = {
 COMMAND_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
-SCREENSHOT_CAPTURE_ATTEMPTS = 3
-HOME_RENDER_SETTLE_SECONDS = 3
+SCREENSHOT_CAPTURE_ATTEMPTS = 4
+HOME_RENDER_SETTLE_SECONDS = 5
+NON_DEMO_RENDER_SETTLE_SECONDS = 8
 HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
 
 
@@ -229,7 +230,7 @@ def capture_language(
             time.sleep(HOME_RENDER_SETTLE_SECONDS)
         else:
             # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
-            time.sleep(4)
+            time.sleep(NON_DEMO_RENDER_SETTLE_SECONDS)
         run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
         run([
             "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
