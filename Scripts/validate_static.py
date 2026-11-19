@@ -356,7 +356,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "read-only repository permission": "permissions:\n  contents: read",
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
-        "current standard Apple silicon macOS 26 runner": "runs-on: macos-26",
+        "current standard macOS 26 Intel runner": "runs-on: macos-26-intel",
         "bounded native verification job": "timeout-minutes: 150",
         "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",

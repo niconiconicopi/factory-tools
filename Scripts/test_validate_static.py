@@ -74,7 +74,7 @@ permissions:
   contents: write
 uses: actions/checkout@v7
   persist-credentials: true
-runs-on: macos-26
+runs-on: macos-26-intel
 run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme FactoryToolsWatch CODE_SIGNING_ALLOWED=NO ${{ secrets.SIGNING_KEY }}
 """
 
