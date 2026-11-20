@@ -25,7 +25,10 @@ struct HomeView: View {
 #if targetEnvironment(simulator)
         let startsOnPeerDashboard = UIDevice.current.userInterfaceIdiom == .pad
             && screenshotDemoScenario?.peerCounterScreenshotMode != nil
-        _activeSheet = State(initialValue: startsOnPeerDashboard ? .peerCounters : nil)
+        let startsOnProcessCapability = screenshotDemoScenario == .processCapability
+        _activeSheet = State(initialValue: startsOnPeerDashboard
+            ? .peerCounters
+            : (startsOnProcessCapability ? .processCapability : nil))
 #endif
     }
 
@@ -176,6 +179,8 @@ struct HomeView: View {
                 switch destination {
                 case .toolPicker:
                     ToolPickerView(home: home)
+                case .processCapability:
+                    ProcessCapabilityView(screenshotDemoValues: screenshotDemoScenario == .processCapability)
                 case .settings:
                     AppSettingsView(home: home)
                 case .peerCounters:
@@ -342,6 +347,7 @@ struct HomeGridRow: Identifiable {
 
 private enum HomeSheetDestination: String, Identifiable {
     case toolPicker
+    case processCapability
     case settings
     case peerCounters
     case createHome

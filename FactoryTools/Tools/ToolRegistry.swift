@@ -18,6 +18,7 @@ enum ToolRegistry {
         ToolDefinition(id: .productionProgress, titleKey: "tool.progress.title", category: .production, accessTier: .pro, isAvailable: true, homeCardRoute: .productionProgress, sessionPolicy: .productionCounter),
         ToolDefinition(id: .defectCounter, titleKey: "tool.defect.title", category: .quality, accessTier: .free, isAvailable: true, homeCardRoute: .defectCounter, sessionPolicy: .defectCounter),
         ToolDefinition(id: .defectRate, titleKey: "tool.defectRate.title", category: .quality, accessTier: .free, isAvailable: true, homeCardRoute: .defectRate),
+        ToolDefinition(id: .processCapability, titleKey: "tool.processCapability.title", category: .quality, accessTier: .pro, isAvailable: true, homeCardRoute: .processCapability),
         ToolDefinition(id: .boxCalculator, titleKey: "tool.box.title", category: .packing, accessTier: .free, isAvailable: true, homeCardRoute: .boxCalculator),
         ToolDefinition(id: .unitConverter, titleKey: "tool.unitConverter.title", category: .utility, accessTier: .free, isAvailable: true, homeCardRoute: .unitConverter)
     ]

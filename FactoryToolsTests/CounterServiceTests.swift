@@ -4986,7 +4986,7 @@ final class CounterServiceTests: XCTestCase {
     func testEveryRegisteredToolHasAnExplicitFreeOrProAccessTier() {
         XCTAssertEqual(ToolRegistry.all.count, ToolID.allCases.count)
         XCTAssertEqual(Set(ToolRegistry.all.map(\.id)).count, ToolID.allCases.count)
-        XCTAssertEqual(Set(ToolRegistry.all.filter { $0.accessTier == .pro }.map(\.id)), [.productionProgress, .oee])
+        XCTAssertEqual(Set(ToolRegistry.all.filter { $0.accessTier == .pro }.map(\.id)), [.productionProgress, .oee, .processCapability])
         XCTAssertTrue(ToolRegistry.hasProAssignments)
     }
 
@@ -5167,6 +5167,7 @@ final class ToolRegistryTests: XCTestCase {
             .productionProgress: .pro,
             .defectCounter: .free,
             .defectRate: .free,
+            .processCapability: .pro,
             .boxCalculator: .free,
             .unitConverter: .free,
         ]
@@ -6739,6 +6740,7 @@ final class ToolRegistryTests: XCTestCase {
                 "production.progress",
                 "quality.defect",
                 "quality.defectRate",
+                "quality.processCapability",
                 "packing.box",
                 "utility.unitConverter"
             ]
@@ -6900,6 +6902,7 @@ final class ToolRegistryTests: XCTestCase {
             .productionProgress: .productionProgress,
             .defectCounter: .defectCounter,
             .defectRate: .defectRate,
+            .processCapability: .processCapability,
             .boxCalculator: .boxCalculator,
             .unitConverter: .unitConverter,
         ]

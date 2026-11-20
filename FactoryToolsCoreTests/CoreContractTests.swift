@@ -16,6 +16,7 @@ final class CoreContractTests: XCTestCase {
             "production.progress",
             "quality.defect",
             "quality.defectRate",
+            "quality.processCapability",
             "packing.box",
             "utility.unitConverter",
         ])
@@ -108,6 +109,7 @@ final class CoreContractTests: XCTestCase {
             .productionProgress: ToolCapabilities(supportsWatch: true, supportedCardSizes: mediumAndLarge),
             .defectCounter: ToolCapabilities(supportsWatch: true, supportedCardSizes: allSizes),
             .defectRate: ToolCapabilities(supportsWatch: false, supportedCardSizes: mediumAndLarge),
+            .processCapability: ToolCapabilities(supportsWatch: false, supportedCardSizes: mediumAndLarge),
             .boxCalculator: ToolCapabilities(supportsWatch: false, supportedCardSizes: mediumAndLarge),
             .unitConverter: ToolCapabilities(supportsWatch: false, supportedCardSizes: [.small, .medium]),
         ]
@@ -116,6 +118,43 @@ final class CoreContractTests: XCTestCase {
         for toolID in ToolID.allCases {
             XCTAssertEqual(toolID.capabilities, expected[toolID])
         }
+    }
+
+    func testProcessCapabilityCalculatesCpAndCenteredCpk() {
+        let result = ProcessCapabilityMath.calculate(
+            lowerSpecLimit: 9,
+            upperSpecLimit: 11,
+            processMean: 10,
+            standardDeviation: 0.2
+        )
+
+        XCTAssertEqual(result?.cp ?? .nan, 1.6666666667, accuracy: 0.0000001)
+        XCTAssertEqual(result?.cpk ?? .nan, 1.6666666667, accuracy: 0.0000001)
+    }
+
+    func testProcessCapabilityUsesNearestSpecificationForOffCenterCpk() {
+        let result = ProcessCapabilityMath.calculate(
+            lowerSpecLimit: 9,
+            upperSpecLimit: 11,
+            processMean: 10.2,
+            standardDeviation: 0.2
+        )
+
+        XCTAssertEqual(result?.cp ?? .nan, 1.6666666667, accuracy: 0.0000001)
+        XCTAssertEqual(result?.cpk ?? .nan, 1.3333333333, accuracy: 0.0000001)
+    }
+
+    func testProcessCapabilityAcceptsMeanOutsideSpecificationsAndRejectsInvalidInputs() {
+        let outside = ProcessCapabilityMath.calculate(
+            lowerSpecLimit: 9,
+            upperSpecLimit: 11,
+            processMean: 11.2,
+            standardDeviation: 0.2
+        )
+        XCTAssertEqual(outside?.cpk ?? .nan, -0.3333333333, accuracy: 0.0000001)
+        XCTAssertNil(ProcessCapabilityMath.calculate(lowerSpecLimit: 11, upperSpecLimit: 9, processMean: 10, standardDeviation: 0.2))
+        XCTAssertNil(ProcessCapabilityMath.calculate(lowerSpecLimit: 9, upperSpecLimit: 11, processMean: 10, standardDeviation: 0))
+        XCTAssertNil(ProcessCapabilityMath.calculate(lowerSpecLimit: .nan, upperSpecLimit: 11, processMean: 10, standardDeviation: 0.2))
     }
 
     func testCounterCommandCodableRoundTripsEveryOperation() throws {

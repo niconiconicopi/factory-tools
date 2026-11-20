@@ -22,6 +22,7 @@ SCREENSHOT_SCENARIOS = (
     "counter-size-small",
     "counter-size-medium",
     "counter-size-large",
+    "process-capability",
     "ipad-dashboard",
     "ipad-offline",
 )
@@ -49,6 +50,7 @@ SCENARIO_EXPECTED_VALUES = {
     "counter-size-small": ("286",),
     "counter-size-medium": ("286", "300"),
     "counter-size-large": ("286", "300"),
+    "process-capability": ("1.333", "1.067"),
     "ipad-dashboard": ("286", "300"),
     "ipad-offline": ("286", "300"),
 }
@@ -60,6 +62,10 @@ SCENARIO_EXPECTED_LABELS = {
     "takt-time": {
         "en": ("Net production time", "Customer demand"),
         "ja": ("正味稼働時間", "顧客需要数"),
+    },
+    "process-capability": {
+        "en": ("Cp", "Cpk", "Process mean"),
+        "ja": ("Cp", "Cpk", "工程平均"),
     },
 }
 COMMAND_TIMEOUT_SECONDS = 900

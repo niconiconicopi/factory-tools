@@ -1803,6 +1803,8 @@ def main() -> int:
     unit_conversion = (ROOT / "FactoryToolsCore" / "UnitConversion.swift").read_text(encoding="utf-8")
     localized_number_parser = (ROOT / "FactoryTools" / "Tools" / "LocalizedNumberParser.swift").read_text(encoding="utf-8")
     unit_converter_view = (ROOT / "FactoryTools" / "Features" / "Tools" / "UnitConverterView.swift").read_text(encoding="utf-8")
+    process_capability_math = (ROOT / "FactoryToolsCore" / "ProcessCapabilityMath.swift").read_text(encoding="utf-8")
+    process_capability_view = (ROOT / "FactoryTools" / "Features" / "Tools" / "ProcessCapabilityView.swift").read_text(encoding="utf-8")
     home_card_view = (ROOT / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")
     require("id: .cycleTime" in registry and "isAvailable: true" in registry.split("id: .cycleTime", 1)[1].split("),", 1)[0],
             "Cycle Time must be available through the canonical Tool Registry")
@@ -1838,7 +1840,7 @@ def main() -> int:
             and 'toolAction("taktTime.open", systemImage: "clock", destination: .taktTime)' in home_card_view,
             "Takt Time home cards must open the calculator")
     require("id: .boxCalculator" in registry and "isAvailable: true" in registry.split("id: .boxCalculator", 1)[1].split("),", 1)[0]
-            and "case .taktTime, .oee, .defectRate, .boxCalculator:" in tool_id_source,
+            and "case .taktTime, .oee, .defectRate, .processCapability, .boxCalculator:" in tool_id_source,
             "Box Calculator must be available with medium and large cards")
     require("import Foundation" in box_packing_math
             and "import SwiftUI" not in box_packing_math
@@ -1876,6 +1878,26 @@ def main() -> int:
     require("id: .unitConverter" in registry and "isAvailable: true" in registry.split("id: .unitConverter", 1)[1].split(")", 1)[0]
             and "case .unitConverter:" in tool_id_source,
             "Unit Converter must be available with small and medium cards")
+    require("id: .processCapability" in registry
+            and "accessTier: .pro" in registry.split("id: .processCapability", 1)[1].split(")", 1)[0]
+            and 'case processCapability = "quality.processCapability"' in tool_id_source
+            and ".capabilityAnalysis" in tool_id_source,
+            "Process Capability must have a stable Pro-only tool identity tied to centralized capability access")
+    require("(upperSpecLimit - lowerSpecLimit) / (6 * standardDeviation)" in process_capability_math
+            and "(upperSpecLimit - processMean) / (3 * standardDeviation)" in process_capability_math
+            and "(processMean - lowerSpecLimit) / (3 * standardDeviation)" in process_capability_math
+            and "lowerSpecLimit < upperSpecLimit" in process_capability_math
+            and "standardDeviation > 0" in process_capability_math
+            and "lowerSpecLimit.isFinite" in process_capability_math
+            and "cp.isFinite, cpk.isFinite" in process_capability_math,
+            "Cp/Cpk must use the standard equations and reject invalid or non-finite values")
+    require('ProcessCapabilityView()' in home_card_view
+            and 'toolAction("processCapability.open", systemImage: "chart.bar.xaxis", destination: .processCapability)' in home_card_view
+            and "LocalizedNumberParser.parse(" in process_capability_view
+            and 'Text("processCapability.caveat")' in process_capability_view
+            and 'Text("processCapability.formula")' in process_capability_view
+            and ".keyboardType(.numbersAndPunctuation)" in process_capability_view,
+            "Cp/Cpk must be a locale-aware, transparent Pro calculator with an explicit stability and distribution caveat")
     require("case length" in unit_conversion and "case mass" in unit_conversion
             and "case volume" in unit_conversion and "case temperature" in unit_conversion
             and "static func convert(_ value: Double, from source: MeasurementUnit, to target: MeasurementUnit) -> Double?" in unit_conversion
@@ -3622,7 +3644,7 @@ def main() -> int:
     require('case oee = "production.oee"' in tool_id_source
             and "id: .oee" in registry
             and "category: .production" in registry.split("id: .oee", 1)[1].split("),", 1)[0]
-            and "case .taktTime, .oee, .defectRate, .boxCalculator:" in tool_id_source
+            and "case .taktTime, .oee, .defectRate, .processCapability, .boxCalculator:" in tool_id_source
             and "static func calculate(" in oee_math
             and "availability = Double(operatingMinutes) / Double(plannedProductionMinutes)" in oee_math
             and "quality = Double(goodUnits) / Double(totalUnits)" in oee_math
@@ -4193,9 +4215,9 @@ def main() -> int:
         "boundary approval status": "publisher approved the Version 1 boundary below on 2026-10-31" in product_decisions
             and "Confirmed Version 1 boundary" in product_decisions
             and "Apply this boundary consistently to app copy, store listings, and review screenshots." in product_decisions,
-        "tool tiers": registered_tool_count == 9
+        "tool tiers": registered_tool_count == 10
             and registry.count("accessTier: .free") == 7
-            and registry.count("accessTier: .pro") == 2,
+            and registry.count("accessTier: .pro") == 3,
         "purchase terms": "JPY ¥980 is the confirmed launch price decision" in product_decisions
             and "one non-consumable Factory Tools Pro item" in product_decisions
             and "the developer could not set a lower share count" in product_decisions

@@ -13,6 +13,7 @@ enum ScreenshotDemoScenario: String, CaseIterable {
     case counterSizeSmall = "counter-size-small"
     case counterSizeMedium = "counter-size-medium"
     case counterSizeLarge = "counter-size-large"
+    case processCapability = "process-capability"
     case ipadDashboard = "ipad-dashboard"
     case ipadOffline = "ipad-offline"
 
@@ -225,6 +226,8 @@ struct FactoryToolsApp: App {
             context.insert(ToolCard(homeProfileID: home.id, toolID: .defectRate, size: .medium, sortOrder: 2))
             insertEvents(for: production, deltas: [200, 80, 6], context: context)
             insertEvents(for: defects, deltas: [5, 3], context: context)
+        case .processCapability:
+            break
         }
         try context.save()
     }

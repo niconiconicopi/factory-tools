@@ -9,6 +9,7 @@ enum ToolCardRoute: String, CaseIterable, Hashable {
     case productionProgress
     case defectCounter
     case defectRate
+    case processCapability
     case boxCalculator
     case unitConverter
     case comingSoon

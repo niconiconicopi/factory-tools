@@ -157,6 +157,8 @@ struct HomeToolCardView: View {
                 }
             case .defectRate:
                 defectRateContent()
+            case .processCapability:
+                toolAction("processCapability.open", systemImage: "chart.bar.xaxis", destination: .processCapability)
             case .boxCalculator:
                 toolAction("boxCalculator.open", systemImage: "shippingbox", destination: .boxCalculator)
             case .unitConverter:
@@ -199,6 +201,8 @@ struct HomeToolCardView: View {
                     BoxCalculatorView()
                 case .unitConverter:
                     UnitConverterView()
+                case .processCapability:
+                    ProcessCapabilityView()
                 case .proSettings:
                     AppSettingsView(home: home)
                 }
@@ -587,6 +591,7 @@ enum HomeToolCardSheet: String, Identifiable {
     case oee
     case boxCalculator
     case unitConverter
+    case processCapability
     case proSettings
 
     var id: String { rawValue }

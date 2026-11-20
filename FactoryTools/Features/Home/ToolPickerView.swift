@@ -216,6 +216,7 @@ struct ToolPickerView: View {
         case .productionProgress: "chart.bar.fill"
         case .defectCounter: "exclamationmark.circle"
         case .defectRate: "percent"
+        case .processCapability: "chart.bar.xaxis"
         case .boxCalculator: "shippingbox"
         case .unitConverter: "arrow.left.arrow.right"
         case .cycleTime: "timer"

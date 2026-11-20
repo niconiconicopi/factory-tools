@@ -35,6 +35,8 @@ Approved: use the current Registry mapping for the first release, with the follo
 - **Free:** Production Counter, Cycle Time, Takt Time, Box Calculator, Unit Converter, basic Defect Counter and Defect Rate; one home with card ordering/sizing; Industrial Dark; basic event history, backup/restore and CSV export; basic Watch counter and Cycle Time capture; iPad counter controls; Japanese and English.
 - **Pro:** the standalone Production Progress card and OEE Calculator; additional homes and advanced dashboard customization; detailed charts, period comparisons and analysis; specialist tools and advanced settings; future Pro themes and advanced Watch features.
 
+Version 1 includes a Pro Process Capability calculator for Cp/Cpk. It accepts LSL, USL, process mean, and a user-supplied process standard deviation. The result is an index calculation only; the app does not validate process stability or distribution assumptions.
+
 This keeps the core count, timing, calculation, basic defect, history and companion workflows useful without payment. The counter itself shows target/progress, while the separate progress dashboard and OEE analysis are Pro. Basic defect capture, basic history and export remain free; detailed defect categories and analysis, charts, and period comparisons are Pro. Industrial Dark is free; future Pro themes are included in the same purchase. Apply this boundary consistently to app copy, store listings, and review screenshots.
 
 ## Sale price and store setup

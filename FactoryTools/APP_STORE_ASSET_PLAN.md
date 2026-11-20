@@ -38,7 +38,7 @@ Keep the displayed feature state and access level accurate. The listed Japanese 
 | 4 | Takt Time with sample values | 生産ペースをすぐ計算 | Calculate the required production pace |
 | 5 | Defect Counter and Defect Rate using a separate home-scoped sample session | 生産数と不良数を記録 | Track output and defects |
 | 6 | Basic counter/Cycle Time history and export or backup entry point | 記録を残し、持ち出せる | Keep and export your records |
-| 7 | A real, accessible Pro tool screen from the app, only after the launch feature set is approved | 専門ツールをProで解放 | Unlock specialist tools with Pro |
+| 7 | The real Process Capability (Cp/Cpk) form and calculated result from the app | 工程能力を数値で確認 | Check process capability with Cp/Cpk |
 
 ### iPad
 

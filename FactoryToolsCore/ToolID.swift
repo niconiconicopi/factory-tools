@@ -128,6 +128,7 @@ public enum ToolID: String, Codable, CaseIterable, Identifiable {
     case productionProgress = "production.progress"
     case defectCounter = "quality.defect"
     case defectRate = "quality.defectRate"
+    case processCapability = "quality.processCapability"
     case boxCalculator = "packing.box"
     case unitConverter = "utility.unitConverter"
 
@@ -205,7 +206,7 @@ public extension ToolID {
             ToolCapabilities(supportsWatch: true, supportedCardSizes: Set(ToolCardSize.allCases))
         case .productionProgress:
             ToolCapabilities(supportsWatch: true, supportedCardSizes: [.medium, .large])
-        case .taktTime, .oee, .defectRate, .boxCalculator:
+        case .taktTime, .oee, .defectRate, .processCapability, .boxCalculator:
             ToolCapabilities(supportsWatch: false, supportedCardSizes: [.medium, .large])
         case .unitConverter:
             ToolCapabilities(supportsWatch: false, supportedCardSizes: [.small, .medium])

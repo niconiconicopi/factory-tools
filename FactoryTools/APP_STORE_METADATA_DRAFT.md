@@ -82,6 +82,7 @@ Unlock Pro tools and advanced features.
 
 Factory Tools Pro（買い切り）
 ・独立した生産進捗カード、OEE計算
+・工程能力（Cp／Cpk）計算
 ・Apple Watchでの生産進捗確認
 ・複数ホーム
 ・サイクルタイムの詳細履歴
@@ -121,6 +122,7 @@ FREE FEATURES
 
 FACTORY TOOLS PRO (ONE-TIME PURCHASE)
 • Standalone Production Progress card and OEE Calculator
+• Process Capability (Cp/Cpk) calculator
 • Read-only Production Progress view on Apple Watch
 • Additional homes
 • Detailed Cycle Time history
