@@ -25,8 +25,7 @@ struct HomeView: View {
 #if targetEnvironment(simulator)
         let startsOnPeerDashboard = UIDevice.current.userInterfaceIdiom == .pad
             && screenshotDemoScenario?.peerCounterScreenshotMode != nil
-        let startsOnProPurchasePreview = screenshotDemoScenario == .proPurchase
-        _activeSheet = State(initialValue: startsOnPeerDashboard ? .peerCounters : (startsOnProPurchasePreview ? .settings : nil))
+        _activeSheet = State(initialValue: startsOnPeerDashboard ? .peerCounters : nil)
 #endif
     }
 
@@ -178,10 +177,7 @@ struct HomeView: View {
                 case .toolPicker:
                     ToolPickerView(home: home)
                 case .settings:
-                    AppSettingsView(
-                        home: home,
-                        screenshotProPurchasePreview: screenshotDemoScenario == .proPurchase
-                    )
+                    AppSettingsView(home: home)
                 case .peerCounters:
                     NavigationStack {
 #if targetEnvironment(simulator)

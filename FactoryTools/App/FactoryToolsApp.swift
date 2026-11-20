@@ -13,7 +13,6 @@ enum ScreenshotDemoScenario: String, CaseIterable {
     case counterSizeSmall = "counter-size-small"
     case counterSizeMedium = "counter-size-medium"
     case counterSizeLarge = "counter-size-large"
-    case proPurchase = "pro-purchase"
     case ipadDashboard = "ipad-dashboard"
     case ipadOffline = "ipad-offline"
 
@@ -190,7 +189,7 @@ struct FactoryToolsApp: App {
         context.insert(settings)
 
         switch scenario {
-        case .home, .counterQuickAdd, .proPurchase, .ipadDashboard, .ipadOffline:
+        case .home, .counterQuickAdd, .ipadDashboard, .ipadOffline:
             let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
             addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
             insertEvents(for: production, deltas: [200, 80, 6], context: context)

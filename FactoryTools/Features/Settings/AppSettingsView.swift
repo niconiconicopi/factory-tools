@@ -15,7 +15,6 @@ struct AppSettingsView: View {
     @EnvironmentObject private var proPurchases: ProPurchaseManager
     @Query private var settings: [AppSettings]
     @Bindable var home: HomeProfile
-    private let screenshotProPurchasePreview: Bool
     @State private var homeNameDraft = ""
     @State private var showingSaveError = false
     @State private var showingBackupError = false
@@ -35,49 +34,44 @@ struct AppSettingsView: View {
     @State private var showingPairingCodeRestoreConfirmation = false
     @ObservedObject private var peerTransport = LocalPeerCounterTransport.shared
 
-    init(home: HomeProfile, screenshotProPurchasePreview: Bool = false) {
+    init(home: HomeProfile) {
         self.home = home
-        self.screenshotProPurchasePreview = screenshotProPurchasePreview
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                if screenshotProPurchasePreview {
-                    proPurchaseScreenshotPreviewSection
-                } else {
-                    Section("settings.home") {
-                        TextField("settings.homeName", text: $homeNameDraft, prompt: Text("home.defaultName"))
-                    }
-                    Section {
-                        if let settings = AppSettingsOrdering.primary(in: settings) {
-                            Picker("settings.language", selection: Binding(
-                                get: { AppLanguage.resolve(settings.language) },
-                                set: {
-                                    do {
-                                        try AppSettingsService(modelContext: modelContext).setLanguage($0, for: settings)
-                                    } catch {
-                                        showingSaveError = true
-                                    }
-                                }
-                            )) {
-                                Text("settings.language.system").tag(AppLanguage.system)
-                                Text("settings.language.japanese").tag(AppLanguage.japanese)
-                                Text("settings.language.english").tag(AppLanguage.english)
-                            }
-                        }
-                    }
-                    Section("settings.theme") {
-                        LabeledContent("settings.currentTheme") {
-                            Text("theme.industrialDark.name")
-                        }
-                    }
-                    proSettingsSection
-                    peerSettingsSection
-                    privacySettingsSection
-                    supportSettingsSection
-                    backupSettingsSection
+                Section("settings.home") {
+                    TextField("settings.homeName", text: $homeNameDraft, prompt: Text("home.defaultName"))
                 }
+                Section {
+                    if let settings = AppSettingsOrdering.primary(in: settings) {
+                        Picker("settings.language", selection: Binding(
+                            get: { AppLanguage.resolve(settings.language) },
+                            set: {
+                                do {
+                                    try AppSettingsService(modelContext: modelContext).setLanguage($0, for: settings)
+                                } catch {
+                                    showingSaveError = true
+                                }
+                            }
+                        )) {
+                            Text("settings.language.system").tag(AppLanguage.system)
+                            Text("settings.language.japanese").tag(AppLanguage.japanese)
+                            Text("settings.language.english").tag(AppLanguage.english)
+                        }
+                    }
+                }
+                Section("settings.theme") {
+                    LabeledContent("settings.currentTheme") {
+                        Text("theme.industrialDark.name")
+                    }
+                }
+                proSettingsSection
+                peerSettingsSection
+                privacySettingsSection
+                supportSettingsSection
+                backupSettingsSection
             }
             .scrollContentBackground(.hidden)
             .background(theme.background)
@@ -346,25 +340,6 @@ struct AppSettingsView: View {
                 proPurchaseControls
             }
             familySharingStatus
-        }
-    }
-
-    private var proPurchaseScreenshotPreviewSection: some View {
-        Section("pro.title") {
-            Text("pro.description")
-                .font(theme.captionFont)
-                .foregroundStyle(theme.secondaryText)
-            Button {} label: {
-                HStack {
-                    Label("pro.purchase", systemImage: "cart")
-                    Spacer()
-                    Text("pro.screenshotPreview.price")
-                }
-            }
-            .allowsHitTesting(false)
-            Label("pro.familySharing.unavailable", systemImage: "person.fill")
-                .font(theme.captionFont)
-                .foregroundStyle(theme.secondaryText)
         }
     }
 

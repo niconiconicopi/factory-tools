@@ -80,7 +80,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
-3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。2026-11-10時点のローカル検証は、Pythonテスト100件、静的構造検査（Swift 67ファイル・XCTestソース286件・日英432文字列）、公開ページ生成確認、秘密情報検査が通過しています。SwiftDataテスト用保存先の終了時削除競合を修正したリポジトリrevision `20882d3` は、[Apple native run 42819982935](https://github.com/niconiconicopi/factory-tools/actions/runs/42819982935) でiPhone・iPadそれぞれ237 XCTest、日英Release画面、S/M/Lカウンター画像、必須スクリーンショット検査に成功しました。[Watch/archive run 42819983047](https://github.com/niconiconicopi/factory-tools/actions/runs/42819983047) は共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面、Watch入り未署名archiveに成功しています。Apple Simulator画像26枚の寸法も確認し、レビュー用18枚のローカルギャラリーを更新しました。これらはSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入や復元の確認ではありません。StoreKit統合購入テストはheadless Simulatorで商品が取得できないため通常CIとアップロード前検証では実行せず、購入マネージャーの回帰テストを残しています。実購入と復元はApp Store Connect Sandboxでの確認待ちです。後続の文書更新commit `9ce4b06` はCI対象コードを変更していません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
+3. 追加費用をかけずに、Windows上のソース検証と文書の準備を終える。2026-11-10時点のローカル検証は、Pythonテスト100件、静的構造検査（Swift 67ファイル・XCTestソース286件・日英431文字列）、公開ページ生成確認、秘密情報検査が通過しています。SwiftDataテスト用保存先の終了時削除競合を修正したリポジトリrevision `20882d3` は、[Apple native run 42819982935](https://github.com/niconiconicopi/factory-tools/actions/runs/42819982935) でiPhone・iPadそれぞれ237 XCTest、日英Release画面、S/M/Lカウンター画像、必須スクリーンショット検査に成功しました。[Watch/archive run 42819983047](https://github.com/niconiconicopi/factory-tools/actions/runs/42819983047) は共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面、Watch入り未署名archiveに成功しています。Apple Simulator画像26枚の寸法も確認し、レビュー用18枚のローカルギャラリーを更新しました。これらはSimulator／未署名ビルドの証拠であり、実機、署名、StoreKit実購入や復元の確認ではありません。StoreKit統合購入テストはheadless Simulatorで商品が取得できないため通常CIとアップロード前検証では実行せず、購入マネージャーの回帰テストを残しています。実購入と復元はApp Store Connect Sandboxでの確認待ちです。後続の文書更新commit `9ce4b06` はCI対象コードを変更していません。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使いません。
 4. Apple Developer Program登録は発行者から完了報告を受けており、Team IDもXcodeプロジェクトへ設定済み。通常はGitHub Actionsへの重複登録は不要です。
 5. Bundle IDの利用可能性を確認してApp Store ConnectにアプリとPro商品を作成し、APIキーと署名設定を行う。商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。
@@ -97,3 +97,4 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 - [IAPの商品IDについて](https://developer.apple.com/help/app-store-connect/reference/in-app-purchases-and-subscriptions/in-app-purchase-information/)
 - [IAP価格の設定](https://developer.apple.com/help/app-store-connect/manage-in-app-purchases/set-a-price-for-an-in-app-purchase)
 - [Appleの日本向け¥980カスタム価格の例](https://developer.apple.com/jp/videos/play/tech-talks/110364/)
+

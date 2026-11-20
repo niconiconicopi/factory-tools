@@ -2290,13 +2290,6 @@ def main() -> int:
     purchase_test = purchase_test_path.read_text(encoding="utf-8") if purchase_test_path.is_file() else ""
     purchase_price_view_path = ROOT / "FactoryTools" / "Features" / "Settings" / "AppSettingsView.swift"
     purchase_price_view = purchase_price_view_path.read_text(encoding="utf-8") if purchase_price_view_path.is_file() else ""
-    production_purchase_price_view = re.sub(
-        r"    private var proPurchaseScreenshotPreviewSection: some View \{.*?\n    \}\n",
-        "",
-        purchase_price_view,
-        flags=re.DOTALL,
-    )
-    screenshot_preview_price_localizations = strings.get("pro.screenshotPreview.price", {}).get("localizations", {})
     storekit_sources = [path for path in source_files if re.search(
         r"^\s*import\s+StoreKit\b|RevenueCat|Purchases\.shared",
         path.read_text(encoding="utf-8"),
@@ -2332,10 +2325,8 @@ def main() -> int:
             and 'XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro.lifetime"))' in core_contract_tests
             and "hasResolvedEntitlement = true" in purchase_manager
             and "Text(product.displayPrice)" in purchase_price_view
-            and 'Text("pro.screenshotPreview.price")' in purchase_price_view
-            and screenshot_preview_price_localizations.get("en", {}).get("stringUnit", {}).get("value") == "Price varies by region"
-            and screenshot_preview_price_localizations.get("ja", {}).get("stringUnit", {}).get("value") == "¥980"
-            and "¥980" not in production_purchase_price_view
+            and "screenshotPreview" not in purchase_price_view
+            and "¥980" not in purchase_price_view
             and not re.search(r"RevenueCat|Purchases\.shared", purchase_manager),
             "StoreKit must stay in the first-party one-time Pro manager and show the StoreKit-localized regional price rather than a hard-coded yen amount")
     storekit_test_target = targets_by_name.get("FactoryToolsTests", {})
