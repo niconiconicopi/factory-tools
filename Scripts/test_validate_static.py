@@ -401,6 +401,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
         self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
+        self.assertIn("all prior iPhone, iPad, and Watch screenshots need a fresh hosted capture", asset_plan)
+        self.assertIn("former title “Factory Tools”", asset_plan)
+        self.assertIn("November 10 review set shows 286 in Japanese but omits it in English", asset_plan)
         self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
         self.assertIn("factory-tools-app-store-ipad-home", workflow)
 
