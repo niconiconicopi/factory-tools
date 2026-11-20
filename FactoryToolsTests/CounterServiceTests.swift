@@ -5697,12 +5697,12 @@ final class ToolRegistryTests: XCTestCase {
         XCTAssertEqual(ToolRegistry.matching("production counter", locale: japanese).map(\.id), [.productionCounter])
         XCTAssertEqual(ToolRegistry.matching("生産カウンター", locale: english).map(\.id), [.productionCounter])
         XCTAssertEqual(ToolRegistry.matching("production.cycleTime", locale: english).map(\.id), [.cycleTime])
-        XCTAssertEqual(ToolRegistry.matching("quality", locale: english).map(\.id), [.defectCounter, .defectRate])
-        XCTAssertEqual(ToolRegistry.matching("Quality", locale: japanese).map(\.id), [.defectCounter, .defectRate])
-        XCTAssertEqual(ToolRegistry.matching("品質", locale: english).map(\.id), [.defectCounter, .defectRate])
+        XCTAssertEqual(ToolRegistry.matching("quality", locale: english).map(\.id), [.defectCounter, .defectRate, .processCapability])
+        XCTAssertEqual(ToolRegistry.matching("Quality", locale: japanese).map(\.id), [.defectCounter, .defectRate, .processCapability])
+        XCTAssertEqual(ToolRegistry.matching("品質", locale: english).map(\.id), [.defectCounter, .defectRate, .processCapability])
         XCTAssertEqual(
             ToolRegistry.matching("", category: .quality, locale: japanese).map(\.id),
-            [.defectCounter, .defectRate]
+            [.defectCounter, .defectRate, .processCapability]
         )
         XCTAssertTrue(ToolRegistry.matching("no such tool", locale: english).isEmpty)
     }
