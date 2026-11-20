@@ -8,6 +8,11 @@ on:
         required: true
         type: boolean
         default: false
+      confirm_store_content_reviewed:
+        description: I reviewed the exact bilingual listing, price, Pro claims, screenshots, and privacy/support copy with the publisher before this upload.
+        required: true
+        type: boolean
+        default: false
       marketing_version:
         description: Release version to archive (for example 1.0).
         required: true
@@ -28,14 +33,14 @@ concurrency:
 
 jobs:
   no_upload:
-    if: inputs.confirm_app_store_connect_upload != true
+    if: inputs.confirm_app_store_connect_upload != true || inputs.confirm_store_content_reviewed != true
     runs-on: ubuntu-latest
     steps:
       - name: Explain skipped upload
-        run: echo "No upload was confirmed. No credentials were read and no Apple build or upload was started."
+        run: echo "Upload confirmation or publisher review of the exact store content is missing. No credentials were read and no Apple build or upload was started."
 
   upload:
-    if: inputs.confirm_app_store_connect_upload == true && github.ref == 'refs/heads/main'
+    if: inputs.confirm_app_store_connect_upload == true && inputs.confirm_store_content_reviewed == true && github.ref == 'refs/heads/main'
     runs-on: macos-26
     timeout-minutes: 60
     env:

@@ -397,7 +397,8 @@ jobs:
         errors = apple_upload_workflow_contract_errors(source)
 
         self.assertIn("missing confirmation default is false", errors)
-        self.assertIn("missing upload is limited to confirmed main-branch runs", errors)
+        self.assertIn("missing store content review defaults off", errors)
+        self.assertIn("missing upload requires content review and is limited to main", errors)
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn(
