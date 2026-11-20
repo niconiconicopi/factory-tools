@@ -540,12 +540,15 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
     def test_home_capture_falls_back_to_final_image_ocr_when_readiness_logs_timeout(self) -> None:
         import capture_simulator_screenshots
 
+        verifier_arguments: list[list[str]] = []
+
         def create_capture_fixture(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
             if "screenshot" in arguments:
                 Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
             elif arguments and arguments[0] == "sips" and "--out" in arguments:
                 Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
             elif arguments and arguments[0] == "swift":
+                verifier_arguments.append(arguments)
                 return subprocess.CompletedProcess(arguments, 0, stdout="286/300 visible", stderr="")
             return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
 
@@ -562,6 +565,36 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
 
             self.assertEqual(dimensions, (2064, 2752))
             self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+        self.assertTrue(any("verify_store_home_title.swift" in command[1] for command in verifier_arguments))
+        self.assertEqual(verifier_arguments[-1][-1], "現場ギア")
+
+    def test_english_home_capture_requires_factory_tools_app_name(self) -> None:
+        import capture_simulator_screenshots
+
+        verifier_arguments: list[list[str]] = []
+
+        def capture_command(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            if "screenshot" in arguments:
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                verifier_arguments.append(arguments)
+                return subprocess.CompletedProcess(arguments, 0, stdout="Factory Tools", stderr="")
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-home-en.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=capture_command), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data"), \
+                    patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(1206, 2622)), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=False, platform="iPhone", scenario="home",
+                )
+
+        self.assertEqual(verifier_arguments[-1][-1], "Factory Tools")
 
     def test_capture_cleans_stale_outputs_but_preserves_unrelated_files(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -584,6 +617,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         home_view = (root / "FactoryTools" / "Features" / "Home" / "HomeView.swift").read_text(encoding="utf-8")
         settings_view = (root / "FactoryTools" / "Features" / "Settings" / "AppSettingsView.swift").read_text(encoding="utf-8")
         capture_script = (root / "Scripts" / "capture_simulator_screenshots.py").read_text(encoding="utf-8")
+        app_name_verifier = (root / "Scripts" / "verify_store_home_title.swift").read_text(encoding="utf-8")
         home_card = (root / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")
         home_verifier = (root / "Scripts" / "verify_simulator_home_screenshot.swift").read_text(encoding="utf-8")
         workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
@@ -592,6 +626,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"cycle-time": ("120", "30")', capture_script)
         self.assertIn('"--language", "ja-JP" if japanese else "en-US"', capture_script)
         self.assertIn('verification_arguments.extend(["--required-label", label])', capture_script)
+        self.assertIn('expected_app_name = "現場ギア" if japanese else "Factory Tools"', capture_script)
+        self.assertIn('str(APP_NAME_SCREENSHOT_VERIFIER)', capture_script)
+        self.assertIn('request.customWords = [expectedTitle]', app_name_verifier)
         self.assertIn("!expectedValues.isEmpty || !requiredLabels.isEmpty", home_verifier)
         self.assertNotIn('"cycle-time": ("120", "4", "30")', capture_script)
         self.assertIn('? ["ja-JP", "en-US"]', home_verifier)

@@ -75,6 +75,7 @@ SCREENSHOT_CAPTURE_ATTEMPTS = 4
 HOME_RENDER_SETTLE_SECONDS = 5
 NON_DEMO_RENDER_SETTLE_SECONDS = 8
 HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
+APP_NAME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_store_home_title.swift")
 
 
 def run(
@@ -247,8 +248,17 @@ def capture_language(
                 verification_arguments.extend(["--required-label", label])
             if scenario in COUNTER_ROW_SCENARIOS:
                 verification_arguments.append("--counter-row")
+            verification_commands = [verification_arguments]
+            if scenario == "home":
+                expected_app_name = "現場ギア" if japanese else "Factory Tools"
+                verification_commands.append([
+                    "swift", str(APP_NAME_SCREENSHOT_VERIFIER), str(output_path), expected_app_name,
+                ])
             try:
-                verification = run(verification_arguments, capture_output=True)
+                verifications = [
+                    run(command, capture_output=True)
+                    for command in verification_commands
+                ]
             except subprocess.CalledProcessError as error:
                 recognized = (error.stderr or error.stdout or "").strip()
                 temporary_png.unlink(missing_ok=True)
@@ -260,7 +270,8 @@ def capture_language(
                 output_path.unlink(missing_ok=True)
                 print(f"Required screen content was not visible; relaunching the app. {recognized}", flush=True)
                 continue
-            print(verification.stdout.strip(), flush=True)
+            for verification in verifications:
+                print(verification.stdout.strip(), flush=True)
         temporary_png.unlink()
         break
     if not output_path.is_file() or output_path.stat().st_size < 10_000:
