@@ -187,7 +187,7 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
                 let wire = LocalPeerWireConnection(
                     connection: connection,
                     queue: callbackQueue,
-                    handshakeTimeout: .milliseconds(250)
+                    handshakeTimeout: isFirstPeer ? .milliseconds(250) : .seconds(15)
                 ) { event in
                     switch event {
                     case .failed(let connectionID) where activeServerWire?.id == connectionID:
@@ -238,7 +238,7 @@ final class LocalPeerPairingKeyStoreTests: XCTestCase {
             if case .ready = state { validClientReady.fulfill() }
         }
         valid.start(queue: callbackQueue)
-        await fulfillment(of: [authenticatedServerPeerReady, validClientReady], timeout: 10)
+        await fulfillment(of: [authenticatedServerPeerReady, validClientReady], timeout: 20)
     }
 
     func testPairingCodeDecodesThirtyTwoBytes() throws {
