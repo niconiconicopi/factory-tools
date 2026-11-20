@@ -6,7 +6,7 @@ Capture method: launch the actual Release Simulator app, enter screenshot-only s
 
 The prior package remains in the workspace only as historical design evidence. Apple requires screenshots in supported dimensions and formats; its current specifications do not require them to come from a signed build or physical device. A new package may become a submission candidate only after the fresh captures pass app-name OCR, dimensions, localization, visual review, and publisher acceptance. This still does not replace physical-device, signed-distribution, or purchase testing.
 
-**Preliminary visual and dimension review (2026-11-08):** This reviewed an earlier interface and is historical only. The screenshot-only Pro preview is a mock screen, is excluded from the screenshot package, and is not suitable as the actual App Review purchase screenshot. The prior image dimensions were JPEG at 1206 × 2622 (iPhone), 2064 × 2752 (13-inch iPad), and 416 × 496 (Watch); verify the new captures again. No image from the old package is accepted for release.
+**Preliminary visual and dimension review (2026-11-08):** This reviewed an earlier interface and is historical only. A screenshot-only Pro purchase preview is a mock screen; it must never be uploaded as an App Store product-page image or an App Review purchase screenshot. The prior image dimensions were JPEG at 1206 × 2622 (iPhone), 2064 × 2752 (13-inch iPad), and 416 × 496 (Watch); verify new captures again. No image from the old package is accepted for release.
 
 The previous repeat on synchronized `main` commit `8b8e80d` passed [Apple native checks run 42432727380](https://github.com/niconiconicopi/factory-tools/actions/runs/42432727380) and [Watch/archive run 42432729530](https://github.com/niconiconicopi/factory-tools/actions/runs/42432729530). Those artifacts reproduce 14 iPhone, four iPad, and bilingual Watch Simulator screenshots. The current run artifacts are linked above; they verify the Takt Time retry on the hosted simulator, not final signed App Store assets.
 
@@ -38,7 +38,7 @@ Keep the displayed feature state and access level accurate. The listed Japanese 
 | 4 | Takt Time with sample values | 生産ペースをすぐ計算 | Calculate the required production pace |
 | 5 | Defect Counter and Defect Rate using a separate home-scoped sample session | 生産数と不良数を記録 | Track output and defects |
 | 6 | Basic counter/Cycle Time history and export or backup entry point | 記録を残し、持ち出せる | Keep and export your records |
-| 7 | Pro purchase screen preview or an unlocked Pro tool, only after the final offer and feature set are approved | 専門ツールをProで解放 | Unlock specialist tools with Pro |
+| 7 | A real, accessible Pro tool screen from the app, only after the launch feature set is approved | 専門ツールをProで解放 | Unlock specialist tools with Pro |
 
 ### iPad
 
@@ -58,12 +58,12 @@ Keep the displayed feature state and access level accurate. The listed Japanese 
 
 ## Separate App Review purchase screenshot
 
-Capture the actual signed iPhone Settings screen with the configured non-consumable product name, localized description, and Apple-provided display price. This is the IAP review asset; it is separate from the product-page screenshots and from the screenshot-only Pro preview. The ¥980 preview can guide composition, but use the actual storefront display price and verify purchase behavior before accepting the App Review asset.
+Capture the actual signed iPhone Settings screen with the configured non-consumable product name, localized description, and Apple-provided display price. This is the IAP review asset; it is separate from product-page screenshots. Do not substitute a designed or screenshot-only mock for the real StoreKit purchase sheet. Verify the actual storefront display price and purchase behavior before accepting this App Review asset.
 
 ## Capture and upload checklist
 
-- Review the local `FactoryTools-AppStore-Assets-Review-2026-11-10` package or retrieve the `factory-tools-app-store-iphone-product-page`, `factory-tools-iphone-counter-card-size-evidence`, and `factory-tools-app-store-ipad-product-page` artifacts from iPhone/iPad run 42819982935 and `factory-tools-app-store-watch-home` from Watch/archive run 42819983047. The local package contains 18 Free-feature images across iPhone, iPad, and Watch; the dedicated counter artifact contains six Japanese/English S/M/L captures. The iPhone CI artifact also includes a screenshot-only Pro preview with a ¥980 mock price and Family Sharing off, but that preview is excluded from the package and is not the actual StoreKit purchase sheet. Check each included localized image against the current release UI and approved listing. The product-page images may be uploaded from these Release Simulator captures once accepted; a signed build is not a screenshot-format requirement.
-- The established iPhone home and Pro preview filenames are `iphone-home-ja.jpg`, `iphone-home-en.jpg`, `iphone-pro-purchase-ja.jpg`, and `iphone-pro-purchase-en.jpg`.
+- The superseded 2026-11-10 package and earlier CI artifact links are historical references only. Do not upload any image from them. Retrieve a fresh artifact after the current workflow completes, and inspect each included localized image against the current release UI and approved listing. The workflow's product-page artifact must contain only direct Release Simulator captures of actual app screens; generated images and screenshot-only mock purchase screens are excluded. A signed build is not a screenshot-format requirement.
+- Only actual app-screen captures belong in the product-page image set. The `iphone-pro-purchase-ja.jpg` and `iphone-pro-purchase-en.jpg` mock previews are not valid product-page assets and must not be used.
 - Keep synthetic home, counter, history, defect, and calculator data in the captured Release build.
 - Use the prepared Apple-listed iPhone, iPad, and Watch dimensions; recapture from CI or a simulator/device only if the release UI changes.
 - For submissions starting April 2027, include iPhone Duo outer- and inner-display screenshots in addition to the currently required Dynamic Island and 13-inch iPad screenshots.

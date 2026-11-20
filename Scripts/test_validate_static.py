@@ -758,9 +758,10 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Require iPhone, iPad, and card-size screenshot captures", workflow)
         self.assertIn('exit "$failed"', workflow)
         self.assertIn('::error title=Required screenshot capture failed::${device} screenshot capture did not succeed (outcome: ${outcome}).', workflow)
-        self.assertIn("--scenarios home counter-quick-add cycle-time takt-time defect-counter counter-history pro-purchase", workflow)
+        self.assertIn("--scenarios home counter-quick-add cycle-time takt-time defect-counter counter-history", workflow)
+        self.assertNotIn("pro-purchase", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
-        self.assertIn("iphone-home-ja.jpg", asset_plan)
+        self.assertIn("iphone-pro-purchase-ja.jpg` and `iphone-pro-purchase-en.jpg` mock previews are not valid", asset_plan)
         self.assertIn("Prepare 13-inch iPad Simulator before release screenshot captures", workflow)
         self.assertLess(
             workflow.index("Prepare 13-inch iPad Simulator before release screenshot captures"),
