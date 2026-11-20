@@ -54,6 +54,14 @@ def image_dimensions(image_path: Path, *, platform: str) -> tuple[int, int]:
     return dimensions
 
 
+def verify_localized_home_title(image_path: Path, *, japanese: bool) -> None:
+    verifier = Path(__file__).with_name("verify_store_home_title.swift")
+    if not verifier.is_file():
+        raise RuntimeError("The localized App Store home-title verifier is missing.")
+    expected_title = "現場ギア" if japanese else "Factory Tools"
+    run(["swift", str(verifier), str(image_path), expected_title], capture_output=True)
+
+
 def capture_language(
     device_id: str,
     identifier: str,
@@ -87,7 +95,10 @@ def capture_language(
     with output_path.open("rb") as stream:
         if stream.read(2) != b"\xff\xd8":
             raise RuntimeError(f"Screenshot is not a JPEG image: {output_path.name}")
-    return image_dimensions(output_path, platform=platform)
+    dimensions = image_dimensions(output_path, platform=platform)
+    if scenario == "home":
+        verify_localized_home_title(output_path, japanese=japanese)
+    return dimensions
 
 
 def main() -> int:
@@ -144,6 +155,7 @@ def main() -> int:
         f"Simulator: {device}",
         f"Bundle ID: {identifier}",
         "Build configuration: Release Simulator; demo data uses an in-memory store and is compiled only for Simulator.",
+        "The localized app name in each home screenshot is verified with Apple Vision OCR.",
     ]
     for filename, (width, height) in captures.items():
         metadata.append(f"{filename}: {width}×{height} JPEG")

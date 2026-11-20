@@ -10,6 +10,7 @@ from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
+import capture_simulator_screenshots
 import capture_watch_screenshots
 from capture_watch_screenshots import record_failure_summary
 from validate_static import (
@@ -207,6 +208,33 @@ class WatchScreenshotDiagnosticsTests(unittest.TestCase):
         self.assertIn(".split { !$0.isNumber }", verifier)
         self.assertIn("!recognizedNumbers.contains($0)", verifier)
 
+
+class StoreScreenshotDiagnosticsTests(unittest.TestCase):
+    def test_home_screenshot_verifier_uses_the_approved_localized_app_names(self) -> None:
+        screenshot_path = Path("home-ja.jpg")
+        with patch.object(capture_simulator_screenshots, "run") as run_mock:
+            capture_simulator_screenshots.verify_localized_home_title(screenshot_path, japanese=True)
+
+        command = run_mock.call_args.args[0]
+        self.assertEqual(command[0], "swift")
+        self.assertEqual(Path(command[1]).name, "verify_store_home_title.swift")
+        self.assertEqual(command[2], str(screenshot_path))
+        self.assertEqual(command[3], "現場ギア")
+        self.assertTrue(run_mock.call_args.kwargs["capture_output"])
+
+        with patch.object(capture_simulator_screenshots, "run") as run_mock:
+            capture_simulator_screenshots.verify_localized_home_title(Path("home-en.jpg"), japanese=False)
+
+        self.assertEqual(run_mock.call_args.args[0][3], "Factory Tools")
+
+    def test_home_title_ocr_verifier_uses_the_requested_language(self) -> None:
+        verifier = (Path(__file__).resolve().parent / "verify_store_home_title.swift").read_text(encoding="utf-8")
+
+        self.assertIn("import Vision", verifier)
+        self.assertIn('request.recognitionLanguages = expectedTitle == "現場ギア" ? ["ja-JP"] : ["en-US"]', verifier)
+        self.assertIn("request.customWords = [expectedTitle]", verifier)
+        self.assertIn("localizedCaseInsensitiveContains(expectedTitle)", verifier)
+
     def test_simulator_configuration_uses_exact_device_type_and_runtime(self) -> None:
         inventory = {
             "devices": {
@@ -401,6 +429,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
         self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
+        self.assertIn("if scenario == \"home\":", capture_script)
+        self.assertIn("verify_localized_home_title(output_path, japanese=japanese)", capture_script)
+        self.assertIn("localized app name in each home screenshot is verified with Apple Vision OCR", capture_script)
         self.assertIn("all prior iPhone, iPad, and Watch screenshots need a fresh hosted capture", asset_plan)
         self.assertIn("former title “Factory Tools”", asset_plan)
         self.assertIn("November 10 review set shows 286 in Japanese but omits it in English", asset_plan)
