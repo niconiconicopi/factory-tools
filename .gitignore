@@ -1,6 +1,13 @@
 # Keep the unrelated workspace project out of a future Factory Tools repository.
 /Audio教材_Phase1/
 
+# Local review captures, downloaded CI artifacts, and the nested diagnostic clone.
+/FactoryTools-AppStore-Assets-Review-*/
+/FactoryTools-AppStore-Assets-Review-*.zip
+/FactoryTools-Preview-*/
+/FactoryTools-artifacts-*/
+/FactoryTools-capture-diagnostic-*/
+
 # Xcode user state and generated build output.
 **/DerivedData/
 **/build/

@@ -86,6 +86,20 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', ipad_test)
         self.assertIn('exit "$test_status"', ipad_test)
 
+    def test_local_review_artifacts_and_nested_diagnostic_clone_are_ignored(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        gitignore = (root / ".gitignore").read_text(encoding="utf-8")
+
+        for pattern in (
+            "/FactoryTools-AppStore-Assets-Review-*/",
+            "/FactoryTools-AppStore-Assets-Review-*.zip",
+            "/FactoryTools-Preview-*/",
+            "/FactoryTools-artifacts-*/",
+            "/FactoryTools-capture-diagnostic-*/",
+        ):
+            with self.subTest(pattern=pattern):
+                self.assertIn(pattern, gitignore)
+
 
 class WatchScreenshotDiagnosticsTests(unittest.TestCase):
     def test_watch_capture_uses_demo_fixture_and_captures_before_always_on_dim(self) -> None:
