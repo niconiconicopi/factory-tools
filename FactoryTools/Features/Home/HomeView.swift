@@ -22,6 +22,12 @@ struct HomeView: View {
         self.screenshotDemoScenario = screenshotDemoScenario
         let selectedHomeID = home.id
         _cards = Query(filter: #Predicate<ToolCard> { $0.homeProfileID == selectedHomeID })
+#if targetEnvironment(simulator)
+        let startsOnPeerDashboard = UIDevice.current.userInterfaceIdiom == .pad
+            && screenshotDemoScenario?.peerCounterScreenshotMode != nil
+        let startsOnProPurchasePreview = screenshotDemoScenario == .proPurchase
+        _activeSheet = State(initialValue: startsOnPeerDashboard ? .peerCounters : (startsOnProPurchasePreview ? .settings : nil))
+#endif
     }
 
     private var homeCards: [ToolCard] {
@@ -34,6 +40,14 @@ struct HomeView: View {
 
     private var gridMinimumWidth: CGFloat {
         HomeGridLayout.minimumColumnWidth(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize)
+    }
+
+    private var peerDashboardSheetDetents: Set<PresentationDetent> {
+#if targetEnvironment(simulator)
+        screenshotDemoScenario?.peerCounterScreenshotMode == nil ? [.medium, .large] : [.large]
+#else
+        [.medium, .large]
+#endif
     }
 
     var body: some View {
@@ -164,9 +178,19 @@ struct HomeView: View {
                 case .toolPicker:
                     ToolPickerView(home: home)
                 case .settings:
-                    AppSettingsView(home: home)
+                    AppSettingsView(
+                        home: home,
+                        screenshotProPurchasePreview: screenshotDemoScenario == .proPurchase
+                    )
                 case .peerCounters:
-                    NavigationStack { PeerCounterView() }
+                    NavigationStack {
+#if targetEnvironment(simulator)
+                        PeerCounterView(screenshotDemoMode: screenshotDemoScenario?.peerCounterScreenshotMode)
+#else
+                        PeerCounterView()
+#endif
+                    }
+                    .presentationDetents(peerDashboardSheetDetents)
                 case .createHome:
                     CreateHomeView()
                 case .manageHomes:
@@ -229,6 +253,8 @@ struct HomeView: View {
     private func screenshotSheet(for card: ToolCard) -> HomeToolCardSheet? {
         guard let screenshotDemoScenario else { return nil }
         switch screenshotDemoScenario {
+        case .counterQuickAdd where card.toolID == ToolID.productionCounter.rawValue:
+            return .customQuickAdd
         case .cycleTime where card.toolID == ToolID.cycleTime.rawValue:
             return .cycleTime
         case .taktTime where card.toolID == ToolID.taktTime.rawValue:

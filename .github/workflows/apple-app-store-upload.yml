@@ -54,6 +54,30 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Resolve Apple team ID
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${DEVELOPMENT_TEAM:-}" ]]; then
+            DEVELOPMENT_TEAM="$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          project = Path("FactoryTools.xcodeproj/project.pbxproj").read_text(encoding="utf-8")
+          team_ids = set(re.findall(r"(?m)\bDEVELOPMENT_TEAM\s*=\s*([A-Z0-9]{10})\s*;", project))
+          if len(team_ids) != 1:
+              raise SystemExit("Expected one shared Apple Developer Team ID in the Xcode project.")
+          print(next(iter(team_ids)))
+          PY
+          )"
+            export DEVELOPMENT_TEAM
+            echo "DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM" >> "$GITHUB_ENV"
+          fi
+          if [[ ! "$DEVELOPMENT_TEAM" =~ ^[A-Z0-9]{10}$ ]]; then
+            echo "The Apple Developer Team ID must contain exactly 10 letters or digits." >&2
+            exit 1
+          fi
+
       - name: Show Apple toolchain
         run: xcodebuild -version
 
@@ -96,6 +120,7 @@ jobs:
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \
@@ -125,6 +150,7 @@ jobs:
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \

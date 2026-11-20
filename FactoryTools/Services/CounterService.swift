@@ -157,6 +157,7 @@ struct CounterService {
     ) throws -> CounterCommandApplyResult {
         let appliedDelta = boundedDelta(delta, currentCount: session.currentCount)
         guard appliedDelta != 0 else { return try recordNoChange(command, to: session) }
+        let previousCount = session.currentCount
         let previousSequence = session.nextEventSequence
         guard previousSequence < Int.max else { throw CounterServiceError.eventSequenceExhausted }
         let event = CountEvent(
@@ -178,7 +179,7 @@ struct CounterService {
             LocalPeerCounterTransport.shared.publishCatalog()
         } catch {
             modelContext.rollback()
-            session.currentCount -= appliedDelta
+            session.currentCount = previousCount
             session.nextEventSequence = previousSequence
             throw error
         }

@@ -18,6 +18,7 @@
    </TestAction>
    <LaunchAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle="0" useCustomWorkingDirectory="NO" ignoresPersistentStateOnLaunch="NO" debugDocumentVersioning="YES" allowLocationSimulation="YES">
       <BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="E00000000000000000000010" BuildableName="FactoryTools.app" BlueprintName="FactoryTools" ReferencedContainer="container:FactoryTools.xcodeproj"/></BuildableProductRunnable>
+      <StoreKitConfigurationFileReference identifier="C00000000000000000000089"/>
    </LaunchAction>
    <ProfileAction buildConfiguration="Release" shouldUseLaunchSchemeArgsEnv="YES" savedToolIdentifier="" useCustomWorkingDirectory="NO" debugDocumentVersioning="YES"><BuildableProductRunnable runnableDebuggingMode="0"><BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="E00000000000000000000010" BuildableName="FactoryTools.app" BlueprintName="FactoryTools" ReferencedContainer="container:FactoryTools.xcodeproj"/></BuildableProductRunnable></ProfileAction>
    <AnalyzeAction buildConfiguration="Debug"/>

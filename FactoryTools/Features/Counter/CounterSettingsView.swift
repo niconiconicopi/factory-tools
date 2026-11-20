@@ -68,6 +68,14 @@ struct CounterQuickAddView: View {
     @State private var showingSaveError = false
     @State private var errorMessageKey = "error.saveMessage"
 
+    private let screenshotDemoValues: Bool
+
+    init(session: ProductionSession, screenshotDemoValues: Bool = false) {
+        self.session = session
+        self.screenshotDemoValues = screenshotDemoValues
+        _amountText = State(initialValue: screenshotDemoValues ? "10" : "")
+    }
+
     var body: some View {
         NavigationStack {
             Form {

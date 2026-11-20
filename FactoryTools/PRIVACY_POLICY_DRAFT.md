@@ -2,27 +2,30 @@
 
 **Draft only.** Complete every bracketed publisher field, review the text for the release build and applicable law, publish a stable public URL, and add an in-app link before submission. Do not publish this draft with placeholders.
 
-**Publisher / 運営者:** `Akira Kobayashi`
+**Publisher / 運営者:** `[Publisher's legal name / 発行者の正式名称]`
 
-**Effective date / 発効日:** `2026-11-21`
-
+**Effective date / 発効日:** `[YYYY-MM-DD]`
 **Privacy contact / 個人情報に関する連絡先:** `azalea.fortask@outlook.jp`
 
 ## 日本語
 
 ### 対象
 
-このポリシーは、日本語名「現場ギア」、英語名「Factory Tools」のiPhone、iPad、Apple Watchアプリで扱う情報について説明します。
+このポリシーは、Factory ToolsのiPhone、iPad、Apple Watchアプリで扱う情報について説明します。
 
 ### アプリが端末内で扱う情報
 
-現場ギア（Factory Tools）は、ホーム名、ツールの配置、設定、生産数、不良数、操作履歴、サイクルタイム、OEEの記録など、利用者が入力または作成したデータを機能の提供と履歴表示のために端末内に保存します。ペアリング機能を使う場合、接続用の秘密コードを端末のKeychainに保存します。Apple Watchは計測中のサイクルタイム状態と未送信のカウンター操作・サイクルタイム記録を端末内に保留し、iPadは未送信のカウンター操作を端末内に保留します。
+Factory Toolsは、ホーム名、ツールの配置、設定、生産数、不良数、操作履歴、サイクルタイム、OEEの記録など、利用者が入力または作成したデータを機能の提供と履歴表示のために端末内に保存します。ペアリング機能を使う場合、接続用の秘密コードを端末のKeychainに保存します。Apple Watchは計測中のサイクルタイム状態と未送信のカウンター操作・サイクルタイム記録を端末内に保留し、iPadは未送信のカウンター操作を端末内に保留します。
+
+### サポートメールでのお問い合わせ
+
+利用者がサポートへメールを送ると、返信先のメールアドレス、本文、利用者が記載・添付した情報を受け取ります。端末・OS・アプリのバージョン、操作内容、表示されたメッセージなど、問題の解決に必要な情報だけ記載してください。生産履歴、バックアップファイル、ペアリングコード、Apple Accountの認証情報、支払い情報は送らないでください。メールの内容は問い合わせへの返信と問題解決のためだけに扱い、対応が完了したら削除します。メールサービスによる処理・保存は[Microsoft プライバシー ステートメント](https://www.microsoft.com/ja-jp/privacy/privacystatement)に従います。
 
 ### 収集、送信、第三者提供
 
 Proの買い切り購入と支払いはAppleのApp Storeが処理します。アプリはStoreKitを使って端末上で購入済みかを確認します。支払い方法、カード情報、Apple Accountの認証情報をアプリが取得したり、開発者へ送信したりすることはありません。
 
-現在のアプリには、開発者が運営するサーバー、アカウント、外部API、アプリ独自のクラウド保存・同期、広告、分析、トラッキング、または第三者SDKはありません。生産データやStoreKitの購入確認情報を開発者へ送信しません。サポートへメールを送る場合は、送信者のメールアドレスと本文を受け取り、問い合わせへの対応に使います。対応中のみメールボックスに保管し、対応が終わったらメールボックスと送信済みアイテムから削除し、削除済みアイテムも空にします。Outlook.comでは、削除済みアイテムを空にした後もMicrosoftのシステムに最大30日間残る場合があります。法令上の保管義務など、Microsoftが示す例外もあります。詳しくは[Microsoftのプライバシーに関する声明](https://www.microsoft.com/ja-JP/privacy/privacystatement)をご確認ください。問い合わせには、生産記録、ペアリングコード、支払い情報、アカウント認証情報を含めないでください。
+現在のアプリには、開発者が運営するサーバー、アカウント、外部API、アプリ独自のクラウド保存・同期、広告、分析、トラッキング、または第三者SDKはありません。生産データやStoreKitの購入確認情報を開発者へ送信しません。
 
 接続中、Factory ToolsはApple Watchとの間でカウンター操作とサイクルタイム記録を直接送受信します。iPhoneからWatchへは、選択中ホームのカウンター情報に加え、Pro利用中はWatch表示を有効にした生産進捗カードのホーム名、生産数、目標数を送信します。ペアリングしたiPadとの間では、カウンター操作と必要なセッション情報を直接送受信します。これらの通信はFactory Toolsの端末間機能に使われ、開発者や外部事業者のサーバーには送られません。
 
@@ -32,9 +35,11 @@ Proの買い切り購入と支払いはAppleのApp Storeが処理します。ア
 
 アプリのデータは各端末に保存され、開発者が管理する保管期間はありません。iPhone/iPadのiCloudバックアップまたはコンピュータバックアップを利用している場合、Appleの端末バックアップにアプリデータが含まれることがあります。Apple Watchのバックアップはペアリング済みiPhoneのバックアップに含まれます。バックアップの設定、管理、削除はAppleのシステムに従います。ホームを削除すると、そのホームに属するカウンターと履歴などのデータもアプリから削除されますが、既存の端末バックアップには更新または削除まで以前のデータが残る場合があります。サイクルタイムとOEEの記録は各画面の削除操作で削除できます。設定からペアリングコードも削除できます。ペアリングを終了するときは、アプリを削除する前に設定からコードを削除してください。AppleのKeychain項目はアプリ削除後も残る場合があるためです。エクスポートしたファイルは利用者が選んだ保存先で管理・削除してください。
 
+JSONバックアップにもCSV書き出しにも、WatchやiPadからの未送信操作とWatchの計測中タイマーは含まれません。アプリを削除する前に、端末間の保留中データを同期してください。
+
 ### 子どものプライバシー
 
-アプリ自体には利用者の情報を開発者へ送信する機能はありません。利用者がサポートへメールを送った場合の情報取扱いは、上記の問い合わせ時の説明に従います。対象年齢や地域に関する問い合わせは、上記の連絡先へお送りください。
+Factory Toolsアプリには、子どもの情報を開発者へ自動送信する機能はありません。子ども本人または保護者がサポートへメールを送る場合は、上記のメール取扱いが適用されます。対象年齢や地域に関する問い合わせは、保護者から上記の連絡先へお送りください。
 
 ### 変更と問い合わせ
 
@@ -48,7 +53,7 @@ Proの買い切り購入と支払いはAppleのApp Storeが処理します。ア
 
 ### Scope
 
-This policy describes information handled by the iPhone, iPad, and Apple Watch apps named 現場ギア in Japanese and Factory Tools in English.
+This policy describes information handled by the Factory Tools apps for iPhone, iPad, and Apple Watch.
 
 ### Information handled on your devices
 
@@ -58,7 +63,11 @@ Factory Tools stores data that you enter or create—such as home names, tool la
 
 Apple's App Store processes the one-time Pro purchase and payment. The app uses StoreKit to check the purchase entitlement on the device. The app does not access payment-method or card details or Apple Account credentials, and does not send them to the developer.
 
-The current app has no developer-operated server, account, external API, app-operated cloud storage or sync, advertising, analytics, tracking, or third-party SDK. Production data and StoreKit entitlement checks are not sent to the developer. If you email support, the developer receives your email address and message to respond to your request. Messages are kept in the mailbox only while the issue is being handled, then removed from the mailbox and Sent Items and the Deleted Items folder is emptied. Outlook.com may retain emptied items in Microsoft's systems for up to 30 days, subject to Microsoft's stated exceptions. See the [Microsoft Privacy Statement](https://www.microsoft.com/en-us/privacy/privacystatement). Do not include production records, pairing codes, payment details, or account credentials in support email.
+The current app has no developer-operated server, account, external API, app-operated cloud storage or sync, advertising, analytics, tracking, or third-party SDK. Production data and StoreKit entitlement checks are not sent to the developer.
+
+### Support email
+
+If you email support, the publisher receives your reply address, message, and any information or attachments you choose to include. Include only details needed to resolve the issue, such as device, operating-system, or app version, the action taken, and any message shown. Do not send production history, backup files, pairing codes, Apple Account credentials, or payment information. The publisher uses the message only to reply and resolve the support request, and deletes it after the request is resolved. The support mailbox uses Microsoft's Outlook email service; Microsoft's processing and storage are described in the [Microsoft Privacy Statement](https://www.microsoft.com/en-us/privacy/privacystatement).
 
 While connected, the app exchanges counter commands and Cycle Time samples directly with Apple Watch. The iPhone also sends the selected home's counter catalog and, while Pro is active, the home name, production count, and target for Watch-enabled Production Progress cards. The app exchanges counter commands and required session information with a paired iPad. These transfers support the device-to-device features and are not sent to a server operated by the developer or an outside provider.
 
@@ -68,11 +77,13 @@ When you export a JSON backup or CSV file, the system share sheet lets you choos
 
 App data is stored on your devices, and the developer does not set a retention period for locally stored data. If you enable iCloud or computer backups for iPhone or iPad, Apple device backups may include app data. Apple Watch backups are included with the paired iPhone backup. Apple manages backup settings, retention, and deletion. Deleting a home removes its counters, history, and associated data from the app, but earlier copies may remain in existing device backups until those backups are updated or deleted. Cycle Time and OEE records can be deleted from their screens. You can also remove a pairing code in Settings. If you are ending pairing, remove the code in Settings before deleting the app; Apple Keychain items may remain after app removal. Manage and delete exported files at the location you chose.
 
+Neither JSON backups nor CSV exports include unsent Watch or iPad commands or an active Watch timer. Sync pending device data before deleting the app.
+
 Apple explains [what iCloud Backup includes](https://support.apple.com/en-us/108770) and [how Apple Watch backups work](https://support.apple.com/en-us/108358).
 
 ### Children's privacy
 
-The app itself has no feature that sends a user's information to the developer. If you email support, the information you choose to send is handled as described above. For questions about age suitability or regional requirements, contact us using the details above.
+The Factory Tools app does not automatically send children's information to the developer. If a child or parent/guardian emails support, the support-email handling described above applies. For questions about age suitability or regional requirements, a parent or guardian may contact us using the details above.
 
 ### Changes and contact
 
@@ -84,7 +95,7 @@ If this privacy or support page is published with GitHub Pages, GitHub logs visi
 
 ## Before publication
 
-- Confirm the publisher name, public contact address, and effective date.
+- Replace every bracketed field with the publisher's actual public details.
 - Confirm all statements against the archived release build, including system frameworks, local device transfers, and any future SDK or purchase integration.
 - Confirm the pairing-code removal wording against Apple's current Keychain behavior and the final Settings flow.
 - Confirm the App Store purchase and payment wording against the final StoreKit configuration and Apple's current App Privacy guidance.

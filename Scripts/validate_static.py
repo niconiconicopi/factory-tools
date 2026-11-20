@@ -356,17 +356,125 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "read-only repository permission": "permissions:\n  contents: read",
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
-        "standard macOS runner": "runs-on: macos-26",
+        "current standard macOS 26 Intel runner": "runs-on: macos-26-intel",
+        "bounded native verification job": "timeout-minutes: 150",
+        "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
         "shared Core XCTest": "-scheme FactoryToolsCore",
         "Watch Simulator build": "-scheme FactoryToolsWatch",
+        "iPhone, iPad, and S/M/L card screenshot failures fail the native workflow": "Require iPhone, iPad, and card-size screenshot captures",
+        "bilingual S/M/L counter screenshots are included in the required gate": "--scenarios counter-size-small counter-size-medium counter-size-large",
+        "S/M/L screenshot artifact is retained for review": "factory-tools-iphone-counter-card-size-evidence",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
+        "archive verifies Watch app in the PlugIns bundle directory": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
+        "archive verifies privacy manifests in both app bundles": 'for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do',
+        "archive verifies required elapsed-time privacy reason": '"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])',
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    for step_name in (
+        "Test iPhone and app-hosted regression suite",
+        "Test iPad and app-hosted regression suite",
+    ):
+        start = source.find(f"      - name: {step_name}\n")
+        next_step = source.find("\n      - name:", start + 1) if start >= 0 else -1
+        block = source[start:next_step if next_step >= 0 else len(source)] if start >= 0 else ""
+        if "timeout-minutes: 60" not in block:
+            errors.append(f"{step_name} must have a 60-minute timeout and diagnostic follow-up")
+        device = "iPhone" if step_name.startswith("Test iPhone") else "iPad"
+        diagnostics_name = f"Upload {device} XCTest diagnostics"
+        diagnostics_start = source.find(f"      - name: {diagnostics_name}\n")
+        diagnostics_end = source.find("\n      - name:", diagnostics_start + 1) if diagnostics_start >= 0 else -1
+        diagnostics_block = (
+            source[diagnostics_start:diagnostics_end if diagnostics_end >= 0 else len(source)]
+            if diagnostics_start >= 0
+            else ""
+        )
+        if "if: failure()" not in diagnostics_block or "actions/upload-artifact@" not in diagnostics_block:
+            errors.append(f"{step_name} must upload XCTest diagnostics after timeout or failure")
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+        errors.append("both app-hosted CI test runs must isolate the known headless StoreKitTest failure")
+    if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
+        errors.append("workflow must not access repository secrets")
+    return errors
+
+
+def apple_archive_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the focused, no-signing Apple archive and Watch embedding check."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "pinned checkout major version": "uses: actions/checkout@v7",
+        "checkout credential persistence disabled": "persist-credentials: false",
+        "hosted macOS runner": "runs-on: macos-26",
+        "bounded archive job": "timeout-minutes: 30",
+        "generic iOS archive": "-destination 'generic/platform=iOS'",
+        "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
+        "archive verifies embedded Watch app": "PlugIns/FactoryToolsWatch.app",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
-        errors.append("workflow must not access repository secrets")
+        errors.append("archive verification workflow must not access repository secrets")
+    return errors
+
+
+def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the manually dispatched, public-free local StoreKit integration probe."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "pinned checkout major version": "uses: actions/checkout@v7",
+        "checkout credential persistence disabled": "persist-credentials: false",
+        "public or manually confirmed private-run job condition": "if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')",
+        "hosted Xcode 27 macOS runner": "runs-on: xcode-27",
+        "bounded StoreKit probe": "timeout-minutes: 30",
+        "dedicated StoreKit test plan scheme": "-scheme FactoryToolsStoreKit",
+        "explicit StoreKit test plan selection": "-testPlan FactoryToolsStoreKit",
+        "latest available iPhone Simulator runtime selection": "max(candidates)",
+        "focused local StoreKit purchase test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "simulator signing enabled for StoreKit integration": "CODE_SIGNING_ALLOWED=YES",
+        "ad-hoc simulator identity avoids publisher signing account": "CODE_SIGN_IDENTITY=-",
+        "failure diagnostics are retained": "factory-tools-storekit-integration-diagnostics",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
+        errors.append("StoreKit integration workflow must be manually dispatched only")
+    if "CODE_SIGNING_ALLOWED=NO" in source:
+        errors.append("StoreKit integration probe must allow simulator ad-hoc signing")
+    if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
+        errors.append("StoreKit integration workflow must not access repository secrets")
+    return errors
+
+
+def apple_sdk27_workflow_contract_errors(source: str) -> list[str]:
+    """Guard the manually dispatched, free Xcode 27 forward-compatibility checks."""
+    requirements = {
+        "manual dispatch only": "on:\n  workflow_dispatch:",
+        "read-only repository permission": "permissions:\n  contents: read",
+        "pinned checkout major version": "uses: actions/checkout@v7",
+        "checkout credential persistence disabled": "persist-credentials: false",
+        "public or manually confirmed private-run job condition": "if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')",
+        "hosted Xcode 27 runner": "runs-on: xcode-27",
+        "bounded forward-check job": "timeout-minutes: 150",
+        "iOS, iPadOS and watchOS SDK 27 verification": "Expected SDK 27 or newer",
+        "source checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
+        "Core contract tests": "-scheme FactoryToolsCore",
+        "iPhone Simulator tests": "name: Test iPhone app and hosted regression suite",
+        "iPad Simulator tests": "name: Test iPad app and hosted regression suite",
+        "Watch Debug and Release builds": "Build Watch Debug and Release targets",
+        "unsigned app archive": "Archive unsigned iPhone app with embedded Watch target",
+        "embedded Watch app verification": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
+        "headless StoreKit test isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
+    }
+    errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+        errors.append("both app-hosted simulator runs must isolate the known headless StoreKitTest failure")
+    if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
+        errors.append("SDK 27 forward checks must be manually dispatched only")
+    if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
+        errors.append("SDK 27 forward checks must not access repository secrets")
     return errors
 
 
@@ -381,6 +489,7 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "read-only repository permission": "permissions:\n  contents: read",
         "checkout credentials disabled": "persist-credentials: false",
         "Apple-hosted macOS runner": "runs-on: macos-26",
+        "known headless StoreKit integration case is isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
         "release source preflight": "--release-preflight",
         "generic iOS archive": "-destination 'generic/platform=iOS'",
         "iPad Simulator regression suite": 'name: Run current iPad regression suite',
@@ -392,6 +501,14 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "no App Review submission": "does not submit for App Review",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    if (
+        "name: Resolve Apple team ID" not in source
+        or "FactoryTools.xcodeproj/project.pbxproj" not in source
+        or "DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM" not in source
+    ):
+        errors.append("Team ID must fall back to the shared Xcode project setting")
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+        errors.append("both iPhone and iPad upload-preflight suites must isolate the known headless StoreKitTest failure")
     if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
         errors.append("distribution upload workflow must not run on push, pull request, or schedule")
     if "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENTS }}" not in source:
@@ -545,6 +662,39 @@ def local_markdown_link_errors(source_path: Path, markdown: str) -> list[str]:
 
 def is_valid_storekit_product_id(value: str) -> bool:
     return len(value) <= 100 and re.fullmatch(r"[A-Za-z0-9._-]+", value) is not None
+
+
+def storekit_configuration_errors(source: str, expected_product_id: str) -> list[str]:
+    errors: list[str] = []
+    try:
+        configuration = parse_json_no_duplicates(source)
+    except (json.JSONDecodeError, DuplicateJSONKeyError) as error:
+        return [f"invalid StoreKit test configuration JSON: {error}"]
+    if not isinstance(configuration, dict):
+        return ["StoreKit test configuration root must be an object"]
+    products = configuration.get("products")
+    if not isinstance(products, list) or len(products) != 1 or not isinstance(products[0], dict):
+        return ["StoreKit test configuration must contain exactly one in-app purchase product"]
+    product = products[0]
+    if product.get("productID") != expected_product_id:
+        errors.append("StoreKit test product ID must match the configured Factory Tools Pro product ID")
+    if product.get("type") != "NonConsumable":
+        errors.append("StoreKit test product must be a non-consumable lifetime purchase")
+    if product.get("familyShareable") is not False:
+        errors.append("StoreKit test product must keep Family Sharing disabled")
+    if product.get("displayPrice") != "980":
+        errors.append("StoreKit test display price must mirror the approved ¥980 Japan candidate")
+    localizations = product.get("localizations")
+    if not isinstance(localizations, list):
+        errors.append("StoreKit test product must include Japanese and English localizations")
+    else:
+        locales = {item.get("locale") for item in localizations if isinstance(item, dict)}
+        if locales != {"ja", "en_US"}:
+            errors.append("StoreKit test product must include exactly Japanese and English localizations")
+    settings = configuration.get("settings")
+    if not isinstance(settings, dict) or settings.get("_storefront") != "JPN":
+        errors.append("StoreKit test configuration must use the Japan storefront")
+    return errors
 
 
 def is_valid_app_store_sku(value: str) -> bool:
@@ -804,10 +954,36 @@ def main() -> int:
     workflow_path = ROOT / ".github" / "workflows" / "apple-native-checks.yml"
     if workflow_path.is_file():
         workflow_source = workflow_path.read_text(encoding="utf-8")
+        watch_archive_workflow_path = ROOT / ".github" / "workflows" / "apple-watch-archive-checks.yml"
+        if watch_archive_workflow_path.is_file():
+            workflow_source += "\n" + watch_archive_workflow_path.read_text(encoding="utf-8")
+        else:
+            ERRORS.append("Apple Watch and archive verification workflow is missing")
         for workflow_issue in apple_workflow_contract_errors(workflow_source):
             ERRORS.append(f"Apple native workflow contract: {workflow_issue}")
     else:
         ERRORS.append("Apple native verification workflow is missing")
+    archive_workflow_path = ROOT / ".github" / "workflows" / "apple-archive-check.yml"
+    if archive_workflow_path.is_file():
+        archive_workflow_source = archive_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_archive_workflow_contract_errors(archive_workflow_source):
+            ERRORS.append(f"Apple archive verification workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple archive verification workflow is missing")
+    storekit_workflow_path = ROOT / ".github" / "workflows" / "apple-storekit-local-test.yml"
+    if storekit_workflow_path.is_file():
+        storekit_workflow_source = storekit_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_storekit_workflow_contract_errors(storekit_workflow_source):
+            ERRORS.append(f"Apple StoreKit integration workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple local StoreKit integration workflow is missing")
+    sdk27_workflow_path = ROOT / ".github" / "workflows" / "apple-sdk27-forward-checks.yml"
+    if sdk27_workflow_path.is_file():
+        sdk27_workflow_source = sdk27_workflow_path.read_text(encoding="utf-8")
+        for workflow_issue in apple_sdk27_workflow_contract_errors(sdk27_workflow_source):
+            ERRORS.append(f"Apple SDK 27 forward workflow contract: {workflow_issue}")
+    else:
+        ERRORS.append("Apple SDK 27 forward verification workflow is missing")
     upload_workflow_path = ROOT / ".github" / "workflows" / "apple-app-store-upload.yml"
     if upload_workflow_path.is_file():
         upload_workflow_source = upload_workflow_path.read_text(encoding="utf-8")
@@ -905,6 +1081,38 @@ def main() -> int:
                 f"Xcode project file reference escapes the workspace: {file_path}")
         require(stays_in_workspace and resolved_path.exists(),
                 f"Xcode project references a missing local file: {file_path}")
+
+    storekit_reference_id = "C00000000000000000000089"
+    storekit_reference = project_objects.get(storekit_reference_id)
+    require(isinstance(storekit_reference, dict)
+            and storekit_reference.get("isa") == "PBXFileReference"
+            and storekit_reference.get("path") == "Resources/FactoryToolsPro.storekit",
+            "local Pro StoreKit configuration must be a project file reference")
+    storekit_path = ROOT / "FactoryTools" / "Resources" / "FactoryToolsPro.storekit"
+    if storekit_path.is_file():
+        for issue in storekit_configuration_errors(
+            storekit_path.read_text(encoding="utf-8"), "factorytools.pro.lifetime"
+        ):
+            ERRORS.append(f"StoreKit local test configuration: {issue}")
+    else:
+        ERRORS.append("local Pro StoreKit configuration is missing")
+    try:
+        scheme_tree = ET.fromstring(scheme.read_text(encoding="utf-8"))
+        launch_action = scheme_tree.find("LaunchAction")
+        archive_action = scheme_tree.find("ArchiveAction")
+        launch_storekit_references = (
+            launch_action.findall("StoreKitConfigurationFileReference") if launch_action is not None else []
+        )
+        archive_storekit_references = (
+            archive_action.findall("StoreKitConfigurationFileReference") if archive_action is not None else []
+        )
+        require(len(launch_storekit_references) == 1
+                and launch_storekit_references[0].get("identifier") == storekit_reference_id,
+                "FactoryTools Debug Run must activate the local Pro StoreKit configuration")
+        require(not archive_storekit_references,
+                "FactoryTools Release Archive must not activate local StoreKit test data")
+    except (ET.ParseError, OSError) as error:
+        ERRORS.append(f"FactoryTools scheme XML is invalid or missing: {error}")
 
     native_targets = {
         object_id: value
@@ -1007,7 +1215,6 @@ def main() -> int:
             and all(settings.get("FACTORYTOOLS_APP_BUNDLE_ID") == "com.niconiconicopi.factorytools" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_PRIVACY_POLICY_URL") == "https://niconiconicopi.github.io/factory-tools/privacy.html" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_SUPPORT_URL") == "https://niconiconicopi.github.io/factory-tools/support.html" for _, settings in project_build_settings)
-            and all(settings.get("DEVELOPMENT_TEAM") == "5NKGZ84ZW3" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_PRO_PRODUCT_ID") == "factorytools.pro.lifetime" for _, settings in project_build_settings)
             and all(settings.get("MARKETING_VERSION") == "1.0" for _, settings in project_build_settings)
             and all(settings.get("CURRENT_PROJECT_VERSION") == "1" for _, settings in project_build_settings)
@@ -1021,7 +1228,7 @@ def main() -> int:
                     and settings.get("INFOPLIST_KEY_CFBundleName") == "Factory Tools"
                     and settings.get("INFOPLIST_KEY_ITSAppUsesNonExemptEncryption") == "NO"
                     for _, settings in watch_build_settings),
-            "iPhone/Watch identity, display name, and version must stay aligned through shared project settings")
+            "iPhone/Watch identity, display name, version, and approved policy URLs must stay aligned through shared project settings")
     require(len(app_build_settings) == 2 and {name for name, _ in app_build_settings} == {"Debug", "Release"},
             "iPhone app must define Debug and Release build configurations")
     require(len(test_build_settings) == 2 and {name for name, _ in test_build_settings} == {"Debug", "Release"},
@@ -1120,8 +1327,7 @@ def main() -> int:
     expected_watch_string_keys = {
         "watch.title", "watch.storageUnavailable", "watch.storageUnavailable.message", "watch.noCounters", "watch.noCounters.message",
         "watch.refresh", "watch.connection.connected", "watch.connection.waiting", "watch.pending",
-        "watch.target", "watch.quickAddFive", "watch.counter.subtractOne", "watch.counter.addOne",
-        "watch.sessionUnavailable", "watch.status.applied",
+        "watch.target", "watch.counter.subtractOne", "watch.counter.addOne", "watch.quickAddFive", "watch.sessionUnavailable", "watch.status.applied",
         "home.defaultName",
         "counter.defaultSessionName", "defect.defaultSessionName",
         "watch.status.alreadyApplied", "watch.status.noChange", "watch.status.staleUndo", "watch.status.rejected",
@@ -1142,10 +1348,6 @@ def main() -> int:
                         and bool(localizations[language].get("stringUnit", {}).get("value"))
                         for language in ("ja", "en")),
                 f"Watch string {key} must have complete Japanese and English translations")
-    watch_title_localizations = watch_strings.get("watch.title", {}).get("localizations", {})
-    require(watch_title_localizations.get("ja", {}).get("stringUnit", {}).get("value") == "現場ギア"
-            and watch_title_localizations.get("en", {}).get("stringUnit", {}).get("value") == "Factory Tools",
-            "Watch app title must match the Japanese and English localized product names")
 
     development_region = project_object.get("developmentRegion")
     known_regions = project_object.get("knownRegions")
@@ -1192,6 +1394,7 @@ def main() -> int:
     require(len(core_build_settings) == 2 and {name for name, _ in core_build_settings} == {"Debug", "Release"}
             and all(settings.get("DEFINES_MODULE") == "YES" for _, settings in core_build_settings)
             and all(settings.get("MACH_O_TYPE") == "staticlib" for _, settings in core_build_settings)
+            and all(settings.get("GENERATE_INFOPLIST_FILE") == "YES" for _, settings in core_build_settings)
             and all(settings.get("SUPPORTED_PLATFORMS") == "iphoneos iphonesimulator macosx watchos watchsimulator" for _, settings in core_build_settings)
             and all(settings.get("SDKROOT") == "auto" for _, settings in core_build_settings)
             and all(settings.get("ALLOW_TARGET_PLATFORM_SPECIALIZATION") == "YES" for _, settings in core_build_settings)
@@ -1530,6 +1733,24 @@ def main() -> int:
                 "background", "panel", "accent", "primaryText", "secondaryText", "warning"
             )),
             "Watch colors must be declared in its dedicated theme token palette")
+    watch_palette = {
+        name: tuple(float(component) for component in rgb)
+        for name, *rgb in re.findall(
+            r"^\s*static let (background|panel|accent|secondaryText|warning) = Color\(red:\s*([0-9.]+),\s*green:\s*([0-9.]+),\s*blue:\s*([0-9.]+)\)",
+            watch_theme_source,
+            re.MULTILINE,
+        )
+    }
+    watch_palette["primaryText"] = (1.0, 1.0, 1.0)
+    watch_palette_required = {"background", "panel", "accent", "secondaryText", "warning", "primaryText"}
+    require(watch_palette_required.issubset(watch_palette),
+            "Watch theme is missing colors required for counter contrast checks")
+    if watch_palette_required.issubset(watch_palette):
+        for foreground in ("primaryText", "secondaryText", "accent", "warning"):
+            for background in ("background", "panel"):
+                ratio = contrast_ratio(watch_palette[foreground], watch_palette[background])
+                require(ratio >= 4.5,
+                        f"Watch {foreground} contrast on {background} is only {ratio:.2f}:1")
     for path in (ROOT / "FactoryToolsWatch").rglob("*.swift"):
         if path == watch_theme_path:
             continue
@@ -1822,11 +2043,13 @@ def main() -> int:
             and "testPeerAuthorityDoesNotReplacePendingOrActivePairedConnection" in core_contract_tests,
             "the iPhone peer authority must preserve its current connection until a new paired connection is established")
     require("@Environment(\\.locale) private var locale" in peer_counter_view
-            and "value: formattedCount(transport.pendingCommandCount)" in peer_counter_view
+            and "value: formattedCount(displayedPendingCommandCount)" in peer_counter_view
+            and "case nil: transport.pendingCommandCount" in peer_counter_view
             and 'Text(formattedCount(session.currentCount))' in peer_counter_view
             and 'Text("/ \\(formattedCount(session.targetCount))")' in peer_counter_view
             and '.accessibilityLabel("counter.currentCount")' in peer_counter_view
             and '.accessibilityLabel("counter.goal")' in peer_counter_view
+            and '.foregroundStyle(theme.accentForeground)' in peer_counter_view
             and 'value.formatted(.number.locale(locale))' in peer_counter_view,
             "the iPad counter dashboard must localize pending/count/target numbers and expose count and target labels to VoiceOver")
     counter_outbox_path = ROOT / "FactoryToolsCore" / "CounterCommandOutbox.swift"
@@ -1878,11 +2101,32 @@ def main() -> int:
         other_swift,
     ), "Only the local peer transport may use Network.framework clients")
     require("import Network" in peer_outbox_tests
-            and "testLocalPeerTLSParametersCompleteLoopbackPSKHandshake" in peer_outbox_tests
+            and "testLocalPeerTLSParametersRoundTripVersionedFramesOverTLSPSK" in peer_outbox_tests
             and "testLocalPeerTLSParametersRejectMismatchedPairingKey" in peer_outbox_tests
             and "LocalPeerTLSParameters.make(pairingKey: pairingKey)" in peer_outbox_tests
-            and 'host: "127.0.0.1"' in peer_outbox_tests,
-            "the local peer transport's production TLS-PSK parameters must pass a loopback handshake test")
+            and "CounterPeerFrameCodec.encode(request)" in peer_outbox_tests
+            and "connection.send(" in peer_outbox_tests
+            and "client.send(content: requestFrame" in peer_outbox_tests
+            and "clientReceivedFrame.wait(timeout: .now() + 10), .success" in peer_outbox_tests
+            and 'host: "127.0.0.1"' in peer_outbox_tests
+            and "let listenerAccepted = DispatchSemaphore(value: 0)" in peer_outbox_tests
+            and "listenerAccepted.signal()" in peer_outbox_tests
+            and "listenerAccepted.wait(timeout: .now() + 10), .success" in peer_outbox_tests
+            and "clientReady.wait(timeout: .now() + 10), .timedOut" in peer_outbox_tests
+            and "handshakeRejected" not in peer_outbox_tests,
+            "the local peer TLS-PSK tests must round-trip versioned frames, verify matching-key readiness, and reject mismatched peers without relying on listener-side failure delivery")
+    require("private let handshakeTimeout: Duration" in local_peer_transport
+            and "handshakeTimeoutTask = Task" in local_peer_transport
+            and "try await Task.sleep(for: handshakeTimeout)" in local_peer_transport
+            and "self.didBecomeReady = true" in local_peer_transport
+            and "self.handshakeTimeoutTask?.cancel()" in local_peer_transport
+            and "testStalledPeerHandshakeTimesOutAndAllowsAValidPeerToConnect" in peer_outbox_tests
+            and "firstPeerTimedOut" in peer_outbox_tests
+            and "CounterPeerConnectionPolicy.shouldAcceptIncomingConnection(" in peer_outbox_tests
+            and "XCTAssertNil(activeServerWire" in peer_outbox_tests
+            and "acceptedPeerCount += 1" in peer_outbox_tests
+            and "firstPeerFailureElapsed ?? 0" in peer_outbox_tests,
+            "a stalled TLS peer must time out, release the single-peer slot, and allow a correctly paired peer to connect")
     require(not re.search(r"\bimport\s+(?:Network|CFNetwork|FoundationNetworking|WebKit|SafariServices)\b", other_swift)
             and "import Network" in local_peer_transport
             and "NWListener" in local_peer_transport
@@ -2041,24 +2285,42 @@ def main() -> int:
             "iPad counter screen must send locale-aware Quick Add, Undo, and target commands through the outbox")
     purchase_manager_path = ROOT / "FactoryTools" / "App" / "ProPurchaseManager.swift"
     purchase_manager = purchase_manager_path.read_text(encoding="utf-8") if purchase_manager_path.is_file() else ""
+    purchase_test_path = ROOT / "FactoryToolsTests" / "ProPurchaseManagerTests.swift"
+    purchase_test = purchase_test_path.read_text(encoding="utf-8") if purchase_test_path.is_file() else ""
     purchase_price_view_path = ROOT / "FactoryTools" / "Features" / "Settings" / "AppSettingsView.swift"
     purchase_price_view = purchase_price_view_path.read_text(encoding="utf-8") if purchase_price_view_path.is_file() else ""
+    production_purchase_price_view = re.sub(
+        r"    private var proPurchaseScreenshotPreviewSection: some View \{.*?\n    \}\n",
+        "",
+        purchase_price_view,
+        flags=re.DOTALL,
+    )
+    screenshot_preview_price_localizations = strings.get("pro.screenshotPreview.price", {}).get("localizations", {})
     storekit_sources = [path for path in source_files if re.search(
         r"^\s*import\s+StoreKit\b|RevenueCat|Purchases\.shared",
         path.read_text(encoding="utf-8"),
         re.MULTILINE,
     )]
     observe_transactions_position = purchase_manager.find("private func observeTransactions()")
-    product_filter_position = purchase_manager.find("guard transaction.productID == productID else { continue }")
-    transaction_finish_position = purchase_manager.find("await transaction.finish()", observe_transactions_position)
+    store_transaction_updates_position = purchase_manager.find("func transactionUpdates() -> AsyncStream<String> {")
+    product_filter_position = purchase_manager.find(
+        "guard transaction.productID == productID else { continue }", store_transaction_updates_position
+    )
+    transaction_finish_position = purchase_manager.find("await transaction.finish()", store_transaction_updates_position)
     require(storekit_sources == [purchase_manager_path]
             and "import StoreKit" in purchase_manager
+            and "private final class StoreKitProPurchaseStore: ProPurchaseStore" in purchase_manager
+            and "@MainActor\nprotocol ProPurchaseStore" in purchase_manager
+            and "Product.products(for: [productID])" in purchase_manager
+            and "product.purchase()" in purchase_manager
             and "Transaction.currentEntitlements" in purchase_manager
             and "Transaction.updates" in purchase_manager
-            and 0 <= observe_transactions_position < product_filter_position < transaction_finish_position
+            and 0 <= store_transaction_updates_position < product_filter_position < transaction_finish_position
+            and 0 <= transaction_finish_position < observe_transactions_position
+            and "guard updatedProductID == productID else { continue }" in purchase_manager
             and "AppStore.sync()" in purchase_manager
-            and "await self.observeTransactions()" in purchase_manager
-            and "await self.refresh()" in purchase_manager
+            and "await self?.observeTransactions()" in purchase_manager
+            and "await self?.refresh()" in purchase_manager
             and "product.type == .nonConsumable" in purchase_manager
             and "evidence.grantsPro(for: productID)" in purchase_manager
             and "transaction.ownershipType == .familyShared" in purchase_manager
@@ -2066,12 +2328,56 @@ def main() -> int:
             and "ProEntitlementEvidence" in all_swift
             and "public func grantsPro(for configuredProductID: String) -> Bool" in all_swift
             and "testProEntitlementRequiresVerifiedActiveOwnershipOfConfiguredProduct" in core_contract_tests
-            and 'XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro"))' in core_contract_tests
+            and 'XCTAssertFalse(evidence(ownership: .familyShared).grantsPro(for: "factorytools.pro.lifetime"))' in core_contract_tests
             and "hasResolvedEntitlement = true" in purchase_manager
             and "Text(product.displayPrice)" in purchase_price_view
-            and "¥980" not in all_swift
+            and 'Text("pro.screenshotPreview.price")' in purchase_price_view
+            and screenshot_preview_price_localizations.get("en", {}).get("stringUnit", {}).get("value") == "Price varies by region"
+            and screenshot_preview_price_localizations.get("ja", {}).get("stringUnit", {}).get("value") == "¥980"
+            and "¥980" not in production_purchase_price_view
             and not re.search(r"RevenueCat|Purchases\.shared", purchase_manager),
             "StoreKit must stay in the first-party one-time Pro manager and show the StoreKit-localized regional price rather than a hard-coded yen amount")
+    storekit_test_target = targets_by_name.get("FactoryToolsTests", {})
+    storekit_test_build_phases = [project_objects.get(phase_id, {}) for phase_id in storekit_test_target.get("buildPhases", [])]
+    storekit_test_sources = next((phase for phase in storekit_test_build_phases
+                                  if phase.get("isa") == "PBXSourcesBuildPhase"), {})
+    storekit_test_resources = next((phase for phase in storekit_test_build_phases
+                                    if phase.get("isa") == "PBXResourcesBuildPhase"), {})
+    app_build_phases = [project_objects.get(phase_id, {}) for phase_id in app_target.get("buildPhases", [])]
+    app_resources = next((phase for phase in app_build_phases
+                          if phase.get("isa") == "PBXResourcesBuildPhase"), {})
+    storekit_test_source_build = project_objects.get("B00000000000000000000089", {})
+    storekit_test_resource_build = project_objects.get("B00000000000000000000090", {})
+    require(purchase_test_path in source_files
+            and "import StoreKitTest" in purchase_test
+            and "SKTestSession(contentsOf: configurationURL)" in purchase_test
+            and "session.disableDialogs = true" in purchase_test
+            and "session.clearTransactions()" in purchase_test
+            and "session.resetToDefaultState()" in purchase_test
+            and 'session.storefront = "JPN"' in purchase_test
+            and 'session.locale = Locale(identifier: "ja_JP")' in purchase_test
+            and '"factorytools.pro.lifetime"' in purchase_test
+            and "Decimal(980)" in purchase_test
+            and ".isFamilyShareable" in purchase_test
+            and "await manager.purchase()" in purchase_test
+            and '"pro.purchaseComplete"' in purchase_test
+            and storekit_test_target.get("name") == "FactoryToolsTests"
+            and "B00000000000000000000089" in storekit_test_sources.get("files", [])
+            and storekit_test_source_build.get("fileRef") == "C00000000000000000000090"
+            and storekit_test_resource_build.get("isa") == "PBXBuildFile"
+            and storekit_test_resource_build.get("fileRef") == storekit_reference_id
+            and "B00000000000000000000090" in storekit_test_resources.get("files", [])
+            and "B00000000000000000000090" not in app_resources.get("files", [])
+            and any(testable.get("parallelizable") == "NO"
+                    for testable in (scheme_tree.findall("./TestAction/Testables/TestableReference")
+                                     if "scheme_tree" in locals() else [])),
+            "the local Pro purchase regression must run serially in app-hosted XCTest with the StoreKit configuration bundled only for tests, never in the production app")
+    restore_action = re.search(
+        r'Button\("pro\.restore"\)\s*\{\s*Task\s*\{\s*await proPurchases\.restorePurchases\(\)\s*\}\s*\}',
+        purchase_price_view,
+    )
+    require(restore_action is not None and all_swift.count("proPurchases.restorePurchases()") == 1,
+            "StoreKit AppStore.sync restore must remain reachable only from the explicit Restore Purchases button")
     home_view_path = ROOT / "FactoryTools" / "Features" / "Home" / "HomeView.swift"
     home_view_source = home_view_path.read_text(encoding="utf-8") if home_view_path.is_file() else ""
     create_home_path = ROOT / "FactoryTools" / "Features" / "Home" / "CreateHomeView.swift"
@@ -2860,6 +3166,7 @@ def main() -> int:
     device_privacy_details = strings.get("settings.privacy.details.devices.body", {}).get("localizations", {})
     local_privacy_en = local_privacy_details.get("en", {}).get("stringUnit", {}).get("value", "")
     local_privacy_ja = local_privacy_details.get("ja", {}).get("stringUnit", {}).get("value", "")
+    export_privacy = strings.get("settings.privacy.details.export.body", {}).get("localizations", {})
     local_summary = strings.get("settings.privacy.localStorageDescription", {}).get("localizations", {})
     deletion_privacy = strings.get("settings.privacy.details.delete.body", {}).get("localizations", {})
     require("Apple may include app data in iPhone or iPad backups" in local_privacy_en
@@ -2872,11 +3179,13 @@ def main() -> int:
             and "Appleの既存バックアップには" in deletion_privacy.get("ja", {}).get("stringUnit", {}).get("value", "")
             and "Apple Watch also stores active Cycle Time timer state" in local_privacy_en
             and "Apple Watchは計測中のサイクルタイム状態" in local_privacy_ja
+            and "Exports do not include unsent Watch or iPad commands or an active Watch timer" in export_privacy.get("en", {}).get("stringUnit", {}).get("value", "")
+            and "アプリを削除または再インストールする前に、端末間の保留中データを同期" in export_privacy.get("ja", {}).get("stringUnit", {}).get("value", "")
             and "Apple Watch also sends Cycle Time samples directly to iPhone" in device_privacy_details.get("en", {}).get("stringUnit", {}).get("value", "")
             and "Apple Watchからはサイクルタイム記録もiPhoneへ直接送信" in device_privacy_details.get("ja", {}).get("stringUnit", {}).get("value", "")
             and "While Pro is active, the iPhone sends the home name, production count, and target" in device_privacy_details.get("en", {}).get("stringUnit", {}).get("value", "")
             and "Pro利用中は、Watch表示を有効にした生産進捗カードのホーム名・生産数・目標数も" in device_privacy_details.get("ja", {}).get("stringUnit", {}).get("value", ""),
-            "in-app privacy details must disclose Watch transfers and Apple-managed device backup behavior in Japanese and English")
+            "in-app privacy details must disclose Watch transfers, Apple-managed backups, and queued-data export limits in Japanese and English")
     require('Section("settings.support")' in settings_view
             and 'object(forInfoDictionaryKey: "FactoryToolsSupportURL")' in settings_view
             and 'Link(destination: supportURL)' in settings_view
@@ -3863,19 +4172,16 @@ def main() -> int:
     platform_boundaries = (ROOT / "FactoryTools" / "PLATFORM_BOUNDARIES.md").read_text(encoding="utf-8")
     product_decisions = (ROOT / "FactoryTools" / "PRODUCT_DECISIONS.md").read_text(encoding="utf-8")
     release_setup_guide = (ROOT / "FactoryTools" / "APPLE_RELEASE_SETUP_JA.md").read_text(encoding="utf-8")
-    hosted_app_test_count = sum(
-        len(re.findall(r"\bfunc\s+test\w+\s*\(", path.read_text(encoding="utf-8")))
-        for path in (ROOT / "FactoryToolsTests").rglob("*.swift")
-    )
-    shared_core_test_count = sum(
-        len(re.findall(r"\bfunc\s+test\w+\s*\(", path.read_text(encoding="utf-8")))
-        for path in (ROOT / "FactoryToolsCoreTests").rglob("*.swift")
-    )
-    require(f"Simulator XCTestが各{hosted_app_test_count}件" in release_setup_guide
-            and f"共有Core XCTestが{shared_core_test_count}件" in release_setup_guide
-            and "https://github.com/niconiconicopi/factory-tools/actions/runs/41273710950" in release_setup_guide
+    release_setup_run_ids = set(re.findall(
+        r"https://github\.com/niconiconicopi/factory-tools/actions/runs/(\d+)",
+        release_setup_guide,
+    ))
+    localized_string_count = len(strings) + len(watch_strings)
+    require(f"XCTestソース{test_case_count}件" in release_setup_guide
+            and f"日英{localized_string_count}文字列" in release_setup_guide
+            and {"42819982935", "42819983047"}.issubset(release_setup_run_ids)
             and "41244759649" not in release_setup_guide,
-            "Japanese Apple release setup guide must point to the latest verified simulator/Core run and current test counts")
+            "Japanese Apple release setup guide must cite the latest hosted runs and current source counts")
     registered_tool_count = registry.count("ToolDefinition(")
     require(f"{test_case_count} XCTest methods across app and Core targets" in roadmap,
             "the roadmap's XCTest source count must match the current test inventory")
@@ -3903,7 +4209,7 @@ def main() -> int:
             and "the developer could not set a lower share count" in product_decisions
             and family_sharing_decision(product_decisions) == "disabled",
         "price decision scope": "Confirmed base storefront and price: **Japan (JP), JPY ¥980**" in product_decisions
-            and "Configure this in App Store Connect" in product_decisions
+            and "Configure this in App Store Connect after enrollment" in product_decisions
             and DEFAULT_BASE_STOREFRONT_CANDIDATE == "JP"
             and DEFAULT_BASE_STOREFRONT_PRICE_CANDIDATE == "JPY:980",
         "Pro tool assignments": "accessTier: .pro" in registry.split("id: .oee", 1)[1].split("),", 1)[0]
@@ -4476,9 +4782,8 @@ def main() -> int:
     require(resource_membership("D40000000000000000000007") == set(),
             "standalone Core tests must not bundle app resources or localization catalogs")
     require(resource_membership("D40000000000000000000009") == {
-                "Localizable.xcstrings", "Assets.xcassets", "InfoPlist.strings"
-            },
-            "FactoryToolsWatch must bundle its Japanese/English app-name localization, String Catalog, and watchOS AppIcon asset catalog")
+                "Localizable.xcstrings", "Assets.xcassets", "PrivacyInfo.xcprivacy"
+            }, "FactoryToolsWatch must bundle its Japanese/English catalog, watchOS AppIcon, and required-reason privacy manifest")
     privacy_manifest_path = ROOT / "FactoryTools" / "PrivacyInfo.xcprivacy"
     try:
         privacy_manifest = plistlib.loads(privacy_manifest_path.read_bytes())
@@ -4491,7 +4796,10 @@ def main() -> int:
         }],
     }
     require(privacy_manifest == expected_privacy_manifest,
-            "the app privacy manifest must declare only the ContinuousClock stopwatch's approved SystemBootTime reason")
+            "iPhone and Watch privacy manifests must declare the ContinuousClock stopwatches' approved SystemBootTime reason")
+    require("ContinuousClock" in (ROOT / "FactoryTools" / "Features" / "Tools" / "CycleTimeCalculatorView.swift").read_text(encoding="utf-8")
+            and "ContinuousClock" in (ROOT / "FactoryToolsWatch" / "WatchCounterModel.swift").read_text(encoding="utf-8"),
+            "iPhone/iPad and Watch timer implementations must both be covered by the declared SystemBootTime reason")
     privacy_inventory = (ROOT / "FactoryTools" / "PRIVACY_DATA_INVENTORY.md").read_text(encoding="utf-8")
     require("not an App Store Connect submission" in privacy_inventory
             and "no app-operated cloud storage or sync, account, advertising, analytics, tracking, external API, or third-party SDK integration" in privacy_inventory
@@ -4504,6 +4812,7 @@ def main() -> int:
             and "WatchConnectivity" in privacy_inventory
             and "local peer connection" in privacy_inventory
             and "35F9.1" in privacy_inventory
+            and "neither includes pending Watch/iPad delivery queues or an active Watch Cycle Time timer" in privacy_inventory
             and "App Store Connect privacy questionnaire" in privacy_inventory,
             "privacy inventory must cover local Watch timer state and Cycle Time transfer alongside its data posture, manifest reason, and publisher review gate")
     privacy_review = (ROOT / "FactoryTools" / "APP_STORE_PRIVACY_REVIEW.md").read_text(encoding="utf-8")
@@ -4515,8 +4824,12 @@ def main() -> int:
     age_rating_review = (ROOT / "FactoryTools" / "APP_STORE_AGE_RATING_REVIEW.md").read_text(encoding="utf-8")
     require("Watch can also send Cycle Time captures" in age_rating_review
             and "direct Watch Cycle Time capture" in age_rating_review
-            and "final App Store Connect declaration" in age_rating_review,
-            "age-rating evidence must describe Watch Cycle Time while retaining publisher attestation as a release gate")
+            and "final App Store Connect declaration" in age_rating_review
+            and "Shared Location (available from November 16, 2026)" in age_rating_review
+            and "Dating and Relationships (available from November 16, 2026)" in age_rating_review
+            and "January 12, 2027" in age_rating_review
+            and "https://developer.apple.com/news/?id=yxkh08us" in age_rating_review,
+            "age-rating evidence must describe Watch Cycle Time, new 2026 location/relationship fields, and publisher attestation")
     xcode_cloud_runbook = (ROOT / "FactoryTools" / "XCODE_CLOUD_RUNBOOK.md").read_text(encoding="utf-8")
     require("25 Xcode Cloud compute hours per month" in xcode_cloud_runbook
             and "do not buy an additional Xcode Cloud subscription" in xcode_cloud_runbook
@@ -4527,12 +4840,13 @@ def main() -> int:
             and "does not claim that Xcode Cloud is configured" in xcode_cloud_runbook,
             "Xcode Cloud guidance must keep the included compute limit, no-Mac bootstrap limitation, and initial Xcode/repository setup gate explicit")
     asset_plan = (ROOT / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
-    require("Beginning April 2027" in asset_plan
-            and "for all app submissions" in asset_plan
-            and "1398 × 2034 (outer display)" in asset_plan
-            and "2007 × 2853 (inner display)" in asset_plan
-            and "without conditioning the requirement on the SDK selected" in asset_plan
-            and "https://developer.apple.com/news/?id=kkphp5qo" in asset_plan,
+    require("apps submitted starting April 2027 need iPhone Duo screenshots" in asset_plan
+            and "1398 × 2034 (outer)" in asset_plan
+            and "2007 × 2853 (inner)" in asset_plan
+            and "The current screenshot specification separately says screenshots are required starting then for apps using the iOS 27.1 SDK or later." in asset_plan
+            and "Apple's September 9, 2026 submission notice sets the general iOS/iPadOS SDK minimum for that period at version 27, not 27.1." in asset_plan
+            and "https://developer.apple.com/news/?id=kkphp5qo" in asset_plan
+            and "https://developer.apple.com/news/?id=k1mtkt1k" in asset_plan,
             "store asset plan must include current iPhone Duo timing and both display sizes for April 2027 submissions")
     privacy_policy = (ROOT / "FactoryTools" / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
     require("Apple Watchは計測中のサイクルタイム状態" in privacy_policy
@@ -4544,13 +4858,19 @@ def main() -> int:
             and "counter commands and Cycle Time samples directly with Apple Watch" in privacy_policy
             and "the home name, production count, and target for Watch-enabled Production Progress cards" in privacy_policy
             and "Keychain項目はアプリ削除後も残る場合がある" in privacy_policy
-            and "Keychain items may remain after app removal" in privacy_policy,
+            and "Keychain items may remain after app removal" in privacy_policy
+            and "JSONバックアップにもCSV書き出しにも、WatchやiPadからの未送信操作とWatchの計測中タイマーは含まれません" in privacy_policy
+            and "Neither JSON backups nor CSV exports include unsent Watch or iPad commands or an active Watch timer" in privacy_policy,
             "privacy policy draft must match Watch and iPad data flows and explain pairing-secret removal in both languages")
     support_page = (ROOT / "FactoryTools" / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
     require("Watchでサイクルタイムを「停止して記録」した後" in support_page
             and "記録はWatch内で確認応答を待っています" in support_page
             and "Watch Cycle Time sample does not appear" in support_page
             and "remains on Watch until acknowledged" in support_page
+            and "返金の可否はAppleが判断します" in support_page
+            and "https://support.apple.com/ja-jp/118223" in support_page
+            and "Apple handles billing and refund requests and decides refund eligibility" in support_page
+            and "https://support.apple.com/en-us/118223" in support_page
             and "アプリを削除する前にiPhoneの設定でペアリングコードを削除" in support_page
             and "remove the pairing code in iPhone Settings before deleting the app" in support_page
             and "iPadの未送信操作は旧コード用のキューに残り" in support_page
@@ -4558,7 +4878,9 @@ def main() -> int:
             and "旧コードを安全な場所に控えてください" in support_page
             and "secure copy of the old code" in support_page
             and "保存済みの64桁コードでペアリングを復元" in support_page
-            and "Enter an existing 64-character code to restore pairing" in support_page,
+            and "Enter an existing 64-character code to restore pairing" in support_page
+            and "JSONバックアップにも履歴CSVにも、Watch／iPadからの未送信操作やWatchの計測中タイマーは含まれません" in support_page
+            and "Neither JSON backups nor history CSV exports include unsent Watch or iPad commands or an active Watch timer" in support_page,
             "bilingual support draft must explain offline Watch recovery and per-pairing iPad queue behavior")
     user_guide = (ROOT / "FactoryTools" / "USER_GUIDE.md").read_text(encoding="utf-8")
     require("アプリ削除前に設定から削除してください" in user_guide
@@ -4615,26 +4937,13 @@ def main() -> int:
         "en": ROOT / "FactoryTools" / "en.lproj" / "InfoPlist.strings",
         "ja": ROOT / "FactoryTools" / "ja.lproj" / "InfoPlist.strings",
     }
-    expected_app_names = {"en": "Factory Tools", "ja": "現場ギア"}
     for language, path in localized_info_files.items():
+        expected_app_name = "Factory Tools" if language == "en" else "現場ギア"
         require(path.is_file()
-                and f'CFBundleDisplayName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8")
-                and f'CFBundleName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8")
+                and f'CFBundleDisplayName = "{expected_app_name}";' in path.read_text(encoding="utf-8")
+                and f'CFBundleName = "{expected_app_name}";' in path.read_text(encoding="utf-8")
                 and "NSLocalNetworkUsageDescription" in path.read_text(encoding="utf-8"),
-                f"{language} InfoPlist.strings must localize app names and local-network permission text")
-    watch_localized_info_files = {
-        language: ROOT / "FactoryToolsWatch" / f"{language}.lproj" / "InfoPlist.strings"
-        for language in expected_app_names
-    }
-    for language, path in watch_localized_info_files.items():
-        require(path.is_file()
-                and f'CFBundleDisplayName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8")
-                and f'CFBundleName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8"),
-                f"Watch {language} InfoPlist.strings must localize the app display name and bundle name")
-    app_title_localizations = strings.get("app.title", {}).get("localizations", {})
-    require(all(app_title_localizations.get(language, {}).get("stringUnit", {}).get("value") == name
-                for language, name in expected_app_names.items()),
-            "iPhone/iPad app title must match the Japanese and English localized product names")
+                f"{language} InfoPlist.strings must use the approved localized app name and local-network permission text")
     japanese_network_copy = localized_info_plist_value(
         localized_info_files["ja"].read_text(encoding="utf-8") if localized_info_files["ja"].is_file() else "",
         "NSLocalNetworkUsageDescription",
@@ -4712,7 +5021,7 @@ def main() -> int:
             print(f"FAIL: {error}")
         return 1
 
-    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native plus manually confirmed release and legal-pages workflow contracts.")
+    print(f"PASS: valid OpenStep project, {len(source_files)} Swift files, {test_case_count} XCTest cases across app and Core targets, {len(strings) + len(watch_strings)} bilingual strings, schemes/assets, target/resource membership, crash-prone Swift escape-hatch checks, and public-free/private-opt-in native, archive, release, and legal-pages workflow contracts.")
     print("PASS: bilingual App Store listing draft fits Apple's name, subtitle, description, and keyword limits.")
     print("PASS: localized Factory Tools Pro in-app purchase metadata fits Apple's display-name and description limits.")
     print("PASS: no Swift packages, third-party billing SDKs, external service endpoints, or distributed counter backends; Apple StoreKit is isolated to the one-time Pro manager; local peer transport is isolated.")

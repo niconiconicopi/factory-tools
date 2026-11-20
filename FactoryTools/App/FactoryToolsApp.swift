@@ -5,10 +5,27 @@ import FactoryToolsCore
 
 enum ScreenshotDemoScenario: String, CaseIterable {
     case home
+    case counterQuickAdd = "counter-quick-add"
     case cycleTime = "cycle-time"
     case taktTime = "takt-time"
     case defectCounter = "defect-counter"
     case counterHistory = "counter-history"
+    case counterSizeSmall = "counter-size-small"
+    case counterSizeMedium = "counter-size-medium"
+    case counterSizeLarge = "counter-size-large"
+    case proPurchase = "pro-purchase"
+    case ipadDashboard = "ipad-dashboard"
+    case ipadOffline = "ipad-offline"
+
+#if targetEnvironment(simulator)
+    var peerCounterScreenshotMode: PeerCounterScreenshotMode? {
+        switch self {
+        case .ipadDashboard: .connected
+        case .ipadOffline: .offline
+        default: nil
+        }
+    }
+#endif
 
     var launchArgument: String { "--factorytools-screenshot-\(rawValue)" }
 
@@ -19,6 +36,7 @@ enum ScreenshotDemoScenario: String, CaseIterable {
 
 @main
 struct FactoryToolsApp: App {
+    private static var hostedTestContainer: ModelContainer?
     @StateObject private var proPurchases = ProPurchaseManager.shared
     @State private var container: ModelContainer?
     @State private var showingRetryError = false
@@ -73,6 +91,10 @@ struct FactoryToolsApp: App {
         screenshotLanguage: AppLanguage? = nil,
         screenshotScenario: ScreenshotDemoScenario? = nil
     ) throws -> ModelContainer {
+        if screenshotLanguage == nil, isRunningHostedTests {
+            return try hostedTestModelContainer()
+        }
+
         let schema = Schema(versionedSchema: FactoryToolsSchemaV1.self)
         let localConfiguration = ModelConfiguration(
             "FactoryTools",
@@ -97,6 +119,46 @@ struct FactoryToolsApp: App {
         return container
     }
 
+    static func hostedTestModelContainer() throws -> ModelContainer {
+        if let hostedTestContainer {
+            return hostedTestContainer
+        }
+
+        let schema = Schema(versionedSchema: FactoryToolsSchemaV1.self)
+        let supportDirectory = try FileManager.default.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        )
+        let testStoreDirectory = supportDirectory
+            .appendingPathComponent("FactoryToolsHostedTests-\(ProcessInfo.processInfo.processIdentifier)", isDirectory: true)
+        try FileManager.default.createDirectory(
+            at: testStoreDirectory,
+            withIntermediateDirectories: true
+        )
+        let configuration = ModelConfiguration(
+            "FactoryToolsHostedTests",
+            schema: schema,
+            url: testStoreDirectory.appendingPathComponent("FactoryTools.store"),
+            cloudKitDatabase: .none
+        )
+        let container = try ModelContainer(
+            for: schema,
+            migrationPlan: FactoryToolsMigrationPlan.self,
+            configurations: [configuration]
+        )
+        hostedTestContainer = container
+        return container
+    }
+
+    static var isRunningHostedTests: Bool {
+        let environment = ProcessInfo.processInfo.environment
+        return environment["FACTORYTOOLS_HOSTED_TESTS"] == "1"
+            || environment["XCTestConfigurationFilePath"] != nil
+            || environment["XCInjectBundleInto"] != nil
+    }
+
     private func retryStoreInitialization() {
         do {
             container = try Self.makeContainer(
@@ -118,7 +180,7 @@ struct FactoryToolsApp: App {
         language: AppLanguage,
         scenario: ScreenshotDemoScenario
     ) throws {
-        let home = HomeProfile(name: "Assembly", usesDefaultName: false, sortOrder: 0)
+        let home = HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)
         let settings = AppSettings(
             language: language.rawValue,
             themeID: ThemeID.industrialDark.rawValue,
@@ -128,9 +190,25 @@ struct FactoryToolsApp: App {
         context.insert(settings)
 
         switch scenario {
-        case .home, .counterHistory:
+        case .home, .counterQuickAdd, .proPurchase, .ipadDashboard, .ipadOffline:
             let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
             addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
+            insertEvents(for: production, deltas: [200, 80, 6], context: context)
+        case .counterHistory:
+            let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
+            production.nextEventSequence = 5
+            addCounterCard(production, home: home, sortOrder: 0, size: .large, context: context)
+            insertUndoHistoryDemoEvents(for: production, context: context)
+        case .counterSizeSmall, .counterSizeMedium, .counterSizeLarge:
+            let production = makeSession(home: home, tool: .productionCounter, count: 286, target: 300, name: "Line A")
+            let size: ToolCardSize
+            switch scenario {
+            case .counterSizeSmall: size = .small
+            case .counterSizeMedium: size = .medium
+            case .counterSizeLarge: size = .large
+            default: return
+            }
+            addCounterCard(production, home: home, sortOrder: 0, size: size, context: context)
             insertEvents(for: production, deltas: [200, 80, 6], context: context)
         case .cycleTime:
             context.insert(ToolCard(homeProfileID: home.id, toolID: .cycleTime, size: .large, sortOrder: 0))
@@ -196,6 +274,49 @@ struct FactoryToolsApp: App {
                 occurredAt: Date(timeIntervalSinceNow: -86_400 * Double(deltas.count - sequence)),
                 kind: sequence == 0 ? .quickAdd : .increment
             ))
+        }
+    }
+
+    private static func insertUndoHistoryDemoEvents(for session: ProductionSession, context: ModelContext) {
+        let referenceDate = Date(timeIntervalSinceNow: -86_400 * 4)
+        let quickAdd = CountEvent(
+            sessionID: session.id,
+            delta: 200,
+            sequence: 0,
+            occurredAt: referenceDate,
+            kind: .quickAdd
+        )
+        let firstIncrement = CountEvent(
+            sessionID: session.id,
+            delta: 80,
+            sequence: 1,
+            occurredAt: referenceDate.addingTimeInterval(3_600),
+            kind: .increment
+        )
+        let undoneIncrement = CountEvent(
+            sessionID: session.id,
+            delta: 10,
+            sequence: 2,
+            occurredAt: referenceDate.addingTimeInterval(7_200),
+            kind: .increment
+        )
+        let undo = CountEvent(
+            sessionID: session.id,
+            delta: -10,
+            sequence: 3,
+            occurredAt: referenceDate.addingTimeInterval(7_260),
+            reversesEventID: undoneIncrement.id,
+            kind: .undo
+        )
+        let finalIncrement = CountEvent(
+            sessionID: session.id,
+            delta: 6,
+            sequence: 4,
+            occurredAt: referenceDate.addingTimeInterval(10_800),
+            kind: .increment
+        )
+        for event in [quickAdd, firstIncrement, undoneIncrement, undo, finalIncrement] {
+            context.insert(event)
         }
     }
     #endif

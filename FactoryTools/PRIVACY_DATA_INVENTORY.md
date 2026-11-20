@@ -13,6 +13,12 @@ This inventory describes the current source implementation to prepare the publis
 | App data may be included in iPhone/iPad device backups; Apple Watch backup is included with paired iPhone backup | Apple-managed iCloud or computer backup, when enabled by the device owner | OS-managed device recovery; Factory Tools does not access or manage these backups |
 | Backup JSON and history CSV | User-selected file location | User-initiated export or transfer; JSON can also be imported additively |
 
+JSON and CSV exports cover persisted model/history data; neither includes pending Watch/iPad delivery queues or an active Watch Cycle Time timer. Support and privacy copy should tell users to finish syncing before removing or reinstalling an app.
+
+## Publisher-operated support channel outside the app
+
+The publisher has provided a Microsoft Outlook mailbox for support. When a user sends an email, the publisher receives the sender's reply address, message, and any voluntarily included details or attachments. The support page requests device, OS, app-version, action, and displayed-message details, while telling users not to attach production records, backups, pairing codes, Apple credentials, or payment information. This information is processed through the support mailbox to respond and resolve the request; it is not collected by the Factory Tools app itself. The privacy-policy draft proposes deleting correspondence when no longer needed. Confirm the real retention/deletion practice and the mailbox provider's terms before publication. See the [Microsoft Privacy Statement](https://www.microsoft.com/ja-jp/privacy/privacystatement).
+
 The app model container disables CloudKit. The app has no app-operated cloud storage or sync, account, advertising, analytics, tracking, external API, or third-party SDK integration in the current project. SwiftData uses the app's Application Support storage by default, which Apple documents as eligible for device backup. The source does not set `isExcludedFromBackup`; therefore disclose Apple-managed backups according to the user's device backup settings. [Apple file-system guidance](https://developer.apple.com/documentation/foundation/using-the-file-system-effectively) and [iCloud Backup contents](https://support.apple.com/en-us/108770).
 
 The iPad pairing code is stored in the iOS Keychain as a `WhenUnlockedThisDeviceOnly` item. Apple Developer Support has described Keychain survival after app removal as undocumented behavior; the privacy policy and support draft therefore say it **may** remain and direct users to remove the pairing code in Settings before deleting the app. See [Apple Developer Forums: Keychain items after uninstall](https://developer.apple.com/forums/thread/36442).
@@ -27,7 +33,7 @@ Factory Tools Pro uses Apple's StoreKit non-consumable purchase. StoreKit return
 
 ## System APIs and privacy manifest
 
-The iPhone/iPad app uses `ContinuousClock` for its local Cycle Time stopwatch. `PrivacyInfo.xcprivacy` declares the System Boot Time accessed API with reason `35F9.1`. The project verifier checks the manifest syntax, target membership, and the source's known required-reason API use.
+The universal iPhone/iPad app and the Watch app use `ContinuousClock` for their local Cycle Time stopwatches. Each app bundle includes `PrivacyInfo.xcprivacy` declaring the System Boot Time accessed API with reason `35F9.1`. The Watch sends the resulting elapsed Cycle Time interval to its paired iPhone as an in-app measurement; it does not send the raw system boot time. The project verifier checks the manifest syntax, both target memberships, and the source's known required-reason API use.
 
 The app also declares the Bonjour service and localized local-network permission text required for optional iPad pairing. The user initiates pairing and can remove the pairing code in Settings.
 

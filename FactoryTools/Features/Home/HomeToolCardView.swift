@@ -1,6 +1,11 @@
 import SwiftData
 import SwiftUI
 import FactoryToolsCore
+#if targetEnvironment(simulator)
+import OSLog
+
+private let screenshotCaptureLogger = Logger(subsystem: "com.factorytools.ios", category: "ScreenshotCapture")
+#endif
 
 struct HomeToolCardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -168,13 +173,20 @@ struct HomeToolCardView: View {
         .frame(maxWidth: .infinity, minHeight: HomeCardPresentation.minimumHeight(for: card.size), alignment: .leading)
         .background(theme.cardBackground, in: RoundedRectangle(cornerRadius: theme.cornerRadius))
         .overlay(RoundedRectangle(cornerRadius: theme.cornerRadius).stroke(theme.border, lineWidth: theme.borderWidth))
+#if targetEnvironment(simulator)
+        .onAppear(perform: logScreenshotCaptureState)
+        .onChange(of: sessions.count) { _, _ in logScreenshotCaptureState() }
+        .onChange(of: session?.currentCount) { _, _ in logScreenshotCaptureState() }
+#endif
         .sheet(item: $activeSheet) { destination in
             Group {
                 switch destination {
                 case .counterSettings:
                     if let session { CounterSettingsView(session: session) }
                 case .customQuickAdd:
-                    if let session { CounterQuickAddView(session: session) }
+                    if let session {
+                        CounterQuickAddView(session: session, screenshotDemoValues: initialSheet == .customQuickAdd)
+                    }
                 case .history:
                     if let session { CounterHistoryView(session: session) }
                 case .cycleTime:
@@ -191,7 +203,9 @@ struct HomeToolCardView: View {
                     AppSettingsView(home: home)
                 }
             }
-            .presentationDetents(initialSheet == nil ? [.medium, .large] : [.large])
+            .presentationDetents(
+                initialSheet == nil || initialSheet == .customQuickAdd ? [.medium, .large] : [.large]
+            )
             .presentationDragIndicator(initialSheet == nil ? .visible : .hidden)
         }
         .alert("error.saveFailed", isPresented: $showingSaveError) {
@@ -471,6 +485,27 @@ struct HomeToolCardView: View {
     private func formattedCount(_ value: Int) -> String {
         value.formatted(.number.locale(locale))
     }
+
+    #if targetEnvironment(simulator)
+    private func logScreenshotCaptureState() {
+        guard ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-demo"),
+              card.toolID == ToolID.productionCounter.rawValue else { return }
+        let captureID = ProcessInfo.processInfo.arguments.first {
+            $0.hasPrefix("--factorytools-screenshot-capture-id=")
+        }.map {
+            String($0.dropFirst("--factorytools-screenshot-capture-id=".count))
+        } ?? "missing"
+        let captureState = [
+            "captureID=\(captureID)",
+            "locale=\(locale.identifier)",
+            "home=\(home.id.uuidString)",
+            "sessionCount=\(sessions.count)",
+            "current=\(session?.currentCount.description ?? "missing")",
+            "target=\(session?.targetCount.description ?? "missing")",
+        ].joined(separator: " ")
+        screenshotCaptureLogger.notice("\(captureState, privacy: .public)")
+    }
+    #endif
 
 }
 

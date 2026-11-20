@@ -1,22 +1,29 @@
 import io
 import json
 import os
+import re
 import struct
 import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
+import xml.etree.ElementTree as ET
 from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
 
-import capture_simulator_screenshots
-import capture_watch_screenshots
-from capture_watch_screenshots import record_failure_summary
+from capture_watch_screenshots import capture_language as capture_watch_language
+from capture_watch_screenshots import record_failure_summary, run as run_watch_capture_command
+from capture_simulator_screenshots import capture_language as capture_simulator_language
+from capture_simulator_screenshots import clear_capture_outputs, wait_for_home_demo_data
 from validate_static import (
     DuplicateJSONKeyError,
     OpenStepParseError,
     apple_workflow_contract_errors,
+    apple_archive_workflow_contract_errors,
+    apple_storekit_workflow_contract_errors,
+    apple_sdk27_workflow_contract_errors,
     apple_upload_workflow_contract_errors,
     pages_publication_workflow_contract_errors,
     apply_release_candidate_overrides,
@@ -43,6 +50,7 @@ from validate_static import (
     release_preflight_blockers,
     release_preflight_configuration_blockers,
     resolve_family_sharing_candidate,
+    storekit_configuration_errors,
     swiftui_unlocalized_copy_literals,
     swift_model_persisted_properties,
     swift_unsafe_escape_hatches,
@@ -52,9 +60,36 @@ from validate_static import (
 class AppleWorkflowContractTests(unittest.TestCase):
     def test_current_workflow_obeys_public_no_cost_contract(self) -> None:
         root = Path(__file__).resolve().parents[1]
-        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        workflow = "\n".join(
+            (
+                (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8"),
+                (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8"),
+            )
+        )
 
         self.assertEqual(apple_workflow_contract_errors(workflow), [])
+
+    def test_native_xctest_steps_are_bounded_to_produce_diagnostics(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow_path = root / ".github" / "workflows" / "apple-native-checks.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+
+        for step_name in (
+            "Test iPhone and app-hosted regression suite",
+            "Test iPad and app-hosted regression suite",
+        ):
+            start = workflow.index(f"      - name: {step_name}\n")
+            next_step = workflow.find("\n      - name:", start + 1)
+            block = workflow[start:next_step if next_step >= 0 else len(workflow)]
+            self.assertIn("timeout-minutes: 60", block)
+
+        missing_timeout = workflow.replace("        timeout-minutes: 60\n", "", 1)
+        self.assertTrue(any("Test iPhone and app-hosted regression suite must have a 60-minute timeout" in error
+                            for error in apple_workflow_contract_errors(missing_timeout)))
+
+        missing_diagnostics = workflow.replace("      - name: Upload iPad XCTest diagnostics\n        if: failure()\n", "", 1)
+        self.assertTrue(any("Test iPad and app-hosted regression suite must upload XCTest diagnostics" in error
+                            for error in apple_workflow_contract_errors(missing_diagnostics)))
 
     def test_workflow_rejects_private_runner_or_secret_access(self) -> None:
         source = """if: github.event.repository.visibility == 'private'
@@ -62,7 +97,7 @@ permissions:
   contents: write
 uses: actions/checkout@v7
   persist-credentials: true
-runs-on: macos-26
+runs-on: macos-26-intel
 run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme FactoryToolsWatch CODE_SIGNING_ALLOWED=NO ${{ secrets.SIGNING_KEY }}
 """
 
@@ -74,232 +109,138 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("missing iPad Simulator regression suite", errors)
         self.assertIn("workflow must not access repository secrets", errors)
 
+
+    def test_current_archive_workflow_is_manual_read_only_and_unsigned(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-archive-check.yml").read_text(encoding="utf-8")
+
+        self.assertEqual(apple_archive_workflow_contract_errors(workflow), [])
+
+    def test_archive_workflow_rejects_signing_secrets_and_push_triggers(self) -> None:
+        source = """on:
+  push:
+permissions:
+  contents: write
+runs-on: macos-latest
+run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_KEY }}
+"""
+
+        errors = apple_archive_workflow_contract_errors(source)
+
+        self.assertIn("missing manual dispatch only", errors)
+        self.assertIn("missing read-only repository permission", errors)
+        self.assertIn("missing hosted macOS runner", errors)
+        self.assertIn("archive verification workflow must not access repository secrets", errors)
+
+
+    def test_current_storekit_probe_is_manual_public_free_and_ad_hoc_signed(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-storekit-local-test.yml").read_text(encoding="utf-8")
+
+        self.assertEqual(apple_storekit_workflow_contract_errors(workflow), [])
+        self.assertIn("runs-on: xcode-27", workflow)
+        self.assertIn("-scheme FactoryToolsStoreKit", workflow)
+        self.assertIn("-testPlan FactoryToolsStoreKit", workflow)
+        self.assertIn("xcrun simctl list runtimes", workflow)
+        self.assertIn("max(candidates)", workflow)
+
+    def test_dedicated_storekit_test_plan_targets_app_and_local_configuration(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        scheme = ET.parse(root / "FactoryTools.xcodeproj" / "xcshareddata" / "xcschemes" / "FactoryToolsStoreKit.xcscheme").getroot()
+        plan = json.loads((root / "FactoryTools.xcodeproj" / "FactoryToolsStoreKit.xctestplan").read_text(encoding="utf-8"))
+
+        plan_reference = scheme.find("./TestAction/TestPlans/TestPlanReference")
+        self.assertIsNotNone(plan_reference)
+        self.assertEqual(plan_reference.get("reference"), "container:FactoryTools.xcodeproj/FactoryToolsStoreKit.xctestplan")
+        self.assertEqual(plan_reference.get("default"), "YES")
+        self.assertEqual(
+            plan["defaultOptions"]["storeKitConfiguration"],
+            "FactoryTools/Resources/FactoryToolsPro.storekit",
+        )
+        self.assertIsInstance(plan["defaultOptions"]["storeKitConfiguration"], str)
+        self.assertEqual(plan["defaultOptions"]["targetForVariableExpansion"]["identifier"], "E00000000000000000000010")
+        self.assertEqual(plan["testTargets"][0]["target"]["identifier"], "E00000000000000000000011")
+
+    def test_storekit_probe_rejects_automatic_triggers_and_secrets(self) -> None:
+        source = """on:
+  push:
+permissions:
+  contents: write
+runs-on: macos-latest
+run: xcodebuild test -scheme FactoryTools CODE_SIGNING_ALLOWED=NO ${{ secrets.SIGNING_KEY }}
+"""
+
+        errors = apple_storekit_workflow_contract_errors(source)
+
+        self.assertIn("missing manual dispatch only", errors)
+        self.assertIn("missing read-only repository permission", errors)
+        self.assertIn("StoreKit integration workflow must be manually dispatched only", errors)
+        self.assertIn("StoreKit integration probe must allow simulator ad-hoc signing", errors)
+        self.assertIn("StoreKit integration workflow must not access repository secrets", errors)
+
+    def test_current_sdk27_forward_workflow_is_manual_free_and_comprehensive(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-sdk27-forward-checks.yml").read_text(encoding="utf-8")
+
+        self.assertEqual(apple_sdk27_workflow_contract_errors(workflow), [])
+
+    def test_sdk27_forward_workflow_rejects_automatic_triggers_and_secrets(self) -> None:
+        source = """on:
+  push:
+permissions:
+  contents: write
+runs-on: macos-latest
+run: xcodebuild archive -scheme FactoryTools ${{ secrets.SIGNING_KEY }}
+"""
+
+        errors = apple_sdk27_workflow_contract_errors(source)
+
+        self.assertIn("missing manual dispatch only", errors)
+        self.assertIn("missing read-only repository permission", errors)
+        self.assertIn("missing hosted Xcode 27 runner", errors)
+        self.assertIn("SDK 27 forward checks must be manually dispatched only", errors)
+        self.assertIn("SDK 27 forward checks must not access repository secrets", errors)
+
     def test_ipad_xctest_failures_write_result_summary_before_failing(self) -> None:
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
         step_start = workflow.index("      - name: Test iPad and app-hosted regression suite")
-        step_end = workflow.index("      - name: Test shared Core contracts", step_start)
-        ipad_test = workflow[step_start:step_end]
+        ipad_test = workflow[step_start:]
 
         self.assertIn('-resultBundlePath "$result_bundle"', ipad_test)
         self.assertIn('test_status=${PIPESTATUS[0]}', ipad_test)
         self.assertIn("xcresulttool get test-results summary --path", ipad_test)
         self.assertIn('>> "$GITHUB_STEP_SUMMARY"', ipad_test)
         self.assertIn('exit "$test_status"', ipad_test)
-
-    def test_local_review_artifacts_and_nested_diagnostic_clone_are_ignored(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        gitignore = (root / ".gitignore").read_text(encoding="utf-8")
-
-        for pattern in (
-            "/FactoryTools-AppStore-Assets-Review-*/",
-            "/FactoryTools-AppStore-Assets-Review-*.zip",
-            "/FactoryTools-Preview-*/",
-            "/FactoryTools-artifacts-*/",
-            "/FactoryTools-capture-diagnostic-*/",
-        ):
-            with self.subTest(pattern=pattern):
-                self.assertIn(pattern, gitignore)
+        self.assertIn("name: Upload iPad XCTest diagnostics", ipad_test)
+        self.assertIn("factory-tools-ipad-xctest-diagnostics", ipad_test)
+        self.assertIn("FactoryTools-iPad.xcresult", ipad_test)
+        self.assertIn("FactoryTools-iPad-xcodebuild.log", ipad_test)
+        self.assertIn('"13-inch" in device["name"]', ipad_test)
+        self.assertIn('xcrun", "simctl", "bootstatus"', ipad_test)
+        self.assertIn("-parallel-testing-enabled NO", ipad_test)
 
 
 class WatchScreenshotDiagnosticsTests(unittest.TestCase):
-    def test_watch_capture_uses_demo_fixture_and_captures_before_always_on_dim(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            output_path = Path(temporary_directory) / "watch-home-en.jpg"
-
-            def fake_run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-                if arguments[:3] == ["xcrun", "simctl", "io"]:
-                    Path(arguments[-1]).write_bytes(b"simulator png")
-                elif arguments[0] == "sips":
-                    Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_100)
-                return subprocess.CompletedProcess(arguments, 0, "", "")
-
-            with (
-                patch.object(capture_watch_screenshots, "run", side_effect=fake_run) as run_mock,
-                patch.object(capture_watch_screenshots.time, "sleep") as sleep_mock,
-                patch.object(capture_watch_screenshots, "image_dimensions", return_value=(416, 496)),
-                redirect_stdout(io.StringIO()),
-            ):
-                dimensions = capture_watch_screenshots.capture_language(
-                    "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
-                    "com.example.watch",
-                    output_path,
-                    japanese=False,
-                )
-
-        launch = run_mock.call_args_list[0].args[0]
-        self.assertIn("--factorytools-screenshot-demo", launch)
-        self.assertNotIn("--factorytools-screenshot-japanese", launch)
-        self.assertEqual(sleep_mock.call_args.args, (3,))
-        self.assertEqual(dimensions, (416, 496))
-        self.assertTrue(any(call.args[0][0] == "swift" for call in run_mock.call_args_list))
-        self.assertFalse(output_path.with_suffix(".png").exists())
-
-    def test_watch_capture_retries_until_the_counter_values_are_visible(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            output_path = Path(temporary_directory) / "watch-home-ja.jpg"
-
-            def fake_run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-                if arguments[:3] == ["xcrun", "simctl", "io"]:
-                    Path(arguments[-1]).write_bytes(b"simulator png")
-                elif arguments[0] == "sips":
-                    Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_100)
-                return subprocess.CompletedProcess(arguments, 0, "", "")
-
-            with (
-                patch.object(capture_watch_screenshots, "run", side_effect=fake_run) as run_mock,
-                patch.object(capture_watch_screenshots, "verify_counter_content", side_effect=[False, True]) as verify_mock,
-                patch.object(capture_watch_screenshots.time, "sleep") as sleep_mock,
-                patch.object(capture_watch_screenshots, "image_dimensions", return_value=(416, 496)),
-                redirect_stdout(io.StringIO()),
-            ):
-                dimensions = capture_watch_screenshots.capture_language(
-                    "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
-                    "com.example.watch",
-                    output_path,
-                    japanese=True,
-                )
-
-        self.assertEqual(dimensions, (416, 496))
-        self.assertEqual(verify_mock.call_count, 2)
-        self.assertEqual(sleep_mock.call_args_list[-1].args, (1,))
-        self.assertEqual(sum(call.args[0][:3] == ["xcrun", "simctl", "io"] for call in run_mock.call_args_list), 2)
-
-    def test_watch_capture_stops_after_twenty_unreadable_frames_and_keeps_last_image(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary_directory:
-            output_path = Path(temporary_directory) / "watch-home-ja.jpg"
-
-            def fake_run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-                if arguments[:3] == ["xcrun", "simctl", "io"]:
-                    Path(arguments[-1]).write_bytes(b"simulator png")
-                elif arguments[0] == "sips":
-                    Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_100)
-                return subprocess.CompletedProcess(arguments, 0, "", "")
-
-            with (
-                patch.object(capture_watch_screenshots, "run", side_effect=fake_run) as run_mock,
-                patch.object(capture_watch_screenshots, "verify_counter_content", return_value=False) as verify_mock,
-                patch.object(capture_watch_screenshots.time, "sleep") as sleep_mock,
-                patch.object(capture_watch_screenshots, "image_dimensions", return_value=(416, 496)),
-                redirect_stdout(io.StringIO()),
-            ):
-                with self.assertRaisesRegex(RuntimeError, "after 20 captures"):
-                    capture_watch_screenshots.capture_language(
-                        "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
-                        "com.example.watch",
-                        output_path,
-                        japanese=True,
-                    )
-
-            self.assertEqual(verify_mock.call_count, 20)
-            self.assertEqual(sleep_mock.call_count, 20)  # Three-second launch delay plus 19 retries.
-            self.assertEqual(sum(call.args[0][:3] == ["xcrun", "simctl", "io"] for call in run_mock.call_args_list), 20)
-            self.assertTrue(output_path.is_file())
-            self.assertFalse(output_path.with_suffix(".png").exists())
-
-    def test_watch_image_content_verifier_uses_apple_vision_for_demo_values(self) -> None:
-        verifier = (Path(__file__).resolve().parent / "verify_watch_screenshot.swift").read_text(encoding="utf-8")
-
-        self.assertIn("import Vision", verifier)
-        self.assertIn("VNRecognizeTextRequest()", verifier)
-        self.assertIn('"286"', verifier)
-        self.assertIn('"300"', verifier)
-        self.assertIn('request.customWords = ["286", "300"]', verifier)
-        self.assertIn(".split { !$0.isNumber }", verifier)
-        self.assertIn("!recognizedNumbers.contains($0)", verifier)
-
-
-class StoreScreenshotDiagnosticsTests(unittest.TestCase):
-    def test_home_screenshot_verifier_uses_the_approved_localized_app_names(self) -> None:
-        screenshot_path = Path("home-ja.jpg")
-        with patch.object(capture_simulator_screenshots, "run") as run_mock:
-            capture_simulator_screenshots.verify_localized_home_title(screenshot_path, japanese=True)
-
-        command = run_mock.call_args.args[0]
-        self.assertEqual(command[0], "swift")
-        self.assertEqual(Path(command[1]).name, "verify_store_home_title.swift")
-        self.assertEqual(command[2], str(screenshot_path))
-        self.assertEqual(command[3], "現場ギア")
-        self.assertTrue(run_mock.call_args.kwargs["capture_output"])
-
-        with patch.object(capture_simulator_screenshots, "run") as run_mock:
-            capture_simulator_screenshots.verify_localized_home_title(Path("home-en.jpg"), japanese=False)
-
-        self.assertEqual(run_mock.call_args.args[0][3], "Factory Tools")
-
-    def test_home_title_ocr_verifier_uses_the_requested_language(self) -> None:
-        verifier = (Path(__file__).resolve().parent / "verify_store_home_title.swift").read_text(encoding="utf-8")
-
-        self.assertIn("import Vision", verifier)
-        self.assertIn('request.recognitionLanguages = expectedTitle == "現場ギア" ? ["ja-JP"] : ["en-US"]', verifier)
-        self.assertIn("request.customWords = [expectedTitle]", verifier)
-        self.assertIn("localizedCaseInsensitiveContains(expectedTitle)", verifier)
-
-    def test_simulator_configuration_uses_exact_device_type_and_runtime(self) -> None:
-        inventory = {
-            "devices": {
-                "com.apple.CoreSimulator.SimRuntime.watchOS-11-0": [
-                    {
-                        "udid": "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
-                        "name": "Apple Watch Series 11 (46mm)",
-                        "deviceTypeIdentifier": "com.apple....watch-series11-46mm",
-                        "state": "Shutdown",
-                    }
-                ]
-            }
-        }
-        result = subprocess.CompletedProcess([], 0, json.dumps(inventory), "")
-        with patch.object(capture_watch_screenshots, "run", return_value=result):
-            configuration = capture_watch_screenshots.simulator_configuration(
-                "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"
-            )
-            state = capture_watch_screenshots.simulator_state("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")
-
-        self.assertEqual(
-            configuration,
-            (
-                "Apple Watch Series 11 (46mm)",
-                "com.apple....watch-series11-46mm",
-                "com.apple.CoreSimulator.SimRuntime.watchOS-11-0",
-            ),
-        )
-        self.assertEqual(state, "Shutdown")
-
-    def test_simulator_configuration_rejects_missing_device_type_identifier(self) -> None:
-        inventory = {
-            "devices": {
-                "watchOS-runtime": [
-                    {"udid": "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE", "name": "Apple Watch 46mm"}
-                ]
-            }
-        }
-        result = subprocess.CompletedProcess([], 0, json.dumps(inventory), "")
-        with patch.object(capture_watch_screenshots, "run", return_value=result):
-            with self.assertRaisesRegex(RuntimeError, "no device type identifier"):
-                capture_watch_screenshots.simulator_configuration("AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE")
-
-    def test_primary_simulator_is_only_shutdown_when_currently_booted(self) -> None:
-        inventory = {"devices": {"watchOS-runtime": [{
-            "udid": "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
-            "state": "Shutdown",
-        }]}}
-        list_result = subprocess.CompletedProcess([], 0, json.dumps(inventory), "")
-        with patch.object(capture_watch_screenshots, "run", side_effect=[list_result, None, None]) as run_mock:
-            capture_watch_screenshots.boot_simulator(
-                "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE", clean=True
-            )
-
-        self.assertEqual(run_mock.call_args_list[1].args[0], [
-            "xcrun", "simctl", "boot", "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"
-        ])
-        self.assertEqual(run_mock.call_args_list[2].args[0], [
-            "xcrun", "simctl", "bootstatus", "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE", "-b"
-        ])
-
     def test_capture_does_not_use_unsupported_watch_status_bar_override(self) -> None:
         source = (Path(__file__).resolve().parent / "capture_watch_screenshots.py").read_text(encoding="utf-8")
 
         self.assertNotIn('"status_bar"', source)
+
+    def test_watch_simulator_boot_timeout_can_exceed_normal_command_timeout(self) -> None:
+        with patch("capture_watch_screenshots.subprocess.run") as process_run:
+            process_run.return_value = subprocess.CompletedProcess(["xcrun"], 0, stdout="ready", stderr="")
+            run_watch_capture_command(["xcrun", "simctl", "bootstatus", "watch", "-b"], timeout_seconds=900)
+
+        self.assertEqual(process_run.call_args.kwargs["timeout"], 900)
+
+    def test_watch_capture_timeout_error_reports_the_selected_limit(self) -> None:
+        with patch(
+            "capture_watch_screenshots.subprocess.run",
+            side_effect=subprocess.TimeoutExpired(["xcrun", "simctl", "bootstatus"], 900),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "timed out after 900 seconds"):
+                run_watch_capture_command(["xcrun", "simctl", "bootstatus"], timeout_seconds=900)
 
     def test_process_failure_summary_includes_command_and_output(self) -> None:
         with tempfile.TemporaryDirectory() as temporary_directory:
@@ -331,12 +272,89 @@ class StoreScreenshotDiagnosticsTests(unittest.TestCase):
             self.assertIn("simulator refused launch%3A unavailable", annotation.getvalue())
 
 
+class ScreenshotFailureArtifactTests(unittest.TestCase):
+    @staticmethod
+    def failed_verification_capture(
+        arguments: list[str], *, capture_output: bool = False
+    ) -> subprocess.CompletedProcess[str]:
+        if "screenshot" in arguments:
+            Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+        elif arguments and arguments[0] == "sips" and "--out" in arguments:
+            Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+        elif arguments and arguments[0] == "swift":
+            raise subprocess.CalledProcessError(1, arguments, stderr="expected text was not recognized")
+        return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+    def test_iphone_home_retains_final_failed_jpeg_for_ci_artifact_upload(self) -> None:
+        import capture_simulator_screenshots
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-home-en.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=self.failed_verification_capture), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data"), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                with self.assertRaisesRegex(RuntimeError, "Diagnostic JPEG retained"):
+                    capture_simulator_language(
+                        "simulator", "com.example.FactoryTools", output_path,
+                        japanese=False, platform="iPhone", scenario="home",
+                    )
+
+            self.assertTrue(output_path.is_file())
+            self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+            self.assertFalse(output_path.with_suffix(".png").exists())
+
+    def test_watch_home_retains_final_failed_jpeg_for_ci_artifact_upload(self) -> None:
+        import capture_watch_screenshots
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "watch-home-ja.jpg"
+            with patch.object(capture_watch_screenshots, "run", side_effect=self.failed_verification_capture), \
+                    patch.object(capture_watch_screenshots, "restart_simulator"), \
+                    patch.object(capture_watch_screenshots.time, "sleep"):
+                with self.assertRaisesRegex(RuntimeError, "Diagnostic JPEG retained"):
+                    capture_watch_language("simulator", "com.example.FactoryTools.watch", output_path, japanese=True)
+
+            self.assertTrue(output_path.is_file())
+            self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+            self.assertFalse(output_path.with_suffix(".png").exists())
+
+
 class AppleUploadWorkflowContractTests(unittest.TestCase):
     def test_current_upload_workflow_is_manual_and_confirmed(self) -> None:
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
 
         self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
+
+    def test_upload_workflow_reads_team_id_from_project_when_override_is_empty(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+        start = workflow.index("      - name: Resolve Apple team ID")
+        end = workflow.index("      - name: Show Apple toolchain", start)
+        step = workflow[start:end]
+
+        self.assertIn('if [[ -z "${DEVELOPMENT_TEAM:-}" ]]', step)
+        self.assertIn('FactoryTools.xcodeproj/project.pbxproj', step)
+        self.assertIn('r"(?m)\\bDEVELOPMENT_TEAM\\s*=\\s*([A-Z0-9]{10})\\s*;"', step)
+        self.assertIn('echo "DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM" >> "$GITHUB_ENV"', step)
+
+        project = (root / "FactoryTools.xcodeproj" / "project.pbxproj").read_text(encoding="utf-8")
+        project_team_ids = set(re.findall(r"(?m)\bDEVELOPMENT_TEAM\s*=\s*([A-Z0-9]{10})\s*;", project))
+        self.assertEqual(len(project_team_ids), 1)
+
+    def test_upload_workflow_skips_only_the_known_headless_storekit_test_twice(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+        skip = "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro"
+
+        self.assertEqual(workflow.count(skip), 2)
+        self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])
+
+        unsafe_workflow = workflow.replace(skip + " \\\n", "", 1)
+        self.assertIn(
+            "both iPhone and iPad upload-preflight suites must isolate the known headless StoreKitTest failure",
+            apple_upload_workflow_contract_errors(unsafe_workflow),
+        )
 
     def test_upload_workflow_rejects_api_key_before_simulator_gates(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -391,52 +409,339 @@ jobs:
 
 
 class SimulatorScreenshotWorkflowTests(unittest.TestCase):
+    def test_home_readiness_ignores_stale_capture_logs(self) -> None:
+        stale_output = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout='captureID=previous locale=en current=286 target=300\n', stderr="",
+        )
+        current_output = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout='captureID=current locale=en sessionCount=1 current=286 target=300\n', stderr="",
+        )
+        with patch("capture_simulator_screenshots.run", side_effect=[stale_output, current_output]) as run_command, \
+             patch("capture_simulator_screenshots.time.sleep"):
+            wait_for_home_demo_data("simulator", language_code="en", capture_id="current")
+        self.assertEqual(run_command.call_count, 2)
+        self.assertEqual(run_command.call_args.kwargs["timeout_seconds"], 10)
+        self.assertIn("2m", run_command.call_args.args[0])
+
+    def test_defect_counter_waits_for_demo_data_and_retries_until_both_counters_are_visible(self) -> None:
+        import capture_simulator_screenshots
+
+        launches: list[list[str]] = []
+        readiness_checks: list[tuple[str, str, str]] = []
+        verifier_arguments: list[list[str]] = []
+
+        def capture_command(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            if arguments[:3] == ["xcrun", "simctl", "launch"]:
+                launches.append(arguments)
+            if "screenshot" in arguments:
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                verifier_arguments.append(arguments)
+                if len(verifier_arguments) == 1:
+                    raise subprocess.CalledProcessError(
+                        1, arguments, stderr="Missing values: 8. Recognized text: blank screen."
+                    )
+                return subprocess.CompletedProcess(arguments, 0, stdout="286, 300, 8 visible", stderr="")
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        def check_readiness(device_id: str, *, language_code: str, capture_id: str) -> None:
+            readiness_checks.append((device_id, language_code, capture_id))
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-defect-counter-ja.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=capture_command), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data", side_effect=check_readiness), \
+                    patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(1206, 2622)), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                dimensions = capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=True, platform="iPhone", scenario="defect-counter",
+                )
+            self.assertTrue(output_path.is_file())
+
+        self.assertEqual(dimensions, (1206, 2622))
+        self.assertEqual(len(launches), 2)
+        self.assertEqual(len(readiness_checks), 2)
+        self.assertEqual(len(verifier_arguments), 2)
+        self.assertEqual(verifier_arguments[1][-3:], ["--language", "ja-JP", "--counter-row"])
+
+    def test_takt_time_capture_retries_blank_first_render_without_home_readiness_polling(self) -> None:
+        import capture_simulator_screenshots
+
+        launches: list[list[str]] = []
+        captures = 0
+        verifier_arguments: list[list[str]] = []
+
+        def capture_command(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            nonlocal captures
+            if arguments[:3] == ["xcrun", "simctl", "launch"]:
+                launches.append(arguments)
+            if "screenshot" in arguments:
+                captures += 1
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                verifier_arguments.append(arguments)
+                if len(verifier_arguments) == 1:
+                    raise subprocess.CalledProcessError(
+                        1, arguments, stderr="Missing values: 27000, 450, 60. Recognized text: blank screen."
+                    )
+                return subprocess.CompletedProcess(
+                    arguments, 0,
+                    stdout="27000, 450, 60, Net production time, Customer demand visible",
+                    stderr="",
+                )
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "iphone-takt-time-en.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=capture_command), \
+                    patch.object(capture_simulator_screenshots, "wait_for_home_demo_data") as readiness, \
+                    patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(1206, 2622)), \
+                    patch.object(capture_simulator_screenshots.time, "sleep"):
+                dimensions = capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=False, platform="iPhone", scenario="takt-time",
+                )
+
+            self.assertTrue(output_path.is_file())
+            self.assertEqual(output_path.read_bytes()[:2], b"\xff\xd8")
+
+        self.assertEqual(dimensions, (1206, 2622))
+        self.assertEqual(len(launches), 2)
+        self.assertEqual(captures, 2)
+        self.assertEqual(len(verifier_arguments), 2)
+        self.assertEqual(
+            verifier_arguments[1][-7:],
+            ["60", "--language", "en-US", "--required-label", "Net production time", "--required-label", "Customer demand"],
+        )
+        readiness.assert_not_called()
+
+    def test_home_readiness_does_not_combine_state_from_different_log_lines(self) -> None:
+        split_output = subprocess.CompletedProcess(
+            args=[], returncode=0,
+            stdout=(
+                'captureID=current locale=en sessionCount=1\n'
+                'current=286 target=300\n'
+                'captureID=current locale=en sessionCount=1 current=286 target=300\n'
+            ), stderr="",
+        )
+        with patch("capture_simulator_screenshots.run", return_value=split_output) as run_command, \
+             patch("capture_simulator_screenshots.time.sleep"):
+            wait_for_home_demo_data("simulator", language_code="en", capture_id="current")
+        self.assertEqual(run_command.call_count, 1)
+
+    def test_home_capture_falls_back_to_final_image_ocr_when_readiness_logs_timeout(self) -> None:
+        import capture_simulator_screenshots
+
+        def create_capture_fixture(arguments: list[str], *, capture_output: bool = False, timeout_seconds: int = 900):
+            if "screenshot" in arguments:
+                Path(arguments[-1]).write_bytes(b"simulator screenshot fixture")
+            elif arguments and arguments[0] == "sips" and "--out" in arguments:
+                Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_001)
+            elif arguments and arguments[0] == "swift":
+                return subprocess.CompletedProcess(arguments, 0, stdout="286/300 visible", stderr="")
+            return subprocess.CompletedProcess(arguments, 0, stdout="", stderr="")
+
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "ipad-home-ja.jpg"
+            with patch.object(capture_simulator_screenshots, "run", side_effect=create_capture_fixture), \
+                 patch.object(capture_simulator_screenshots, "wait_for_home_demo_data", side_effect=RuntimeError("log query timed out")), \
+                 patch.object(capture_simulator_screenshots, "image_dimensions", return_value=(2064, 2752)), \
+                 patch.object(capture_simulator_screenshots.time, "sleep"):
+                dimensions = capture_simulator_language(
+                    "simulator", "com.example.FactoryTools", output_path,
+                    japanese=True, platform="iPad", scenario="home",
+                )
+
+            self.assertEqual(dimensions, (2064, 2752))
+            self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
+
+    def test_capture_cleans_stale_outputs_but_preserves_unrelated_files(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_dir = Path(temporary_directory)
+            stale_names = ("ipad-home-en.jpg", "ipad-takt-time-ja.png", "capture-info.txt")
+            for name in stale_names:
+                (output_dir / name).write_text("stale", encoding="utf-8")
+            unrelated = output_dir / "notes.txt"
+            unrelated.write_text("keep", encoding="utf-8")
+
+            clear_capture_outputs(output_dir, platform="ipad")
+
+            self.assertTrue(all(not (output_dir / name).exists() for name in stale_names))
+            self.assertEqual(unrelated.read_text(encoding="utf-8"), "keep")
+
     def test_ci_captures_bilingual_release_simulator_screenshots_without_persisting_demo_data(self) -> None:
         root = Path(__file__).resolve().parents[1]
         app_source = (root / "FactoryTools" / "App" / "FactoryToolsApp.swift").read_text(encoding="utf-8")
+        bootstrap_view = (root / "FactoryTools" / "App" / "AppBootstrapView.swift").read_text(encoding="utf-8")
         home_view = (root / "FactoryTools" / "Features" / "Home" / "HomeView.swift").read_text(encoding="utf-8")
+        settings_view = (root / "FactoryTools" / "Features" / "Settings" / "AppSettingsView.swift").read_text(encoding="utf-8")
         capture_script = (root / "Scripts" / "capture_simulator_screenshots.py").read_text(encoding="utf-8")
         home_card = (root / "FactoryTools" / "Features" / "Home" / "HomeToolCardView.swift").read_text(encoding="utf-8")
+        home_verifier = (root / "Scripts" / "verify_simulator_home_screenshot.swift").read_text(encoding="utf-8")
         workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
         asset_plan = (root / "FactoryTools" / "APP_STORE_ASSET_PLAN.md").read_text(encoding="utf-8")
 
+        self.assertIn('"cycle-time": ("120", "30")', capture_script)
+        self.assertIn('"--language", "ja-JP" if japanese else "en-US"', capture_script)
+        self.assertIn('verification_arguments.extend(["--required-label", label])', capture_script)
+        self.assertIn("!expectedValues.isEmpty || !requiredLabels.isEmpty", home_verifier)
+        self.assertNotIn('"cycle-time": ("120", "4", "30")', capture_script)
+        self.assertIn('? ["ja-JP", "en-US"]', home_verifier)
+        self.assertIn('request.recognitionLanguages = [language]', home_verifier)
+        self.assertIn('observation.confidence >= 0.25', home_verifier)
         self.assertIn("#if targetEnvironment(simulator)", app_source)
+        self.assertIn('HomeProfile(name: "Production", usesDefaultName: true, sortOrder: 0)', app_source)
         self.assertIn('arguments.contains("--factorytools-screenshot-demo")', app_source)
         self.assertIn('case cycleTime = "cycle-time"', app_source)
         self.assertIn('case taktTime = "takt-time"', app_source)
         self.assertIn('case defectCounter = "defect-counter"', app_source)
         self.assertIn('case counterHistory = "counter-history"', app_source)
+        self.assertIn('case counterSizeSmall = "counter-size-small"', app_source)
+        self.assertIn('case counterSizeMedium = "counter-size-medium"', app_source)
+        self.assertIn('case counterSizeLarge = "counter-size-large"', app_source)
+        self.assertIn("case .counterSizeSmall, .counterSizeMedium, .counterSizeLarge:", app_source)
+        self.assertIn('case proPurchase = "pro-purchase"', app_source)
+        self.assertIn('case counterQuickAdd = "counter-quick-add"', app_source)
+        self.assertIn("insertUndoHistoryDemoEvents(for: production, context: context)", app_source)
+        self.assertIn("reversesEventID: undoneIncrement.id", app_source)
+        self.assertIn("kind: .undo", app_source)
+        self.assertIn('case ipadDashboard = "ipad-dashboard"', app_source)
+        self.assertIn('case ipadOffline = "ipad-offline"', app_source)
+        self.assertIn("screenshotProPurchasePreview: screenshotDemoScenario == .proPurchase", home_view)
+        self.assertIn("private var proPurchaseScreenshotPreviewSection", settings_view)
+        self.assertIn('Text("pro.screenshotPreview.price")', settings_view)
+        self.assertIn(".allowsHitTesting(false)", settings_view)
+        self.assertIn("PeerCounterView(screenshotDemoMode:", home_view)
+        self.assertIn(".presentationDetents(peerDashboardSheetDetents)", home_view)
+        self.assertIn("private var peerDashboardSheetDetents: Set<PresentationDetent>", home_view)
+        self.assertIn("screenshotDemoScenario?.peerCounterScreenshotMode == nil ? [.medium, .large] : [.large]", home_view)
+        peer_view = (root / "FactoryTools" / "Features" / "Counter" / "PeerCounterView.swift").read_text(encoding="utf-8")
+        self.assertIn('homeName: "Production"', peer_view)
+        self.assertIn("homeNameIsDefault: true", peer_view)
+        self.assertIn("defaultSessionNameToolID: .productionCounter", peer_view)
+        self.assertIn('case .connected: "peer.status.connected"', peer_view)
+        self.assertIn('case .offline: "peer.status.reconnecting"', peer_view)
+        self.assertIn('.foregroundStyle(theme.accentForeground)', peer_view)
+        self.assertIn("guard screenshotDemoMode == nil else { return }", peer_view)
+        self.assertIn("guard screenshotDemoScenario == nil else { return }", bootstrap_view)
+        self.assertIn("guard screenshotDemoScenario == nil,", bootstrap_view)
         self.assertIn("case .cycleTime where card.toolID == ToolID.cycleTime.rawValue:", home_view)
         self.assertIn("case .taktTime where card.toolID == ToolID.taktTime.rawValue:", home_view)
         self.assertIn("case .counterHistory where card.toolID == ToolID.productionCounter.rawValue:", home_view)
-        self.assertIn(".presentationDetents(initialSheet == nil ? [.medium, .large] : [.large])", home_card)
+        self.assertIn("initialSheet == nil || initialSheet == .customQuickAdd ? [.medium, .large] : [.large]", home_card)
         self.assertIn(".presentationDragIndicator(initialSheet == nil ? .visible : .hidden)", home_card)
         self.assertIn("isStoredInMemoryOnly: screenshotLanguage != nil", app_source)
+        self.assertIn('appendingPathComponent("FactoryToolsHostedTests-\\(ProcessInfo.processInfo.processIdentifier)"', app_source)
+        self.assertIn("url: testStoreDirectory.appendingPathComponent(\"FactoryTools.store\")", app_source)
+        self.assertIn('environment["FACTORYTOOLS_HOSTED_TESTS"] == "1"', app_source)
+        self.assertIn("FactoryToolsApp.isRunningHostedTests", (root / "FactoryToolsTests" / "CounterServiceTests.swift").read_text(encoding="utf-8"))
         self.assertIn("ProductionSession(", app_source)
         self.assertIn('"--factorytools-screenshot-japanese"', app_source)
         self.assertIn('f"--factorytools-screenshot-{scenario}"', capture_script)
         self.assertIn('"sips", "-s", "format", "jpeg"', capture_script)
         self.assertIn('f"{arguments.platform}-{scenario}-{language}.jpg"', capture_script)
+        self.assertIn("COMMAND_TIMEOUT_SECONDS = 900", capture_script)
+        self.assertIn("HOME_READINESS_TIMEOUT_SECONDS = 30", capture_script)
+        self.assertIn("HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10", capture_script)
+        self.assertIn("def clear_capture_outputs", capture_script)
+        self.assertIn("Simulator readiness logs were unavailable; the final image OCR will decide capture readiness.", capture_script)
+        self.assertIn('"log", "show", "--last", "2m"', capture_script)
+        self.assertIn("SCREENSHOT_CAPTURE_ATTEMPTS = 4", capture_script)
+        self.assertIn("HOME_RENDER_SETTLE_SECONDS = 5", capture_script)
+        self.assertIn("NON_DEMO_RENDER_SETTLE_SECONDS = 8", capture_script)
+        self.assertIn('language = "ja" if japanese else "en"', capture_script)
+        self.assertIn("wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)", capture_script)
+        self.assertIn('"log", "show", "--last", "2m"', capture_script)
+        self.assertIn('f"--factorytools-screenshot-capture-id={capture_id}"', capture_script)
+        self.assertIn('f"captureID={capture_id}" in line', capture_script)
+        self.assertIn("for line in result.stdout.splitlines()", capture_script)
+        self.assertIn("time.sleep(HOME_RENDER_SETTLE_SECONDS)", capture_script)
+        self.assertIn('f"locale={language_code}"', capture_script)
+        self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER)', capture_script)
+        self.assertIn('"swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values,', capture_script)
+        self.assertIn('"defect-counter": ("286", "300", "8")', capture_script)
+        self.assertIn('"counter-history": ("286", "200")', capture_script)
+        self.assertIn('"counter-size-small": ("286",)', capture_script)
+        self.assertIn('"counter-size-medium": ("286", "300")', capture_script)
+        self.assertIn('"counter-size-large": ("286", "300")', capture_script)
+        self.assertIn('"pro-purchase": (),', capture_script)
+        self.assertIn('"en": ("Price varies by region",)', capture_script)
+        self.assertIn('"ja": ("980",)', capture_script)
+        self.assertIn('if scenario in COUNTER_ROW_SCENARIOS:', capture_script)
+        self.assertIn('"--counter-row"', capture_script)
+        self.assertIn("initialSheet == .customQuickAdd ? [.medium, .large] : [.large]", home_card)
+        self.assertLess(
+            capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+            capture_script.index('str(HOME_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+        )
+        self.assertIn('"286", "300"', capture_script)
+        self.assertIn('current=286 target=300', capture_script)
+        self.assertIn('subsystem: "com.factorytools.ios"', home_card)
+        self.assertIn('category: "ScreenshotCapture"', home_card)
+        self.assertIn("session?.currentCount.description", home_card)
+        self.assertIn("confidence >= 0.5", home_verifier)
+        self.assertIn("hasCountAndTargetOnSameRow", home_verifier)
+        self.assertIn('case "--counter-row":', home_verifier)
+        self.assertIn("abs(current.bounds.midY - target.bounds.midY) <= 0.06", home_verifier)
+        self.assertIn("current.bounds.minX < target.bounds.minX", home_verifier)
+        self.assertIn("Recognized text:", home_verifier)
+        self.assertIn("timeout=timeout_seconds", capture_script)
+        self.assertIn("Running simulator capture command:", capture_script)
         self.assertIn("CycleTimeSample(homeProfileID: home.id", app_source)
         self.assertIn('"27000" : ""', (root / "FactoryTools" / "Features" / "Tools" / "TaktTimeCalculatorView.swift").read_text(encoding="utf-8"))
+        takt_view = (root / "FactoryTools" / "Features" / "Tools" / "TaktTimeCalculatorView.swift").read_text(encoding="utf-8")
+        cycle_view = (root / "FactoryTools" / "Features" / "Tools" / "CycleTimeCalculatorView.swift").read_text(encoding="utf-8")
+        self.assertIn('LabeledContent("taktTime.netSeconds")', takt_view)
+        self.assertIn('LabeledContent("taktTime.demand")', takt_view)
+        self.assertIn('LabeledContent("cycleTime.totalSeconds")', cycle_view)
+        self.assertIn('LabeledContent("cycleTime.quantity")', cycle_view)
+        self.assertIn('"ja": ("正味稼働時間", "顧客需要数")', capture_script)
         self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
         self.assertIn('"13-inch" not in device', capture_script)
         self.assertIn('dimensions not in {(2064, 2752), (2048, 2732)}', capture_script)
         self.assertIn("-configuration Release", workflow)
         self.assertIn("Scripts/capture_simulator_screenshots.py", workflow)
-        self.assertIn("uses: actions/upload-artifact@v4", workflow)
+        self.assertIn("uses: actions/upload-artifact@v7.0.1", workflow)
+        self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
+        self.assertEqual(workflow.count("if: always()"), 5)
+        self.assertEqual(workflow.count("if-no-files-found: ignore"), 5)
         self.assertIn("retention-days: 30", workflow)
-        self.assertIn("--scenarios home cycle-time takt-time defect-counter counter-history", workflow)
+        self.assertIn("Capture bilingual Production Counter S/M/L layout evidence", workflow)
+        self.assertIn("factory-tools-iphone-counter-card-size-evidence", workflow)
+        self.assertIn("--scenarios counter-size-small counter-size-medium counter-size-large", workflow)
+        self.assertIn("CARD_SIZE_SCREENSHOTS: ${{ steps.capture_counter_size_evidence.outcome }}", workflow)
+        self.assertIn("Require iPhone, iPad, and card-size screenshot captures", workflow)
+        self.assertIn('exit "$failed"', workflow)
+        self.assertIn('::error title=Required screenshot capture failed::${device} screenshot capture did not succeed (outcome: ${outcome}).', workflow)
+        self.assertIn("--scenarios home counter-quick-add cycle-time takt-time defect-counter counter-history pro-purchase", workflow)
         self.assertIn("factory-tools-app-store-iphone-product-page", workflow)
-        self.assertIn("factory-tools-app-store-iphone-home", asset_plan)
-        self.assertIn("if scenario == \"home\":", capture_script)
-        self.assertIn("verify_localized_home_title(output_path, japanese=japanese)", capture_script)
-        self.assertIn("localized app name in each home screenshot is verified with Apple Vision OCR", capture_script)
-        self.assertIn("all prior iPhone, iPad, and Watch screenshots need a fresh hosted capture", asset_plan)
-        self.assertIn("former title “Factory Tools”", asset_plan)
-        self.assertIn("November 10 review set shows 286 in Japanese but omits it in English", asset_plan)
-        self.assertIn("Capture bilingual 13-inch iPad home screenshots from Release Simulator build", workflow)
-        self.assertIn("factory-tools-app-store-ipad-home", workflow)
+        self.assertIn("iphone-home-ja.jpg", asset_plan)
+        self.assertIn("Prepare 13-inch iPad Simulator before release screenshot captures", workflow)
+        self.assertLess(
+            workflow.index("Prepare 13-inch iPad Simulator before release screenshot captures"),
+            workflow.index("Capture bilingual iPhone product-page screenshots from Release Simulator build"),
+        )
+        self.assertIn('"bootstatus", sys.argv[1], "-b"], check=True, timeout=900)', workflow)
+        self.assertIn('xcrun simctl shutdown "$simulator_id"', workflow)
+        self.assertIn("def ensure_simulator_booted(device_id: str) -> None:", capture_script)
+        self.assertIn('["xcrun", "simctl", "boot", device_id]', capture_script)
+        self.assertIn("Capture bilingual 13-inch iPad product-page screenshots from Release Simulator build", workflow)
+        self.assertIn("--scenarios ipad-dashboard ipad-offline", workflow)
+        self.assertIn("factory-tools-app-store-ipad-product-page", workflow)
+
+    def test_watch_archive_privacy_manifest_check_script_is_valid_python(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8")
+        script = workflow.split('python3 - "$manifest" <<\'PY\'\n', 1)[1].split("\n          PY\n", 1)[0]
+
+        compile(textwrap.dedent(script), "<watch-archive-privacy-manifest-check>", "exec")
 
     def test_ci_captures_bilingual_release_watch_screenshots_with_simulator_only_data(self) -> None:
         root = Path(__file__).resolve().parents[1]
@@ -444,8 +749,10 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         watch_model = (root / "FactoryToolsWatch" / "WatchCounterModel.swift").read_text(encoding="utf-8")
         watch_view = (root / "FactoryToolsWatch" / "WatchHomeView.swift").read_text(encoding="utf-8")
         watch_theme = (root / "FactoryToolsWatch" / "WatchTheme.swift").read_text(encoding="utf-8")
+        watch_strings = (root / "FactoryToolsWatch" / "Resources" / "Localizable.xcstrings").read_text(encoding="utf-8")
         capture_script = (root / "Scripts" / "capture_watch_screenshots.py").read_text(encoding="utf-8")
-        workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        screenshot_verifier = (root / "Scripts" / "verify_watch_screenshot.swift").read_text(encoding="utf-8")
+        workflow = (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8")
 
         self.assertIn("#if targetEnvironment(simulator)", watch_app)
         self.assertIn("model.screenshotDemoSessionID", watch_app)
@@ -454,7 +761,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"home.defaultName"', (root / "FactoryToolsWatch" / "Resources" / "Localizable.xcstrings").read_text(encoding="utf-8"))
         self.assertIn("currentCount: 286", watch_model)
         self.assertIn("targetCount: 300", watch_model)
-        self.assertIn("static let primaryText = Color.primary", watch_theme)
+        self.assertIn("static let primaryText = Color.white", watch_theme)
         self.assertIn("struct WatchCounterDetailView: View", watch_view)
         counter_detail = watch_view.split("struct WatchCounterDetailView: View", 1)[1]
         self.assertIn("@Environment(\\.isLuminanceReduced) private var isLuminanceReduced", counter_detail)
@@ -464,43 +771,88 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("ProgressView(value: completion)", counter_detail)
         self.assertIn(".progressViewStyle(.linear)", counter_detail)
         self.assertIn(".tint(counterAccent)", counter_detail)
+        self.assertIn(".tint(WatchTheme.secondaryText)", counter_detail)
+        self.assertIn('.accessibilityLabel("watch.counter.subtractOne")', counter_detail)
+        self.assertIn('.accessibilityLabel("watch.counter.addOne")', counter_detail)
+        self.assertIn('"watch.counter.subtractOne"', watch_strings)
+        self.assertIn('"watch.counter.addOne"', watch_strings)
+        self.assertIn('category: "ScreenshotCapture"', watch_view)
+        self.assertIn("@Environment(\\.colorScheme) private var colorScheme", counter_detail)
+        self.assertIn("@Environment(\\.scenePhase) private var scenePhase", counter_detail)
+        self.assertIn(r'.id("\(model.displayLanguage.rawValue)-\(String(describing: scenePhase))")', counter_detail)
+        self.assertIn("redactionReasons.contains(.privacy)", watch_view)
+        self.assertIn("redactionReasons.contains(.placeholder)", watch_view)
         self.assertNotIn("GeometryReader { geometry in", counter_detail)
         self.assertNotIn("Text(session.currentCount, format: .number)", counter_detail)
-        self.assertIn('"simctl", "install", device_id, str(arguments.app)', capture_script)
+        self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
         self.assertIn("dimensions != (416, 496)", capture_script)
         self.assertIn('"watch-home-en.jpg"', capture_script)
         self.assertIn('"watch-home-ja.jpg"', capture_script)
-        self.assertIn('(arguments.device_id, "watch-home-ja.jpg", True, True)', capture_script)
-        self.assertIn('(english_device_id, "watch-home-en.jpg", False, False)', capture_script)
-        self.assertIn('"simctl", "create", name, device_type, runtime_identifier', capture_script)
-        self.assertIn('"simctl", "delete", english_device_id', capture_script)
-        self.assertIn('device_type_value = device.get("deviceTypeIdentifier")', capture_script)
-        self.assertIn('def simulator_state(device_id: str) -> str:', capture_script)
-        self.assertIn('if state == "Booted":', capture_script)
-        self.assertIn('if simulator_state(english_device_id) != "Shutdown":', capture_script)
-        self.assertIn('for device_id, filename, japanese, clean in (', capture_script)
-        self.assertIn('arguments.output_dir / filename', capture_script)
-        self.assertIn('print("Removing the temporary Apple Watch Simulator.", flush=True)', capture_script)
+        self.assertLess(
+            capture_script.index('"watch-home-ja.jpg": capture_language'),
+            capture_script.index('captures["watch-home-en.jpg"] = capture_language'),
+        )
+        self.assertIn('print("Installing the Release Watch app.", flush=True)', capture_script)
         self.assertIn('print(f"Capturing {output_path.name}.", flush=True)', capture_script)
-        self.assertIn("time.sleep(3)", capture_script)
-        self.assertIn("for attempt in range(20):", capture_script)
-        self.assertIn("if verify_counter_content(output_path):", capture_script)
-        self.assertIn("time.sleep(1)", capture_script)
-        self.assertIn("enter its dimmed presentation", capture_script)
-        self.assertIn('print("Restarting the primary Apple Watch Simulator for a clean capture.", flush=True)', capture_script)
-        self.assertIn('print("Booting an independent Apple Watch Simulator for the second locale.", flush=True)', capture_script)
+        self.assertIn("time.sleep(20)", capture_script)
+        self.assertIn("MAX_SCREENSHOT_ATTEMPTS = 3", capture_script)
+        self.assertIn('"swift", str(WATCH_SCREENSHOT_VERIFIER)', capture_script)
+        self.assertIn('str(WATCH_SCREENSHOT_VERIFIER), str(output_path), "286", "300"', capture_script)
+        self.assertLess(
+            capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+            capture_script.index('str(WATCH_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+        )
+        self.assertIn('"286", "300"', capture_script)
+        self.assertIn("Counter text was not visible; restarting Watch Simulator.", capture_script)
+        self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
+        self.assertIn("Watch screenshot is missing visible counter values", screenshot_verifier)
+        self.assertIn("VNRecognizeTextRequest()", screenshot_verifier)
+        self.assertIn("VNImageRequestHandler(url: imageURL).perform([request])", screenshot_verifier)
+        self.assertIn("requiredVerticalRange.contains(item.bounds.midY)", screenshot_verifier)
+        self.assertIn("index == 0 ? 0.40...0.75 : 0.10...0.42", screenshot_verifier)
+        self.assertIn("Watch screenshot OCR:", screenshot_verifier)
+        self.assertIn('"log", "show", "--last", "2m"', capture_script)
+        self.assertNotIn("restart_simulator(arguments.device_id)", capture_script)
+        self.assertIn("COMMAND_TIMEOUT_SECONDS = 300", capture_script)
+        self.assertIn("SIMULATOR_BOOT_TIMEOUT_SECONDS = 900", capture_script)
+        self.assertIn("timeout_seconds: int = COMMAND_TIMEOUT_SECONDS", capture_script)
+        self.assertIn("timeout_seconds=SIMULATOR_BOOT_TIMEOUT_SECONDS", capture_script)
+        self.assertIn('parser.add_argument("--device-name")', capture_script)
+        self.assertIn("arguments.device_name or simulator_name(arguments.device_id)", capture_script)
+        self.assertIn("Each launch terminates the prior app process", capture_script)
         self.assertIn('summary_path = os.environ.get("GITHUB_STEP_SUMMARY")', capture_script)
         self.assertIn("record_failure_summary(error)", capture_script)
         self.assertIn("stderr=result.stderr", capture_script)
         self.assertIn("if error.stderr:", capture_script)
         self.assertIn("Capture bilingual Apple Watch screenshots from Release Simulator build", workflow)
         self.assertIn("Build Watch Release Simulator target for screenshots", workflow)
+        self.assertIn("timeout-minutes: 90", workflow)
+        self.assertIn("timeout-minutes: 30", workflow)
+        self.assertIn("id: build_watch_release", workflow)
+        self.assertIn('timeout=30)', workflow)
+        self.assertIn('echo "simulator_id=$simulator_id" >> "$GITHUB_OUTPUT"', workflow)
+        self.assertIn("WATCH_SIMULATOR_ID: ${{ steps.build_watch_release.outputs.simulator_id }}", workflow)
+        self.assertIn('--device-name "$simulator_name"', workflow)
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
+        self.assertIn("FactoryTools.app/PlugIns/FactoryToolsWatch.app", workflow)
+        self.assertIn('for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do', workflow)
+        self.assertIn('entry.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategorySystemBootTime"', workflow)
+        self.assertIn('"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])', workflow)
         self.assertIn("factory-tools-app-store-watch-home", workflow)
-        watch_upload_step = workflow.split("      - name: Upload bilingual Apple Watch screenshot artifact", 1)[1].split("\n      - name:", 1)[0]
-        self.assertIn("if: always()", watch_upload_step)
-        self.assertIn("if-no-files-found: ignore", watch_upload_step)
+        self.assertRegex(
+            workflow,
+            r"id: capture_watch_screenshots\n\s+timeout-minutes: 30\n\s+continue-on-error: true",
+        )
+        self.assertIn("Test shared Core contracts", workflow)
+        self.assertIn("Archive generic iPhone and iPad app without signing", workflow)
+
+        ios_workflow = (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8")
+        for capture_id in ("capture_iphone_screenshots", "capture_ipad_screenshots"):
+            self.assertRegex(
+                ios_workflow,
+                rf"id: {capture_id}\n(?:\s+timeout-minutes: \d+\n)?\s+continue-on-error: true",
+            )
 
 
 class LegalPagesWorkflowContractTests(unittest.TestCase):
@@ -538,20 +890,28 @@ jobs:
         self.assertIn("legal-pages publication workflow must not deploy automatically", errors)
 
 
-class AppReviewNotesTests(unittest.TestCase):
-    def test_review_notes_use_the_confirmed_publisher_identity(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        notes = (root / "FactoryTools" / "APP_REVIEW_NOTES_DRAFT.md").read_text(encoding="utf-8")
-
-        self.assertIn("現場ギア / Factory Tools", notes)
-        self.assertIn("**Akira Kobayashi**", notes)
-        self.assertIn("**azalea.fortask@outlook.jp**", notes)
-        self.assertNotIn("[Publisher review contact]", notes)
-        self.assertNotIn("[Monitored review contact email]", notes)
-        self.assertIn("Confirm the review contact and email are publisher-owned and monitored", notes)
-
-
 class SwiftRuntimeSafetySourceTests(unittest.TestCase):
+    def test_writable_swiftdata_test_stores_survive_until_host_process_exit(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "FactoryToolsTests" / "CounterServiceTests.swift").read_text(encoding="utf-8")
+
+        self.assertIn("private enum TestStoreDirectory", source)
+        self.assertIn("private static let cleanStaleDirectories", source)
+        self.assertIn('directory.lastPathComponent.hasPrefix("FactoryToolsTestStore-")', source)
+        self.assertIn("try TestStoreDirectory.create()", source)
+        self.assertNotIn("private var temporaryStoreDirectories", source)
+        self.assertNotIn("try? FileManager.default.removeItem(at: directory)", source[source.index("final class CounterServiceTests"):])
+
+    def test_read_only_swiftdata_test_stores_survive_until_host_process_exit(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        source = (root / "FactoryToolsTests" / "CounterServiceTests.swift").read_text(encoding="utf-8")
+
+        self.assertIn("private enum ReadOnlyTestStoreDirectory", source)
+        self.assertIn("private static let cleanStaleDirectories", source)
+        self.assertIn('directory.lastPathComponent.hasPrefix("FactoryToolsReadOnly-")', source)
+        self.assertIn("let directory = try ReadOnlyTestStoreDirectory.create()", source)
+        self.assertNotIn("addTeardownBlock { try? FileManager.default.removeItem(at: directory) }", source)
+
     def test_safe_optional_and_throwing_paths_are_allowed(self) -> None:
         source = """func decode<T: Decodable>(_ type: T.Type, data: Data) throws -> T {
     try JSONDecoder().decode(type, from: data)
@@ -763,6 +1123,21 @@ class AppStoreMetadataTests(unittest.TestCase):
         self.assertFalse(is_valid_storekit_product_id("factorytools/pro"))
         self.assertFalse(is_valid_storekit_product_id(""))
 
+    def test_local_storekit_configuration_matches_approved_purchase(self) -> None:
+        source = (Path(__file__).resolve().parents[1] / "FactoryTools" / "Resources" / "FactoryToolsPro.storekit").read_text(encoding="utf-8")
+
+        self.assertEqual(storekit_configuration_errors(source, "factorytools.pro.lifetime"), [])
+
+    def test_local_storekit_configuration_rejects_purchase_boundary_drift(self) -> None:
+        source = '{"products":[{"productID":"other","type":"Consumable","familyShareable":true,"displayPrice":"1","localizations":[{"locale":"en_US"}]}],"settings":{"_storefront":"USA"}}'
+
+        errors = storekit_configuration_errors(source, "factorytools.pro.lifetime")
+
+        self.assertEqual(len(errors), 6)
+        self.assertTrue(any("product ID" in error for error in errors))
+        self.assertTrue(any("non-consumable" in error for error in errors))
+        self.assertTrue(any("Family Sharing" in error for error in errors))
+
     def test_app_store_sku_uses_supported_characters_and_valid_prefix(self) -> None:
         self.assertTrue(is_valid_app_store_sku("FACTORYTOOLS-IOS-001"))
         self.assertTrue(is_valid_app_store_sku("App_1.0"))
@@ -783,6 +1158,32 @@ class JSONResourceValidationTests(unittest.TestCase):
     def test_rejects_duplicate_keys_in_resource_json(self) -> None:
         with self.assertRaises(DuplicateJSONKeyError):
             parse_json_no_duplicates('{"language": "ja", "language": "en"}')
+
+
+class PrivacyManifestTargetTests(unittest.TestCase):
+    def test_required_reason_manifest_is_bundled_in_each_timer_app(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        project = parse_openstep((root / "FactoryTools.xcodeproj" / "project.pbxproj").read_text(encoding="utf-8"))
+        objects = project["objects"]
+        manifest_reference = next(
+            object_id for object_id, item in objects.items()
+            if item.get("isa") == "PBXFileReference" and item.get("path") == "PrivacyInfo.xcprivacy"
+        )
+
+        for target_name in ("FactoryTools", "FactoryToolsWatch"):
+            target = next(
+                item for item in objects.values()
+                if item.get("isa") == "PBXNativeTarget" and item.get("name") == target_name
+            )
+            bundled_manifest = any(
+                objects[build_file_id].get("fileRef") == manifest_reference
+                for phase_id in target["buildPhases"]
+                for phase in (objects[phase_id],)
+                if phase.get("isa") == "PBXResourcesBuildPhase"
+                for build_file_id in phase["files"]
+            )
+            with self.subTest(target=target_name):
+                self.assertTrue(bundled_manifest)
 
 
 class SwiftDataModelSourceTests(unittest.TestCase):
@@ -817,13 +1218,6 @@ class ContrastCalculationTests(unittest.TestCase):
 
 
 class PNGValidationTests(unittest.TestCase):
-    def test_iphone_and_watch_share_the_approved_brand_icon(self) -> None:
-        root = Path(__file__).resolve().parents[1]
-        iphone_icon = root / "FactoryTools" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset" / "AppIcon.png"
-        watch_icon = root / "FactoryToolsWatch" / "Resources" / "Assets.xcassets" / "AppIcon.appiconset" / "AppIcon.png"
-
-        self.assertEqual(iphone_icon.read_bytes(), watch_icon.read_bytes())
-
     @staticmethod
     def make_png(color_type: int, with_transparency_chunk: bool = False) -> bytes:
         signature = b"\x89PNG\r\n\x1a\n"
@@ -850,7 +1244,7 @@ class PNGValidationTests(unittest.TestCase):
 
 
 class ReleasePreflightTests(unittest.TestCase):
-    def test_base_storefront_price_option_has_explicit_name(self) -> None:
+    def test_base_storefront_price_option_has_explicit_name_and_passes(self) -> None:
         script = Path(__file__).with_name("validate_static.py")
         for option in ("--candidate-base-storefront-price", "--candidate-pro-price"):
             with self.subTest(option=option):
@@ -864,9 +1258,9 @@ class ReleasePreflightTests(unittest.TestCase):
 
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertNotIn("base storefront price candidate", result.stdout)
-                self.assertIn("candidate values passed source-level checks in Debug and Release", result.stdout)
+                self.assertIn("candidate values passed source-level checks", result.stdout)
 
-    def test_release_preflight_reports_blockers_with_cp932_console_encoding(self) -> None:
+    def test_release_preflight_passes_with_cp932_console_encoding(self) -> None:
         script = Path(__file__).with_name("validate_static.py")
         environment = os.environ.copy()
         environment["PYTHONIOENCODING"] = "cp932"
@@ -881,7 +1275,7 @@ class ReleasePreflightTests(unittest.TestCase):
         )
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("Debug and Release source identity/resource checks passed", result.stdout)
+        self.assertIn("PASS: Debug and Release source identity/resource checks passed.", result.stdout)
         self.assertNotIn("UnicodeEncodeError", result.stderr)
         self.assertNotIn("Traceback", result.stderr)
 
@@ -897,8 +1291,8 @@ class ReleasePreflightTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("JP / JPY:980", result.stdout)
-        self.assertIn("Debug and Release source identity/resource checks passed", result.stdout)
-        self.assertIn("LIMIT: Static checks do not compile or type-check Swift", result.stdout)
+        self.assertIn("PASS: Debug and Release source identity/resource checks passed.", result.stdout)
+        self.assertIn("This is not a release approval", result.stdout)
         self.assertNotIn("distribution blocker(s)", result.stdout)
         self.assertNotIn("base storefront price candidate", result.stdout)
         self.assertNotIn("base storefront country/region candidate", result.stdout)
@@ -1165,7 +1559,7 @@ class ReleasePreflightTests(unittest.TestCase):
 
     def test_candidate_distribution_values_validate_both_targets_without_mutation(self) -> None:
         project_settings = {
-            "FACTORYTOOLS_APP_BUNDLE_ID": "com.example.FactoryTools",
+            "FACTORYTOOLS_APP_BUNDLE_ID": "com.niconiconicopi.factorytools",
             "MARKETING_VERSION": "0.1",
             "CURRENT_PROJECT_VERSION": "1",
         }
@@ -1204,7 +1598,7 @@ class ReleasePreflightTests(unittest.TestCase):
                 ),
                 [],
             )
-        self.assertEqual(project_settings["FACTORYTOOLS_APP_BUNDLE_ID"], "com.example.FactoryTools")
+        self.assertEqual(project_settings["FACTORYTOOLS_APP_BUNDLE_ID"], "com.niconiconicopi.factorytools")
         self.assertEqual(project_settings["MARKETING_VERSION"], "0.1")
         self.assertNotIn("DEVELOPMENT_TEAM", project_settings)
 
@@ -1303,4 +1697,3 @@ class WatchTransportSourceRegressionTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

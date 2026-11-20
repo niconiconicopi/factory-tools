@@ -1,5 +1,13 @@
 import FactoryToolsCore
 import SwiftUI
+#if targetEnvironment(simulator)
+import OSLog
+
+private let watchScreenshotCaptureLogger = Logger(
+    subsystem: "com.factorytools.watch",
+    category: "ScreenshotCapture"
+)
+#endif
 
 struct WatchHomeView: View {
     @EnvironmentObject private var model: WatchCounterModel
@@ -339,11 +347,32 @@ private struct WatchCycleTimeDetailView: View {
 
 struct WatchCounterDetailView: View {
     @EnvironmentObject private var model: WatchCounterModel
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
+    @Environment(\.redactionReasons) private var redactionReasons
+    @Environment(\.scenePhase) private var scenePhase
     let sessionID: UUID
 
     private var session: WatchCounterSessionSnapshot? { model.session(id: sessionID) }
     private var counterAccent: Color { isLuminanceReduced ? WatchTheme.primaryText : WatchTheme.accent }
+
+    #if targetEnvironment(simulator)
+    private func logScreenshotCaptureState() {
+        guard model.screenshotDemoSessionID == sessionID, let session else { return }
+        let colorSchemeName = colorScheme == .dark ? "dark" : "light"
+        let captureState = [
+            "language=\(model.displayLanguage.rawValue)",
+            "count=\(session.currentCount)",
+            "target=\(session.targetCount)",
+            "colorScheme=\(colorSchemeName)",
+            "scenePhase=\(String(describing: scenePhase))",
+            "luminanceReduced=\(isLuminanceReduced)",
+            "privacyRedacted=\(redactionReasons.contains(.privacy))",
+            "placeholderRedacted=\(redactionReasons.contains(.placeholder))",
+        ].joined(separator: " ")
+        watchScreenshotCaptureLogger.notice("\(captureState, privacy: .public)")
+    }
+    #endif
 
     var body: some View {
         if let session {
@@ -404,7 +433,7 @@ struct WatchCounterDetailView: View {
                             Text("−1").font(.headline)
                         }
                         .accessibilityLabel("watch.counter.subtractOne")
-                        .tint(WatchTheme.panel)
+                        .tint(WatchTheme.secondaryText)
                         Button {
                             model.addOne(to: session)
                         } label: {
@@ -423,7 +452,14 @@ struct WatchCounterDetailView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.horizontal, 3)
+                .id("\(model.displayLanguage.rawValue)-\(String(describing: scenePhase))")
             }
+#if targetEnvironment(simulator)
+            .onAppear(perform: logScreenshotCaptureState)
+            .onChange(of: isLuminanceReduced) { _, _ in logScreenshotCaptureState() }
+            .onChange(of: redactionReasons) { _, _ in logScreenshotCaptureState() }
+            .onChange(of: scenePhase) { _, _ in logScreenshotCaptureState() }
+#endif
             .navigationTitle(watchHomeNameText(session.homeName, isDefault: session.homeNameIsDefault))
             .navigationBarTitleDisplayMode(.inline)
         } else {

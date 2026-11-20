@@ -38,34 +38,16 @@ class PublicSiteDraftTests(unittest.TestCase):
         pages = generate_public_site.build_outputs()
         privacy = pages["privacy.html"]
         support = pages["support.html"]
-        for name in ("index.html", "privacy.html", "support.html"):
-            self.assertIn("現場ギア / Factory Tools", pages[name])
         self.assertIn('lang="ja"', privacy)
         self.assertIn('lang="en"', privacy)
-        self.assertIn("Akira Kobayashi", privacy)
+        self.assertIn("[Publisher&#x27;s legal name / 発行者の正式名称]", privacy)
         self.assertIn("azalea.fortask@outlook.jp", privacy)
-        self.assertIn("azalea.fortask@outlook.jp", support)
-        self.assertIn("\u73fe\u5834\u30ae\u30a2", support)
-        self.assertIn("Factory Tools", support)
-
-    def test_privacy_page_retains_local_storage_and_transfer_disclosures_in_both_languages(self) -> None:
-        privacy = generate_public_site.build_outputs()["privacy.html"]
-        required_copy = (
-            "端末内に保存します",
-            "ペアリングしたiPadとの間では",
-            "開発者や外部事業者のサーバーには送られません",
-            "Appleの端末バックアップにアプリデータが含まれることがあります",
-            "stores data that you enter or create",
-            "directly with Apple Watch",
-            "paired iPad",
-            "not sent to a server operated by the developer or an outside provider",
-            "Apple device backups may include app data",
-            "GitHub logs visitor IP addresses for service security",
-        )
-
-        for statement in required_copy:
-            with self.subTest(statement=statement):
-                self.assertIn(statement, privacy)
+        self.assertIn('href="mailto:azalea.fortask@outlook.jp"', support)
+        self.assertNotIn("[サポート用メールアドレス]", support)
+        self.assertNotIn("[Monitored support email address]", support)
+        self.assertIn("Unsent iPad commands remain in the queue for the old code", support)
+        for filename in ("index.html", "privacy.html", "support.html"):
+            self.assertIn("現場ギア / Factory Tools", pages[filename])
 
     def test_generated_pages_omit_internal_publication_checklists(self) -> None:
         pages = generate_public_site.build_outputs()
@@ -73,6 +55,21 @@ class PublicSiteDraftTests(unittest.TestCase):
         self.assertNotIn("Publisher checklist", pages["support.html"])
         self.assertIn("Draft page", pages["privacy.html"])
         self.assertIn("Draft page", pages["support.html"])
+
+    def test_privacy_policy_discloses_support_email_handling(self) -> None:
+        privacy = generate_public_site.build_outputs()["privacy.html"]
+        self.assertIn("サポートメールでのお問い合わせ", privacy)
+        self.assertIn("Support email", privacy)
+        self.assertIn("reply address, message", privacy)
+        self.assertIn("https://www.microsoft.com/ja-jp/privacy/privacystatement", privacy)
+        self.assertIn("https://www.microsoft.com/en-us/privacy/privacystatement", privacy)
+
+    def test_privacy_policy_uses_confirmed_deletion_practice_without_internal_note(self) -> None:
+        privacy = generate_public_site.build_outputs()["privacy.html"]
+        self.assertIn("対応が完了したら削除します", privacy)
+        self.assertIn("deletes it after the request is resolved", privacy)
+        self.assertNotIn("公開前に、運営者は実際のメール保管・削除方法", privacy)
+        self.assertNotIn("The publisher must confirm that the actual mailbox-retention", privacy)
 
     def test_site_uses_only_local_assets_and_no_scripts(self) -> None:
         pages = generate_public_site.build_outputs()
@@ -112,6 +109,10 @@ class PublicSiteDraftTests(unittest.TestCase):
             "*.xcresult/",
             "*.app/",
             "/FactoryTools/SitePublicationCandidate/",
+            "/FactoryTools-artifacts-*/",
+            "/FactoryTools-diag-*/",
+            "/FactoryTools-preview-ci-*/",
+            "/FactoryTools-storekit-run.log",
         ):
             self.assertIn(expected, ignore_source)
         self.assertNotIn("/FactoryTools/\n", ignore_source)
@@ -142,38 +143,72 @@ class PublicSiteDraftTests(unittest.TestCase):
     def test_publication_candidate_is_blocked_while_publisher_fields_are_missing(self) -> None:
         privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
         support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
-        privacy = privacy.replace("Akira Kobayashi", "[Publisher's legal name / 発行者の正式名称]")
-        privacy = privacy.replace("2026-11-21", "[YYYY-MM-DD]")
-        privacy = privacy.replace("azalea.fortask@outlook.jp", "[Public contact email or contact page / 公開連絡先メールアドレスまたは問い合わせページ]")
-        support = support.replace("- 発行者: **Akira Kobayashi**", "- 開発者: **[開発者名]**")
-        support = support.replace("- Publisher: **Akira Kobayashi**", "- Developer: **[Developer name]**")
-        support = support.replace("- サポートメール: **azalea.fortask@outlook.jp**", "- サポートメール: **[サポート用メールアドレス]**")
-        support = support.replace("- Support email: **azalea.fortask@outlook.jp**", "- Support email: **[Monitored support email address]**")
-        support = support.replace("プライバシーについては **https://niconiconicopi.github.io/factory-tools/privacy.html**", "プライバシーについては **[公開済みプライバシーポリシーURL]")
-        support = support.replace("Read our privacy policy at **https://niconiconicopi.github.io/factory-tools/privacy.html**", "Read our privacy policy at **[Published privacy policy URL]")
         missing = generate_public_site.unresolved_publisher_fields(privacy, support)
-        self.assertGreaterEqual(len(missing), 7)
+        self.assertEqual(
+            missing,
+            ["publisher legal name"],
+        )
         with self.assertRaisesRegex(ValueError, "Resolve publisher-page issues"):
-            generate_public_site.build_outputs(publication_ready=True, privacy_source=privacy, support_source=support)
+            generate_public_site.build_outputs(publication_ready=True)
 
     def test_reviewed_complete_copy_generates_separate_indexable_candidate(self) -> None:
         privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
         support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
+        privacy = privacy.replace("[Publisher's legal name / 発行者の正式名称]", "Factory Tools Publisher")
+        privacy = privacy.replace("azalea.fortask@outlook.jp", "support@example.org")
+        support = support.replace("azalea.fortask@outlook.jp", "support@example.org")
+        support = support.replace("https://niconiconicopi.github.io/factory-tools/privacy.html", "https://example.org/privacy.html")
         pages = generate_public_site.build_outputs(publication_ready=True, privacy_source=privacy, support_source=support)
         self.assertNotIn("noindex", pages["privacy.html"])
         self.assertNotIn("Draft page", pages["privacy.html"])
-        self.assertIn("azalea.fortask@outlook.jp", pages["support.html"])
-        self.assertIn("https://niconiconicopi.github.io/factory-tools/privacy.html", pages["support.html"])
+        self.assertIn("support@example.org", pages["support.html"])
+        self.assertNotIn("[YYYY-MM-DD]", pages["privacy.html"])
+        self.assertRegex(pages["privacy.html"], r"Effective date / 発効日:</strong> <code>20\d{2}-\d{2}-\d{2}</code>")
+        self.assertIn("https://example.org/privacy.html", pages["support.html"])
+        self.assertIn("開発者: <strong>Factory Tools Publisher</strong>", pages["support.html"])
+        self.assertIn("Developer: <strong>Factory Tools Publisher</strong>", pages["support.html"])
         self.assertIn("GitHub Pagesで公開する場合", pages["privacy.html"])
         self.assertIn("GitHub logs visitor IP addresses for service security.", pages["privacy.html"])
-        self.assertIn('href="mailto:azalea.fortask@outlook.jp"', pages["support.html"])
-        self.assertIn('href="https://niconiconicopi.github.io/factory-tools/privacy.html"', pages["support.html"])
+        self.assertIn('href="mailto:support@example.org"', pages["support.html"])
+        self.assertIn('href="https://example.org/privacy.html"', pages["support.html"])
         self.assertIn("candidate without the draft banner", pages["README.md"])
+
+    def test_publication_name_can_be_injected_without_editing_public_source(self) -> None:
+        privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
+        support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
+        pages = generate_public_site.build_outputs(
+            publication_ready=True,
+            privacy_source=privacy,
+            support_source=support,
+            publisher_legal_name="Jordan Green",
+        )
+        self.assertIn("Jordan Green", pages["privacy.html"])
+        self.assertIn("Jordan Green", pages["support.html"])
+        self.assertIn("[Publisher's legal name / 発行者の正式名称]", privacy)
+
+    def test_publication_name_rejects_markdown_control_characters(self) -> None:
+        privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
+        support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
+        for name in ("Name`Break", "Name[Link]", "Name\nSecond line"):
+            with self.subTest(name=name), self.assertRaisesRegex(ValueError, "unsupported formatting characters"):
+                generate_public_site.build_outputs(
+                    publication_ready=True,
+                    privacy_source=privacy,
+                    support_source=support,
+                    publisher_legal_name=name,
+                )
+
+    def test_publication_workflow_reads_publisher_name_from_actions_secret(self) -> None:
+        workflow = (generate_public_site.ROOT / ".github/workflows/publish-legal-pages.yml").read_text(encoding="utf-8")
+        privacy_source = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
+        self.assertIn("FACTORYTOOLS_PUBLISHER_LEGAL_NAME: ${{ secrets.FACTORYTOOLS_PUBLISHER_LEGAL_NAME }}", workflow)
+        self.assertIn("[Publisher's legal name / 発行者の正式名称]", privacy_source)
 
     def test_publication_copy_rejects_invalid_dates_contacts_and_mismatched_urls(self) -> None:
         privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
         support = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
-        privacy = privacy.replace("2026-11-21", "2026-02-30")
+        privacy = privacy.replace("[Publisher's legal name / 発行者の正式名称]", "Factory Tools Publisher")
+        privacy = privacy.replace("[YYYY-MM-DD]", "2026-02-30")
         privacy = privacy.replace("azalea.fortask@outlook.jp", "not-an-email")
         support = support.replace("azalea.fortask@outlook.jp", "bad-email")
         support = support.replace("https://niconiconicopi.github.io/factory-tools/privacy.html", "https://example.org/privacy-ja.html", 1)
@@ -191,6 +226,11 @@ class PublicSiteDraftTests(unittest.TestCase):
         privacy = privacy.replace("訪問者のIPアドレスを記録します", "訪問者データを記録します")
         privacy = privacy.replace("### Website hosting", "### Hosting")
         privacy = privacy.replace("logs visitor IP addresses", "logs connection data")
+        privacy = privacy.replace("[Publisher's legal name / 発行者の正式名称]", "Factory Tools Publisher")
+        privacy = privacy.replace("[YYYY-MM-DD]", "2026-10-31")
+        privacy = privacy.replace("azalea.fortask@outlook.jp", "support@example.org")
+        support = support.replace("azalea.fortask@outlook.jp", "support@example.org")
+        support = support.replace("https://niconiconicopi.github.io/factory-tools/privacy.html", "https://example.org/privacy.html")
         issues = generate_public_site.publication_copy_issues(privacy, support)
 
         self.assertIn("Japanese privacy copy must describe website hosting separately from app data", issues)

@@ -9,13 +9,94 @@ import os
 import re
 import subprocess
 import time
+import uuid
 from pathlib import Path
 
-SCREENSHOT_SCENARIOS = ("home", "cycle-time", "takt-time", "defect-counter", "counter-history")
+SCREENSHOT_SCENARIOS = (
+    "home",
+    "counter-quick-add",
+    "cycle-time",
+    "takt-time",
+    "defect-counter",
+    "counter-history",
+    "counter-size-small",
+    "counter-size-medium",
+    "counter-size-large",
+    "pro-purchase",
+    "ipad-dashboard",
+    "ipad-offline",
+)
+DEMO_READY_SCENARIOS = {
+    "home",
+    "counter-quick-add",
+    "defect-counter",
+    "counter-size-small",
+    "counter-size-medium",
+    "counter-size-large",
+    "ipad-dashboard",
+    "ipad-offline",
+}
+COUNTER_ROW_SCENARIOS = DEMO_READY_SCENARIOS - {"counter-size-small"}
+SCENARIO_EXPECTED_VALUES = {
+    "home": ("286", "300"),
+    "counter-quick-add": ("286", "300", "10"),
+    # Vision intermittently omits the small standalone unit-count input even
+    # though it is visible; the time input and derived result uniquely verify
+    # this screen without making the capture gate OCR-fragile.
+    "cycle-time": ("120", "30"),
+    "takt-time": ("27000", "450", "60"),
+    "defect-counter": ("286", "300", "8"),
+    "counter-history": ("286", "200"),
+    "counter-size-small": ("286",),
+    "counter-size-medium": ("286", "300"),
+    "counter-size-large": ("286", "300"),
+    "pro-purchase": (),
+    "ipad-dashboard": ("286", "300"),
+    "ipad-offline": ("286", "300"),
+}
+SCENARIO_EXPECTED_LABELS = {
+    "cycle-time": {
+        "en": ("Total time", "Units produced"),
+        "ja": ("合計時間", "生産個数"),
+    },
+    "takt-time": {
+        "en": ("Net production time", "Customer demand"),
+        "ja": ("正味稼働時間", "顧客需要数"),
+    },
+    "pro-purchase": {
+        "en": ("Price varies by region",),
+        "ja": ("980",),
+    },
+}
+COMMAND_TIMEOUT_SECONDS = 900
+HOME_READINESS_TIMEOUT_SECONDS = 30
+HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
+SCREENSHOT_CAPTURE_ATTEMPTS = 4
+HOME_RENDER_SETTLE_SECONDS = 5
+NON_DEMO_RENDER_SETTLE_SECONDS = 8
+HOME_SCREENSHOT_VERIFIER = Path(__file__).with_name("verify_simulator_home_screenshot.swift")
 
 
-def run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(arguments, check=True, text=True, capture_output=capture_output)
+def run(
+    arguments: list[str],
+    *,
+    capture_output: bool = False,
+    timeout_seconds: int = COMMAND_TIMEOUT_SECONDS,
+) -> subprocess.CompletedProcess[str]:
+    print(f"Running simulator capture command: {' '.join(arguments)}", flush=True)
+    try:
+        return subprocess.run(
+            arguments,
+            check=True,
+            text=True,
+            capture_output=capture_output,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as error:
+        command = " ".join(arguments)
+        raise RuntimeError(
+            f"Simulator capture command timed out after {timeout_seconds} seconds: {command}"
+        ) from error
 
 
 def simulator_name(device_id: str) -> str:
@@ -26,6 +107,21 @@ def simulator_name(device_id: str) -> str:
             if device.get("udid") == device_id:
                 return str(device.get("name", "Apple Simulator"))
     raise RuntimeError("The requested Simulator device is not available.")
+
+
+def ensure_simulator_booted(device_id: str) -> None:
+    result = run(["xcrun", "simctl", "list", "devices", "--json"], capture_output=True)
+    inventory = json.loads(result.stdout)
+    state = next(
+        (device.get("state") for devices in inventory.get("devices", {}).values()
+         for device in devices if device.get("udid") == device_id),
+        None,
+    )
+    if state is None:
+        raise RuntimeError("The requested Simulator device is not available.")
+    if state != "Booted":
+        run(["xcrun", "simctl", "boot", device_id])
+    run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
 
 
 def bundle_identifier(app_path: Path) -> str:
@@ -54,12 +150,44 @@ def image_dimensions(image_path: Path, *, platform: str) -> tuple[int, int]:
     return dimensions
 
 
-def verify_localized_home_title(image_path: Path, *, japanese: bool) -> None:
-    verifier = Path(__file__).with_name("verify_store_home_title.swift")
-    if not verifier.is_file():
-        raise RuntimeError("The localized App Store home-title verifier is missing.")
-    expected_title = "現場ギア" if japanese else "Factory Tools"
-    run(["swift", str(verifier), str(image_path), expected_title], capture_output=True)
+def clear_capture_outputs(output_dir: Path, *, platform: str) -> None:
+    """Remove only known screenshot outputs so a partial run cannot upload stale images."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    for scenario in SCREENSHOT_SCENARIOS:
+        for language in ("en", "ja"):
+            stem = f"{platform}-{scenario}-{language}"
+            for suffix in (".jpg", ".png"):
+                (output_dir / f"{stem}{suffix}").unlink(missing_ok=True)
+    (output_dir / "capture-info.txt").unlink(missing_ok=True)
+
+
+def wait_for_home_demo_data(device_id: str, *, language_code: str, capture_id: str) -> None:
+    """Wait until the real SwiftData-backed counter query has reached the demo values."""
+    deadline = time.monotonic() + HOME_READINESS_TIMEOUT_SECONDS
+    print("Waiting for the simulator home counter query to load.", flush=True)
+    while time.monotonic() < deadline:
+        result = run(
+            [
+                "xcrun", "simctl", "spawn", device_id,
+                "log", "show", "--last", "2m", "--style", "compact",
+                "--predicate", 'subsystem == "com.factorytools.ios" AND category == "ScreenshotCapture"',
+            ],
+            capture_output=True,
+            timeout_seconds=HOME_READINESS_COMMAND_TIMEOUT_SECONDS,
+        )
+        ready_line = any(
+            f"captureID={capture_id}" in line
+            and f"locale={language_code}" in line
+            and "current=286 target=300" in line
+            for line in result.stdout.splitlines()
+        )
+        if ready_line:
+            print("SwiftData-backed home counter values are ready.", flush=True)
+            return
+        time.sleep(2)
+    raise RuntimeError(
+        f"The simulator home counter did not reach 286/300 within {HOME_READINESS_TIMEOUT_SECONDS} seconds."
+    )
 
 
 def capture_language(
@@ -71,34 +199,76 @@ def capture_language(
     platform: str,
     scenario: str,
 ) -> tuple[int, int]:
+    language = "ja" if japanese else "en"
     language_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         language_arguments.append("--factorytools-screenshot-japanese")
     language_arguments.append(f"--factorytools-screenshot-{scenario}")
-    run(
-        [
-            "xcrun", "simctl", "launch", "--terminate-running-process", device_id,
-            identifier, *language_arguments,
-        ]
-    )
-    # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
-    time.sleep(4)
     temporary_png = output_path.with_suffix(".png")
-    run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
-    run([
-        "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
-        str(temporary_png), "--out", str(output_path),
-    ])
-    temporary_png.unlink()
+    attempts = SCREENSHOT_CAPTURE_ATTEMPTS
+    for attempt in range(1, attempts + 1):
+        capture_id = uuid.uuid4().hex
+        capture_arguments = [f"--factorytools-screenshot-capture-id={capture_id}"]
+        print(
+            f"Launching {language} {platform} {scenario} screenshot (attempt {attempt}/{attempts}).",
+            flush=True,
+        )
+        run(
+            [
+                "xcrun", "simctl", "launch", "--terminate-running-process", device_id,
+                identifier, *language_arguments, *capture_arguments,
+            ]
+        )
+        if scenario in DEMO_READY_SCENARIOS:
+            try:
+                wait_for_home_demo_data(device_id, language_code=language, capture_id=capture_id)
+            except RuntimeError as error:
+                print(
+                    f"Simulator readiness logs were unavailable; the final image OCR will decide capture readiness. {error}",
+                    flush=True,
+                )
+            time.sleep(HOME_RENDER_SETTLE_SECONDS)
+        else:
+            # Allow SwiftUI's first layout and the locale-specific navigation title to settle.
+            time.sleep(NON_DEMO_RENDER_SETTLE_SECONDS)
+        run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+        run([
+            "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
+            str(temporary_png), "--out", str(output_path),
+        ])
+        expected_values = SCENARIO_EXPECTED_VALUES.get(scenario)
+        if expected_values is not None:
+            expected_labels = SCENARIO_EXPECTED_LABELS.get(scenario, {}).get(language, ())
+            verification_arguments = [
+                "swift", str(HOME_SCREENSHOT_VERIFIER), str(output_path), *expected_values,
+                "--language", "ja-JP" if japanese else "en-US",
+            ]
+            for label in expected_labels:
+                verification_arguments.extend(["--required-label", label])
+            if scenario in COUNTER_ROW_SCENARIOS:
+                verification_arguments.append("--counter-row")
+            try:
+                verification = run(verification_arguments, capture_output=True)
+            except subprocess.CalledProcessError as error:
+                recognized = (error.stderr or error.stdout or "").strip()
+                temporary_png.unlink(missing_ok=True)
+                if attempt == attempts:
+                    raise RuntimeError(
+                        f"{output_path.name} did not show the required screen content after {attempts} capture(s). "
+                        f"Diagnostic JPEG retained at {output_path}. {recognized}"
+                    ) from error
+                output_path.unlink(missing_ok=True)
+                print(f"Required screen content was not visible; relaunching the app. {recognized}", flush=True)
+                continue
+            print(verification.stdout.strip(), flush=True)
+        temporary_png.unlink()
+        break
     if not output_path.is_file() or output_path.stat().st_size < 10_000:
         raise RuntimeError(f"Screenshot output is missing or unexpectedly small: {output_path.name}")
     with output_path.open("rb") as stream:
         if stream.read(2) != b"\xff\xd8":
             raise RuntimeError(f"Screenshot is not a JPEG image: {output_path.name}")
-    dimensions = image_dimensions(output_path, platform=platform)
-    if scenario == "home":
-        verify_localized_home_title(output_path, japanese=japanese)
-    return dimensions
+    return image_dimensions(output_path, platform=platform)
 
 
 def main() -> int:
@@ -122,9 +292,9 @@ def main() -> int:
     if arguments.platform == "ipad" and "13-inch" not in device:
         parser.error(f"A 13-inch iPad Simulator is required; found {device}.")
     identifier = bundle_identifier(arguments.app)
-    arguments.output_dir.mkdir(parents=True, exist_ok=True)
+    clear_capture_outputs(arguments.output_dir, platform=arguments.platform)
 
-    run(["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"])
+    ensure_simulator_booted(arguments.device_id)
     status_bar_arguments = [
         "xcrun", "simctl", "status_bar", arguments.device_id, "override",
         "--time", "9:41", "--wifiMode", "active", "--wifiBars", "3",
@@ -155,8 +325,11 @@ def main() -> int:
         f"Simulator: {device}",
         f"Bundle ID: {identifier}",
         "Build configuration: Release Simulator; demo data uses an in-memory store and is compiled only for Simulator.",
-        "The localized app name in each home screenshot is verified with Apple Vision OCR.",
     ]
+    if arguments.platform == "ipad" and any(scenario.startswith("ipad-") for scenario in arguments.scenarios):
+        metadata.append(
+            "iPad connection and pending-command labels are simulator-only fixtures; no peer connection was established."
+        )
     for filename, (width, height) in captures.items():
         metadata.append(f"{filename}: {width}×{height} JPEG")
     if run_id := os.environ.get("GITHUB_RUN_ID"):
