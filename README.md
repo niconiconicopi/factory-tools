@@ -1,6 +1,6 @@
-# Factory Tools
+# 現場ギア / Factory Tools
 
-Factory Tools is a SwiftUI toolkit for production work on iPhone, Apple Watch, and iPad. It uses SwiftData for local persistence and contains no third-party packages, external APIs, paid SDKs, or cloud service dependencies.
+現場ギア (Factory Tools) is a SwiftUI toolkit for production work on iPhone, Apple Watch, and iPad. The app name is localized: 現場ギア in Japanese and Factory Tools in English. It uses SwiftData for local persistence and contains no third-party packages, external APIs, paid SDKs, or cloud service dependencies.
 
 The Xcode project targets iOS 17 and watchOS 10. Its schemes cover the app, shared Core logic, and Watch app. Read the [project overview](FactoryTools/README.md), [roadmap](FactoryTools/ROADMAP.md), and [product decisions](FactoryTools/PRODUCT_DECISIONS.md) for current scope and release status.
 

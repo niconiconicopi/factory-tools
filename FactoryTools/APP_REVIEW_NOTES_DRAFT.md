@@ -1,11 +1,11 @@
-# App Review Notes — Factory Tools
+# App Review Notes — 現場ギア / Factory Tools
 
-**Draft only.** Verify the instructions against the signed submission build. Replace the contact placeholder before submission. Do not add credentials; the app has no account or sign-in flow.
+**Draft only.** Verify the instructions against the signed submission build and confirm the review contact is monitored before submission. Do not add credentials; the app has no account or sign-in flow.
 
 ## Review contact
 
-- Contact: **[Publisher review contact]**
-- Email: **[Monitored review contact email]**
+- Contact: **Akira Kobayashi**
+- Email: **azalea.fortask@outlook.jp**
 
 ## App access
 
@@ -68,7 +68,7 @@ If only one device is available during review, the full iPhone core flow remains
 
 審査時に1台しか利用できない場合も、iPhoneの機能はすべて確認できます。WatchとiPadの操作確認には各端末とのペアリングが必要です。
 
-審査連絡先は、公開・監視されている発行者の連絡先に置き換えてください。
+提出前に審査連絡先へ受信できることを確認し、審査中はメッセージを監視してください。
 
 ## Purchase review asset
 
@@ -76,7 +76,7 @@ The non-consumable Factory Tools Pro product is submitted with the iOS version. 
 
 ## Before submission
 
-- Replace the review contact and email with publisher-owned, monitored details.
+- Confirm the review contact and email are publisher-owned and monitored throughout App Review.
 - Confirm the sandbox product is available and both purchase and restore unlock the expected Pro feature set.
 - Confirm the Pro purchase screen and product metadata match the single non-consumable product.
 - Confirm the Watch/iPad steps against the submitted targets and actual release build.

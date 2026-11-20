@@ -1,6 +1,6 @@
 # GitHubからApp Store Connectへアップロードする手順
 
-このリポジトリには、Macを手元に置かずに署名付きiPhone/iPad/WatchビルドをApp Store Connectへアップロードする手動ワークフローを用意しています。Apple Developer Program登録、発行者設定、App Store Connect APIキーが揃うまでは実行できません。通常のpushやPull Requestでは配布ビルドもアップロードも始まりません。
+このリポジトリには、Macを手元に置かずに署名付きiPhone/iPad/WatchビルドをApp Store Connectへアップロードする手動ワークフローを用意しています。Apple Developer Programの個人登録は完了し、Team IDと候補Bundle ID・URLは記録済みです。App Store Connectのアプリ/IAP設定とAPIキーを用意するまでは実行できません。通常のpushやPull Requestでは配布ビルドもアップロードも始まりません。
 
 ワークフローは、iPhone・iPad Simulatorの回帰テスト、共有Coreテスト、Watch Simulatorビルドがすべて成功した後にだけApp Store Connect APIキーを読み込みます。検証が失敗した場合は秘密鍵をrunnerへ渡しません。
 
@@ -16,7 +16,7 @@ Appleは、App Store Connect APIキーを使った `xcodebuild` のヘッドレ�
 
 ## Apple側で先に用意するもの
 
-1. Apple Developer Program登録と、公開者名義の確定。
+1. Apple Developer Programは個人として登録済み。App Store Connectに表示される販売者名が発行者の法的氏名と一致することを確認します。Team ID `5NKGZ84ZW3` はプロジェクトに設定済みです。
 2. App Store Connect上のアプリ記録。iPhoneアプリの明示Bundle IDを登録します。
 3. `factorytools.pro.lifetime` の非消費型IAP、¥980の日本基準価格、販売地域、Family Sharingオフの設定。
 4. App Store ConnectのチームAPIキーと、Xcodeが署名に使える権限。鍵の `.p8` ファイルは一度しかダウンロードできないため、公開リポジトリやチャットへ置かず保管します。
@@ -32,10 +32,10 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 | 名前 | 値 |
 |---|---|
-| `FACTORYTOOLS_APP_BUNDLE_ID` | 公開者が所有するアプリBundle ID |
-| `APPLE_TEAM_ID` | Apple Developer Team ID |
-| `FACTORYTOOLS_PRIVACY_POLICY_URL` | 公開済みプライバシーポリシーHTTPS URL |
-| `FACTORYTOOLS_SUPPORT_URL` | 連絡先を含む公開済みサポートHTTPS URL |
+| `FACTORYTOOLS_APP_BUNDLE_ID` | 候補 `com.niconiconicopi.factorytools`。App Store Connectで利用可能性を確認してから使用 |
+| `APPLE_TEAM_ID` | `5NKGZ84ZW3` |
+| `FACTORYTOOLS_PRIVACY_POLICY_URL` | 候補 `https://niconiconicopi.github.io/factory-tools/privacy.html`。公開後に到達確認 |
+| `FACTORYTOOLS_SUPPORT_URL` | 候補 `https://niconiconicopi.github.io/factory-tools/support.html`。公開後に到達確認 |
 | `FACTORYTOOLS_PRO_PRODUCT_ID` | `factorytools.pro.lifetime` |
 | `APP_STORE_CONNECT_KEY_ID` | App Store Connect APIキーのKey ID |
 | `APP_STORE_CONNECT_ISSUER_ID` | チームAPIキーのIssuer ID |
@@ -50,7 +50,7 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 ## 手動アップロード
 
-1. [Release preflight](RELEASE_READINESS_AUDIT.md#release-preflight-evidence)の5つのプロジェクト項目が埋まり、Apple側のアプリ/IAP設定とURL公開が完了していることを確認します。
+1. `python Scripts/validate_static.py --release-preflight` が通ることを確認します。次にApp Store Connectで候補Bundle IDの利用可能性を確かめてアプリ記録を作り、非消費型Pro商品・契約・税務/入金設定と公開済みHTTPSページを整えます。
 2. GitHubの **Actions → Apple App Store upload → Run workflow** をmainブランチから開きます。
 3. Appleへのアップロードを行うときだけ、`confirm_app_store_connect_upload` をオンにします。対象バージョンと、App Store Connectで未使用のビルド番号を入力します。
 4. 成功したらApp Store Connectのビルド処理完了を待ちます。ワークフローは審査提出をしません。
@@ -61,10 +61,10 @@ GitHubの公開リポジトリで **Settings → Secrets and variables → Actio
 
 公開リポジトリでは、GitHub Freeの範囲でGitHub Pagesを使えます。リポジトリの **Settings → Pages → Build and deployment → Source** で **GitHub Actions** を選ぶと、静的ページ用の準備ができます。[GitHub Pagesの利用条件と設定](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site)
 
-GitHub Pagesを選んだ場合の候補URLは、プライバシーが `https://niconiconicopi.github.io/factory-tools/privacy.html`、サポートが `https://niconiconicopi.github.io/factory-tools/support.html` です。確認時点では両ページをまだ公開していないため、現在はアクセスすると404になります。発行者がGitHub Pagesを選ぶ場合にだけ、公開コピーとアプリ設定でこのURLを使います。
+発行者は無料のGitHub Pagesを公開先として承認済みです。候補URLはプライバシーが `https://niconiconicopi.github.io/factory-tools/privacy.html`、サポートが `https://niconiconicopi.github.io/factory-tools/support.html` です。ページはまだ未公開で、発行者の最終コピー確認後に手動公開し、HTTPSでの到達を確認します。
 
 ワークフロー **Publish privacy and support pages** は手動実行だけで、公開確認欄の初期値はオフです。確認をオンにした場合も、mainブランチからのみ動き、発行者名・連絡先・日付などが揃って公開コピー検証に通るまでデプロイされません。通常のpushでは公開しません。GitHub Pagesには訪問者IPアドレスをセキュリティ目的で記録する運用があるため、ホスティング側の取り扱いと必要な告知を公開者が確認してください。[GitHub Pagesの利用制限](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits)、[GitHub Pagesのアクセス記録](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages)
 
 ## 残るApple側の確認
 
-GitHubの成功は署名付きバイナリのアップロードを示します。StoreKit購入/復元、Watch通信、iPadローカルネットワーク、実機表示は別途確認が必要です。実機が用意できない限り、それらの動作確認を完了扱いにはしません。また、App Store Connectの商用設定、スクリーンショット、年齢・プライバシー・輸出コンプライアンス回答、App Review連絡先は公開者が仕上げます。
+GitHubの成功は署名付きバイナリのアップロードを示します。StoreKit購入/復元、Watch通信、iPadローカルネットワーク、実機表示は別途確認が必要です。実機が用意できない限り、それらの動作確認を完了扱いにはしません。また、App Store Connectの商用設定、スクリーンショット、年齢・プライバシー・輸出コンプライアンス回答、App Review連絡先の最終登録は発行者が仕上げます。

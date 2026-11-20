@@ -1,17 +1,17 @@
-# Factory Tools Support Page
+# Factory Tools / 現場ギア Support Page
 
-**Publication status: draft.** Before publishing, replace every bracketed publisher field with a real, monitored contact and update the supported app/platform versions. Do not publish a placeholder email or promise a response time that has not been established.
+**Publication status: draft.** Publisher contact and candidate page URLs are filled in. The publisher must still review the content, verify the mailbox and page URLs, and publish the pages before App Store submission.
 
 ---
 
 ## 日本語
 
-# Factory Tools サポート
+## 現場ギア（Factory Tools）サポート
 
 Factory Toolsをご利用いただきありがとうございます。お問い合わせは以下の窓口へお送りください。
 
-- 開発者: **[開発者名]**
-- サポートメール: **[サポート用メールアドレス]**
+- 発行者: **Akira Kobayashi**
+- サポートメール: **azalea.fortask@outlook.jp**
 - 対応言語: 日本語 / English
 
 ### お問い合わせに含めてください
@@ -35,7 +35,7 @@ Watchでサイクルタイムを「停止して記録」した後、iPhoneの履
 
 ### プライバシー
 
-プライバシーについては **[公開済みプライバシーポリシーURL]** をご確認ください。
+プライバシーについては **https://niconiconicopi.github.io/factory-tools/privacy.html** をご確認ください。公開前の草案URLのため、ページ公開後にアクセスできることを確認してください。
 
 ---
 
@@ -45,8 +45,8 @@ Watchでサイクルタイムを「停止して記録」した後、iPhoneの履
 
 Thank you for using Factory Tools. Contact us at:
 
-- Developer: **[Developer name]**
-- Support email: **[Monitored support email address]**
+- Publisher: **Akira Kobayashi**
+- Support email: **azalea.fortask@outlook.jp**
 - Support languages: Japanese / English
 
 ### Include in your request
@@ -70,14 +70,13 @@ If a Watch Cycle Time sample does not appear in iPhone history after **Stop & Sa
 
 ### Privacy
 
-Read our privacy policy at **[Published privacy policy URL]**.
+Read our privacy policy at **https://niconiconicopi.github.io/factory-tools/privacy.html**. This is a candidate URL until the page is published and checked.
 
 ---
 
 ## Publisher checklist
 
-- Replace developer name and support email in both language sections.
-- Confirm the mailbox is monitored and can receive replies in Japanese and English, or narrow the stated language support.
-- Replace both privacy-policy placeholders with the same published HTTPS URL used by the app and App Store Connect.
+- Confirm the publisher name is the intended public spelling and the support mailbox is monitored and can receive replies in Japanese and English, or narrow the stated language support.
+- Confirm the privacy-policy candidate URL is published, reachable, and matches the app and App Store Connect.
 - Review troubleshooting steps against the release build and current product behavior.
 - Publish this page at a stable HTTPS URL, then set the same URL in the Release `FACTORYTOOLS_SUPPORT_URL` build setting and App Store Connect.

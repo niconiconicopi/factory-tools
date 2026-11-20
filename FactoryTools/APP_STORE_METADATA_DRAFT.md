@@ -10,14 +10,14 @@ Apple requires an App Store support link with current contact information so cus
 
 | Field | Draft / status |
 |---|---|
-| App name | Factory Tools (confirm availability in App Store Connect) |
+| App name | English: Factory Tools; Japanese (ja-JP): 現場ギア (confirm availability in App Store Connect) |
 | Primary language | English; add Japanese localization so English remains the fallback in other storefronts |
 | SKU | `FACTORYTOOLS-IOS-001` (candidate; confirm it is unused in the publisher's App Store Connect account before creating the record; it cannot be changed later) |
 | Copyright | Enter the publisher's copyright statement in the version information |
 | Primary category | Business (selected for the manufacturing operations focus) |
 | Age rating | Complete the App Store Connect age-rating questionnaire |
-| Support URL | Publisher to provide; it must lead to a support page with current contact information |
-| Privacy Policy URL | Publisher to publish and provide; required for iOS apps |
+| Support URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/support.html`; publish and verify contact details before submission |
+| Privacy Policy URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/privacy.html`; publish and verify before submission |
 | Promotional text | Leave blank for first submission |
 | Screenshots and previews | Capture from a release build on supported Apple devices |
 | In-app purchase | One non-consumable Factory Tools Pro purchase; offer in all currently available territories where permitted; Japan base price is ¥980, then review generated local prices |
@@ -55,7 +55,7 @@ Unlock Pro tools and advanced features.
 ## Japanese (ja-JP)
 
 **Name**  
-Factory Tools
+現場ギア
 
 **Subtitle**  
 生産カウンターと現場計算
@@ -65,7 +65,7 @@ Factory Tools
 
 **Description**
 
-生産数の記録から、サイクルタイムやOEEの確認まで。Factory Toolsは、製造現場で使うカウンターと計算ツールをまとめたアプリです。
+生産数の記録から、サイクルタイムやOEEの確認まで。現場ギアは、製造現場で使うカウンターと計算ツールをまとめたアプリです。
 
 生産カウンターで数量を記録し、目標への進捗を確認。タクトタイム、サイクルタイム、不良率、箱詰め、単位換算などの計算もすぐに行えます。無料のホームではカードのサイズや並び順を調整できます。追加ホームはFactory Tools Proで利用できます。
 

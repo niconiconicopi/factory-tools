@@ -11,6 +11,7 @@ import shlex
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 
@@ -63,14 +64,41 @@ def record_failure_summary(error: Exception) -> None:
         summary.write("\n".join(lines))
 
 
-def simulator_name(device_id: str) -> str:
+def simulator_configuration(device_id: str) -> tuple[str, str, str]:
+    result = run(["xcrun", "simctl", "list", "devices", "--json"], capture_output=True)
+    inventory = json.loads(result.stdout)
+    for runtime_identifier, devices in inventory.get("devices", {}).items():
+        for device in devices:
+            if device.get("udid") == device_id:
+                name = str(device.get("name", "Apple Watch Simulator"))
+                device_type_value = device.get("deviceTypeIdentifier")
+                if not device_type_value:
+                    raise RuntimeError("The selected Apple Watch Simulator has no device type identifier.")
+                device_type = str(device_type_value)
+                return name, device_type, str(runtime_identifier)
+    raise RuntimeError("The requested Apple Watch Simulator device is not available.")
+
+
+def simulator_state(device_id: str) -> str:
     result = run(["xcrun", "simctl", "list", "devices", "--json"], capture_output=True)
     inventory = json.loads(result.stdout)
     for devices in inventory.get("devices", {}).values():
         for device in devices:
             if device.get("udid") == device_id:
-                return str(device.get("name", "Apple Watch Simulator"))
+                return str(device.get("state", "Unknown"))
     raise RuntimeError("The requested Apple Watch Simulator device is not available.")
+
+
+def create_capture_simulator(device_type: str, runtime_identifier: str, language: str) -> str:
+    name = f"Factory Tools {language} {uuid.uuid4().hex[:8]}"
+    result = run(
+        ["xcrun", "simctl", "create", name, device_type, runtime_identifier],
+        capture_output=True,
+    )
+    simulator_id = result.stdout.strip()
+    if not re.fullmatch(r"[0-9A-Fa-f-]{36}", simulator_id):
+        raise RuntimeError("Could not create an independent Apple Watch Simulator for the second locale.")
+    return simulator_id
 
 
 def bundle_identifier(app_path: Path) -> str:
@@ -96,34 +124,65 @@ def image_dimensions(image_path: Path) -> tuple[int, int]:
     return dimensions
 
 
+def verify_counter_content(image_path: Path) -> bool:
+    verifier = Path(__file__).with_name("verify_watch_screenshot.swift")
+    if not verifier.is_file():
+        raise RuntimeError("The Apple Watch screenshot content verifier is missing.")
+    try:
+        run(["swift", str(verifier), str(image_path)], capture_output=True)
+    except subprocess.CalledProcessError as error:
+        diagnostic = error.stderr or error.output or ""
+        if "Apple Watch screenshot is missing expected demo values:" in diagnostic:
+            return False
+        raise
+    return True
+
+
 def capture_language(device_id: str, identifier: str, output_path: Path, *, japanese: bool) -> tuple[int, int]:
     launch_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         launch_arguments.append("--factorytools-screenshot-japanese")
     print(f"Launching {'Japanese' if japanese else 'English'} Watch counter detail.", flush=True)
     run(["xcrun", "simctl", "launch", "--terminate-running-process", device_id, identifier, *launch_arguments])
-    # Give WatchKit and the numeric content transition time to settle after each locale relaunch.
-    time.sleep(8)
+    # Each locale gets a fresh simulator. Capture promptly so Always On does not
+    # enter its dimmed presentation and suppress the counter/progress content.
+    time.sleep(3)
     temporary_png = output_path.with_suffix(".png")
     print(f"Capturing {output_path.name}.", flush=True)
-    run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
-    run([
-        "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
-        str(temporary_png), "--out", str(output_path),
-    ])
-    temporary_png.unlink()
-    if not output_path.is_file() or output_path.stat().st_size < 10_000:
-        raise RuntimeError(f"Screenshot output is missing or unexpectedly small: {output_path.name}")
-    with output_path.open("rb") as stream:
-        if stream.read(2) != b"\xff\xd8":
-            raise RuntimeError(f"Screenshot is not a JPEG image: {output_path.name}")
-    return image_dimensions(output_path)
+    for attempt in range(20):
+        run(["xcrun", "simctl", "io", device_id, "screenshot", str(temporary_png)])
+        run([
+            "sips", "-s", "format", "jpeg", "-s", "formatOptions", "95",
+            str(temporary_png), "--out", str(output_path),
+        ])
+        temporary_png.unlink()
+        if not output_path.is_file() or output_path.stat().st_size < 10_000:
+            raise RuntimeError(f"Screenshot output is missing or unexpectedly small: {output_path.name}")
+        with output_path.open("rb") as stream:
+            if stream.read(2) != b"\xff\xd8":
+                raise RuntimeError(f"Screenshot is not a JPEG image: {output_path.name}")
+        dimensions = image_dimensions(output_path)
+        if verify_counter_content(output_path):
+            return dimensions
+        if attempt < 19:
+            print("Waiting for the Watch counter to finish rendering before retrying capture.", flush=True)
+            time.sleep(1)
+    raise RuntimeError(f"The Watch counter values did not render in {output_path.name} after 20 captures.")
 
 
-def restart_simulator(device_id: str) -> None:
-    """Start a locale capture from a clean watchOS Simulator session."""
-    print("Restarting Apple Watch Simulator for a clean locale capture.", flush=True)
-    run(["xcrun", "simctl", "shutdown", device_id])
+def boot_simulator(device_id: str, *, clean: bool) -> None:
+    """Boot a dedicated watchOS Simulator for one locale capture."""
+    state = simulator_state(device_id)
+    if clean:
+        if state == "Booted":
+            print("Restarting the primary Apple Watch Simulator for a clean capture.", flush=True)
+            run(["xcrun", "simctl", "shutdown", device_id])
+        elif state != "Shutdown":
+            raise RuntimeError(f"The primary Apple Watch Simulator is in an unexpected state: {state}.")
+    else:
+        print("Booting an independent Apple Watch Simulator for the second locale.", flush=True)
+        if state != "Shutdown":
+            raise RuntimeError(f"The independent Apple Watch Simulator should be shut down before capture; found {state}.")
     run(["xcrun", "simctl", "boot", device_id])
     run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
 
@@ -137,34 +196,39 @@ def main() -> int:
     if not arguments.app.is_dir():
         parser.error(f"Release Watch Simulator app does not exist: {arguments.app}")
 
-    device = simulator_name(arguments.device_id)
+    device, device_type, runtime_identifier = simulator_configuration(arguments.device_id)
     if "46mm" not in device:
         parser.error(f"A 46mm Apple Watch Simulator is required; found {device}.")
     identifier = bundle_identifier(arguments.app)
     arguments.output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"Booting 46mm Apple Watch Simulator: {device}.", flush=True)
-    run(["xcrun", "simctl", "bootstatus", arguments.device_id, "-b"])
-    # watchOS Simulator does not support simctl status_bar overrides.
-    # Install the Release build explicitly; the preceding Watch build step alone does not install it.
-    print("Installing the Release Watch app.", flush=True)
-    run(["xcrun", "simctl", "install", arguments.device_id, str(arguments.app)])
-    # The Debug-to-Release switch can leave the first locale on a stale WatchKit
-    # session. Start both language captures from the same clean simulator state.
-    restart_simulator(arguments.device_id)
-    captures = {
-        "watch-home-en.jpg": capture_language(
-            arguments.device_id, identifier, arguments.output_dir / "watch-home-en.jpg", japanese=False
-        )
-    }
-    restart_simulator(arguments.device_id)
-    captures["watch-home-ja.jpg"] = capture_language(
-        arguments.device_id, identifier, arguments.output_dir / "watch-home-ja.jpg", japanese=True
-    )
+    english_device_id = create_capture_simulator(device_type, runtime_identifier, "English")
+    captures = {}
+    try:
+        print(f"Booting independent locale simulators from 46mm device type: {device}.", flush=True)
+        for device_id, filename, japanese, clean in (
+            (arguments.device_id, "watch-home-ja.jpg", True, True),
+            (english_device_id, "watch-home-en.jpg", False, False),
+        ):
+            boot_simulator(device_id, clean=clean)
+            print(f"Installing the Release Watch Simulator app for {filename}.", flush=True)
+            run(["xcrun", "simctl", "install", device_id, str(arguments.app)])
+            captures[filename] = capture_language(
+                device_id,
+                identifier,
+                arguments.output_dir / filename,
+                japanese=japanese,
+            )
+    finally:
+        print("Removing the temporary Apple Watch Simulator.", flush=True)
+        if simulator_state(english_device_id) != "Shutdown":
+            run(["xcrun", "simctl", "shutdown", english_device_id])
+        run(["xcrun", "simctl", "delete", english_device_id])
     metadata = [
         "Factory Tools App Store Apple Watch screenshot capture",
         f"Simulator: {device}",
         f"Bundle ID: {identifier}",
-        "Build configuration: Release Watch Simulator; counter data is in-memory and simulator-only.",
+        "Build configuration: Release Watch Simulator; each locale used an independent simulator; demo data is in-memory only.",
+        "Screenshot content: Apple Vision OCR verified counter 286 and target 300 in each locale.",
     ]
     for filename, (width, height) in captures.items():
         metadata.append(f"{filename}: {width}×{height} JPEG")

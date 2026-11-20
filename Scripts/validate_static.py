@@ -1004,9 +1004,10 @@ def main() -> int:
     app_bundle_identifiers = {settings.get("PRODUCT_BUNDLE_IDENTIFIER") for _, settings in app_build_settings}
     require(len(project_build_settings) == 2
             and {name for name, _ in project_build_settings} == {"Debug", "Release"}
-            and all(settings.get("FACTORYTOOLS_APP_BUNDLE_ID") == "com.example.FactoryTools" for _, settings in project_build_settings)
-            and all(settings.get("FACTORYTOOLS_PRIVACY_POLICY_URL") == "" for _, settings in project_build_settings)
-            and all(settings.get("FACTORYTOOLS_SUPPORT_URL") == "" for _, settings in project_build_settings)
+            and all(settings.get("FACTORYTOOLS_APP_BUNDLE_ID") == "com.niconiconicopi.factorytools" for _, settings in project_build_settings)
+            and all(settings.get("FACTORYTOOLS_PRIVACY_POLICY_URL") == "https://niconiconicopi.github.io/factory-tools/privacy.html" for _, settings in project_build_settings)
+            and all(settings.get("FACTORYTOOLS_SUPPORT_URL") == "https://niconiconicopi.github.io/factory-tools/support.html" for _, settings in project_build_settings)
+            and all(settings.get("DEVELOPMENT_TEAM") == "5NKGZ84ZW3" for _, settings in project_build_settings)
             and all(settings.get("FACTORYTOOLS_PRO_PRODUCT_ID") == "factorytools.pro.lifetime" for _, settings in project_build_settings)
             and all(settings.get("MARKETING_VERSION") == "1.0" for _, settings in project_build_settings)
             and all(settings.get("CURRENT_PROJECT_VERSION") == "1" for _, settings in project_build_settings)
@@ -1119,7 +1120,8 @@ def main() -> int:
     expected_watch_string_keys = {
         "watch.title", "watch.storageUnavailable", "watch.storageUnavailable.message", "watch.noCounters", "watch.noCounters.message",
         "watch.refresh", "watch.connection.connected", "watch.connection.waiting", "watch.pending",
-        "watch.target", "watch.quickAddFive", "watch.sessionUnavailable", "watch.status.applied",
+        "watch.target", "watch.quickAddFive", "watch.counter.subtractOne", "watch.counter.addOne",
+        "watch.sessionUnavailable", "watch.status.applied",
         "home.defaultName",
         "counter.defaultSessionName", "defect.defaultSessionName",
         "watch.status.alreadyApplied", "watch.status.noChange", "watch.status.staleUndo", "watch.status.rejected",
@@ -1140,6 +1142,10 @@ def main() -> int:
                         and bool(localizations[language].get("stringUnit", {}).get("value"))
                         for language in ("ja", "en")),
                 f"Watch string {key} must have complete Japanese and English translations")
+    watch_title_localizations = watch_strings.get("watch.title", {}).get("localizations", {})
+    require(watch_title_localizations.get("ja", {}).get("stringUnit", {}).get("value") == "現場ギア"
+            and watch_title_localizations.get("en", {}).get("stringUnit", {}).get("value") == "Factory Tools",
+            "Watch app title must match the Japanese and English localized product names")
 
     development_region = project_object.get("developmentRegion")
     known_regions = project_object.get("knownRegions")
@@ -3897,7 +3903,7 @@ def main() -> int:
             and "the developer could not set a lower share count" in product_decisions
             and family_sharing_decision(product_decisions) == "disabled",
         "price decision scope": "Confirmed base storefront and price: **Japan (JP), JPY ¥980**" in product_decisions
-            and "Configure this in App Store Connect after enrollment" in product_decisions
+            and "Configure this in App Store Connect" in product_decisions
             and DEFAULT_BASE_STOREFRONT_CANDIDATE == "JP"
             and DEFAULT_BASE_STOREFRONT_PRICE_CANDIDATE == "JPY:980",
         "Pro tool assignments": "accessTier: .pro" in registry.split("id: .oee", 1)[1].split("),", 1)[0]
@@ -4469,8 +4475,10 @@ def main() -> int:
             }, "FactoryTools app target must bundle its localized resources and privacy manifest")
     require(resource_membership("D40000000000000000000007") == set(),
             "standalone Core tests must not bundle app resources or localization catalogs")
-    require(resource_membership("D40000000000000000000009") == {"Localizable.xcstrings", "Assets.xcassets"},
-            "FactoryToolsWatch must bundle its own Japanese/English String Catalog and watchOS AppIcon asset catalog")
+    require(resource_membership("D40000000000000000000009") == {
+                "Localizable.xcstrings", "Assets.xcassets", "InfoPlist.strings"
+            },
+            "FactoryToolsWatch must bundle its Japanese/English app-name localization, String Catalog, and watchOS AppIcon asset catalog")
     privacy_manifest_path = ROOT / "FactoryTools" / "PrivacyInfo.xcprivacy"
     try:
         privacy_manifest = plistlib.loads(privacy_manifest_path.read_bytes())
@@ -4607,12 +4615,26 @@ def main() -> int:
         "en": ROOT / "FactoryTools" / "en.lproj" / "InfoPlist.strings",
         "ja": ROOT / "FactoryTools" / "ja.lproj" / "InfoPlist.strings",
     }
+    expected_app_names = {"en": "Factory Tools", "ja": "現場ギア"}
     for language, path in localized_info_files.items():
         require(path.is_file()
-                and 'CFBundleDisplayName = "Factory Tools";' in path.read_text(encoding="utf-8")
-                and 'CFBundleName = "Factory Tools";' in path.read_text(encoding="utf-8")
+                and f'CFBundleDisplayName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8")
+                and f'CFBundleName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8")
                 and "NSLocalNetworkUsageDescription" in path.read_text(encoding="utf-8"),
                 f"{language} InfoPlist.strings must localize app names and local-network permission text")
+    watch_localized_info_files = {
+        language: ROOT / "FactoryToolsWatch" / f"{language}.lproj" / "InfoPlist.strings"
+        for language in expected_app_names
+    }
+    for language, path in watch_localized_info_files.items():
+        require(path.is_file()
+                and f'CFBundleDisplayName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8")
+                and f'CFBundleName = "{expected_app_names[language]}";' in path.read_text(encoding="utf-8"),
+                f"Watch {language} InfoPlist.strings must localize the app display name and bundle name")
+    app_title_localizations = strings.get("app.title", {}).get("localizations", {})
+    require(all(app_title_localizations.get(language, {}).get("stringUnit", {}).get("value") == name
+                for language, name in expected_app_names.items()),
+            "iPhone/iPad app title must match the Japanese and English localized product names")
     japanese_network_copy = localized_info_plist_value(
         localized_info_files["ja"].read_text(encoding="utf-8") if localized_info_files["ja"].is_file() else "",
         "NSLocalNetworkUsageDescription",

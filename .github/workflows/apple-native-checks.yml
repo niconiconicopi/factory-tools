@@ -212,11 +212,12 @@ jobs:
             --output-dir "$RUNNER_TEMP/FactoryToolsWatchScreenshots"
 
       - name: Upload bilingual Apple Watch screenshot artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: factory-tools-app-store-watch-home
           path: ${{ runner.temp }}/FactoryToolsWatchScreenshots/
-          if-no-files-found: error
+          if-no-files-found: ignore
           retention-days: 30
 
       - name: Archive generic iPhone and iPad app without signing

@@ -152,25 +152,25 @@ def public_content(document: str, *, discard_after: str, remove_draft_notice: st
 def html_page(*, title: str, source: str, draft_notice: str, publication_ready: bool = False, privacy_link: str = "privacy.html") -> str:
     ja, en = public_content(source, discard_after="## Before publication" if "## Before publication" in source else "## Publisher checklist", remove_draft_notice=draft_notice)
     indexing = "" if publication_ready else '  <meta name="robots" content="noindex, nofollow">\n'
-    notice = "" if publication_ready else f'    <p class="draft" role="note">{escape("Draft page: publisher details and public URLs must be completed before publication. / 公開前に発行者情報と公開URLを確定してください。")}</p>\n'
+    notice = "" if publication_ready else f'    <p class="draft" role="note">{escape("Draft page: publisher review and publication are still pending. / 発行者による内容確認と公開はまだ完了していません。")}</p>\n'
     return f"""<!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 {indexing}  <meta name="description" content="{escape(title, quote=True)}">
-  <title>{escape(title)} | Factory Tools</title>
+  <title>{escape(title)} | 現場ギア / Factory Tools</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content / 本文へ</a>
-  <header><h1>Factory Tools</h1><nav aria-label="Site navigation"><a href="index.html">Home / ホーム</a><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header>
+  <header><h1>現場ギア / Factory Tools</h1><nav aria-label="Site navigation"><a href="index.html">Home / ホーム</a><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header>
   <main id="main" tabindex="-1">
 {notice}    <h2>{escape(title)}</h2>
     <section lang="ja">{markdown_body(ja)}</section>
     <section lang="en"><h2>English</h2>{markdown_body(en)}</section>
   </main>
-  <footer><a href="{escape(privacy_link, quote=True)}">Privacy / プライバシー</a> · Factory Tools</footer>
+  <footer><a href="{escape(privacy_link, quote=True)}">Privacy / プライバシー</a> · 現場ギア / Factory Tools</footer>
 </body>
 </html>
 """
@@ -274,7 +274,7 @@ def build_outputs(*, publication_ready: bool = False, privacy_source: str | None
         if issues:
             raise ValueError("Resolve publisher-page issues before generating publication pages: " + "; ".join(issues))
     privacy_notice = "**Draft only.** Complete every bracketed publisher field, review the text for the release build and applicable law, publish a stable public URL, and add an in-app link before submission. Do not publish this draft with placeholders."
-    support_notice = "**Publication status: draft.** Before publishing, replace every bracketed publisher field with a real, monitored contact and update the supported app/platform versions. Do not publish a placeholder email or promise a response time that has not been established."
+    support_notice = "**Publication status: draft.** The publisher must review the content, confirm the mailbox and candidate URLs, and publish the pages before App Store submission. Do not promise a response time that has not been established."
     privacy_page = html_page(title="Privacy Policy / プライバシーポリシー", source=privacy, draft_notice=privacy_notice, publication_ready=publication_ready)
     support_page = html_page(title="Support / サポート", source=support, draft_notice=support_notice, publication_ready=publication_ready)
     if publication_ready:
@@ -283,11 +283,11 @@ def build_outputs(*, publication_ready: bool = False, privacy_source: str | None
         publication_status = "This publication candidate is generated from the publisher-reviewed bilingual source drafts. Verify the legal contact, privacy/support URLs, and HTTPS reachability before uploading. This command does not publish the pages."
     else:
         robots_tag = '<meta name="robots" content="noindex, nofollow">'
-        draft_banner = '<p class="draft" role="note">Draft site for local review. Complete publisher details and URLs before publishing. / ローカル確認用の下書きサイトです。公開前に発行者情報とURLを確定してください。</p>'
-        publication_status = "The pages intentionally carry `noindex` and a visible draft banner. Do not publish before completing all placeholders and the publisher's legal/contact review."
+        draft_banner = '<p class="draft" role="note">Draft site for local review. Publisher review and publication are still pending. / ローカル確認用の下書きサイトです。発行者による内容確認と公開はまだ完了していません。</p>'
+        publication_status = "The pages intentionally carry `noindex` and a visible draft banner. Do not publish before the publisher reviews the final copy and verifies the contact mailbox, candidate URLs, and legal requirements."
     index = """<!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">{robots_tag}<title>Factory Tools</title><link rel="stylesheet" href="styles.css"></head>
-<body><a class="skip-link" href="#main">Skip to content / 本文へ</a><header><h1>Factory Tools</h1><nav aria-label="Site navigation"><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header><main id="main" tabindex="-1">{draft_banner}<h2>Information / ご案内</h2><p>Read our <a href="privacy.html">privacy policy / プライバシーポリシー</a> or visit <a href="support.html">support / サポート</a>.</p></main></body></html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">{robots_tag}<title>現場ギア / Factory Tools</title><link rel="stylesheet" href="styles.css"></head>
+<body><a class="skip-link" href="#main">Skip to content / 本文へ</a><header><h1>現場ギア / Factory Tools</h1><nav aria-label="Site navigation"><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header><main id="main" tabindex="-1">{draft_banner}<h2>Information / ご案内</h2><p>Read our <a href="privacy.html">privacy policy / プライバシーポリシー</a> or visit <a href="support.html">support / サポート</a>.</p></main></body></html>
 """
     index = index.format(robots_tag=robots_tag, draft_banner=draft_banner)
     readme = """# Factory Tools public-pages draft
@@ -296,8 +296,8 @@ This folder is generated from the bilingual source drafts in the parent director
 
 ## Before publishing
 
-1. Complete the publisher name, monitored support/privacy contact, effective date, and privacy-policy link in `../PRIVACY_POLICY_DRAFT.md` and `../SUPPORT_PAGE_DRAFT.md`.
-2. Review both documents against the signed release build and the publisher's legal obligations. Update the supported platform/version information.
+1. Confirm the publisher name, monitored support/privacy contact, effective date, and candidate privacy-policy link in `../PRIVACY_POLICY_DRAFT.md` and `../SUPPORT_PAGE_DRAFT.md`.
+2. Review both documents against the final release build and the publisher's legal obligations. Confirm the stated platform behavior and mailbox language support.
 3. Run `python Scripts/generate_public_site.py` from the workspace root, then `python Scripts/generate_public_site.py --check` to ensure these pages match the source drafts.
 4. After the publisher has completed that review, run `python Scripts/generate_public_site.py --publication-copy-reviewed` and `python Scripts/generate_public_site.py --publication-copy-reviewed --check`. This checks required names/contact fields, a real YYYY-MM-DD date, monitored email syntax, and one shared HTTPS privacy URL before writing a separate candidate without the draft banner or `noindex`. It does not publish the pages or verify contact ownership, URL ownership, or reachability.
 5. Publish the candidate folder on a publisher-controlled, stable HTTPS host, then configure the same privacy and support URLs in the app and App Store Connect. This repository includes a separately gated GitHub Pages deployment workflow; first set the repository's Pages source to **GitHub Actions**, then use it only after the owner approves the completed public copy.
