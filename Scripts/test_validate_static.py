@@ -164,6 +164,38 @@ class WatchScreenshotDiagnosticsTests(unittest.TestCase):
         self.assertEqual(sleep_mock.call_args_list[-1].args, (1,))
         self.assertEqual(sum(call.args[0][:3] == ["xcrun", "simctl", "io"] for call in run_mock.call_args_list), 2)
 
+    def test_watch_capture_stops_after_twenty_unreadable_frames_and_keeps_last_image(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_path = Path(temporary_directory) / "watch-home-ja.jpg"
+
+            def fake_run(arguments: list[str], *, capture_output: bool = False) -> subprocess.CompletedProcess[str]:
+                if arguments[:3] == ["xcrun", "simctl", "io"]:
+                    Path(arguments[-1]).write_bytes(b"simulator png")
+                elif arguments[0] == "sips":
+                    Path(arguments[-1]).write_bytes(b"\xff\xd8" + b"x" * 10_100)
+                return subprocess.CompletedProcess(arguments, 0, "", "")
+
+            with (
+                patch.object(capture_watch_screenshots, "run", side_effect=fake_run) as run_mock,
+                patch.object(capture_watch_screenshots, "verify_counter_content", return_value=False) as verify_mock,
+                patch.object(capture_watch_screenshots.time, "sleep") as sleep_mock,
+                patch.object(capture_watch_screenshots, "image_dimensions", return_value=(416, 496)),
+                redirect_stdout(io.StringIO()),
+            ):
+                with self.assertRaisesRegex(RuntimeError, "after 20 captures"):
+                    capture_watch_screenshots.capture_language(
+                        "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE",
+                        "com.example.watch",
+                        output_path,
+                        japanese=True,
+                    )
+
+            self.assertEqual(verify_mock.call_count, 20)
+            self.assertEqual(sleep_mock.call_count, 20)  # Three-second launch delay plus 19 retries.
+            self.assertEqual(sum(call.args[0][:3] == ["xcrun", "simctl", "io"] for call in run_mock.call_args_list), 20)
+            self.assertTrue(output_path.is_file())
+            self.assertFalse(output_path.with_suffix(".png").exists())
+
     def test_watch_image_content_verifier_uses_apple_vision_for_demo_values(self) -> None:
         verifier = (Path(__file__).resolve().parent / "verify_watch_screenshot.swift").read_text(encoding="utf-8")
 
