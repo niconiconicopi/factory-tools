@@ -61,7 +61,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を維持する。
 2. Apple Developer Programの個人登録は完了済み。Team ID `5NKGZ84ZW3`、候補Bundle ID `com.niconiconicopi.factorytools`、¥980の日本価格、商品ID候補、公開者の連絡先は準備済み。
-3. Windows上のソース検証と76件のスクリプトテストは通過済み。既存の[Apple native checks](https://github.com/niconiconicopi/factory-tools/actions/runs/41273710950)では、iPhone/iPad Simulator XCTestが各223件、共有Core XCTestが48件、Watch Debug/Releaseビルド、スクリーンショット生成、Watchを含む未署名archiveが成功済み。最新のWatch撮影で2枚目が暗くなる問題が見つかり、言語ごとに別Simulatorを使う修正はローカルにあり、ホストCIによる再確認待ち。GitHub CLIの保存トークンは無効で、現在リモートへ反映できていない。Xcode Cloudは任意であり、Macを必要とするため無料検証には使わない。
+3. Windows上のソース検証と87件のスクリプトテストは通過済み。既存の[Apple native checks](https://github.com/niconiconicopi/factory-tools/actions/runs/41273710950)では、iPhone/iPad Simulator XCTestが各223件、共有Core XCTestが48件、Watch Debug/Releaseビルド、スクリーンショット生成、Watchを含む未署名archiveが成功済み。後のWatch画像を直接確認すると、日本語画像でカウント286が欠け、英語画像には表示されています。原因は未確定です。現在の撮影処理は言語ごとに別Simulatorを使い、OCRで286と300が見えるまで最大20回撮り直します。修正を含むローカルコミットはまだホストCIで確認されていません。GitHub CLIの保存トークンは無効で、この環境からはリモートへ反映できていません。Xcode Cloudは任意であり、Macを必要とするため無料検証には使いません。
 4. App Store ConnectでBundle ID候補の利用可能性を確認してアプリ記録を作成する。SKU `FACTORYTOOLS-IOS-001` のアカウント内未使用確認後に登録し、作成後変更できない値を確定する。
 5. 候補プライバシー／サポートURLのページを完成・公開し、HTTPS到達性と問い合わせメールの受信を確認してアプリとApp Store Connectに登録する。
 6. App Store Connectの有料アプリ契約、税務・入金情報、IAP税区分を設定する。Proの非消費型商品を作成し、Family Sharingはオフ、日本向け¥980、全地域の価格・配信を確認する。
