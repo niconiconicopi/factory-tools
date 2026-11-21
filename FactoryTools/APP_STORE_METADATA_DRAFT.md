@@ -19,7 +19,7 @@ Apple requires an App Store support link with current contact information so cus
 | Support URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/support.html`; publish and verify contact details before submission |
 | Privacy Policy URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/privacy.html`; publish and verify before submission |
 | Promotional text | Leave blank for first submission |
-| Screenshots and previews | Capture from a release build on supported Apple devices |
+| Screenshots and previews | Direct Release Simulator captures are prepared; publisher review remains pending |
 | In-app purchase | One non-consumable Factory Tools Pro purchase; offer in all currently available territories where permitted; Japan base price is ¥980, then review generated local prices |
 | Family Sharing | Disabled for Version 1; verify the setting is off in App Store Connect |
 

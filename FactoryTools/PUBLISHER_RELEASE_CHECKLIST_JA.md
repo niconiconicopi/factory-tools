@@ -18,7 +18,7 @@ Apple Developer Program登録完了の報告を受け、Team IDを受領してXc
 - [ ] GitHub Pagesを有効にしてプライバシー／サポートページを公開し、安定したHTTPS URLへのアクセスを確認する。
 - [ ] EUを含む全地域で配信する方針に沿って、AppleのDSA販売者／非販売者の説明を読み、自分の活動実態から申告内容を判断する。現時点での本人の説明は「趣味として運営する」ですが、Proの買い切り販売（日本価格¥980）もAppleが挙げる判断要素の一つです。この回答だけで非販売者と確定せず、実際の販売・宣伝・事業との関係を踏まえ、App Store Connectで公開前に自己判断してください。個人登録や価格だけでこちらが法的区分を決めることはできません。販売者として申告する場合、Appleが求めるEU向け連絡先の表示・確認条件を先に確認してください。
 - [x] 最新コード `e01a704` のApple CIが通過。ネイティブ run `44866670896` でiPhone/iPadテスト、画面撮影14枚＋4枚、S/M/L証拠6枚、画像最終ゲートが成功。Watch/archive run `44866670819` でWatchテスト・日英撮影2枚・署名なしiOS/iPadアーカイブが成功。
-- [ ] iPhone/iPad/Watchの画像候補、ストア文面、Pro価格、プライバシー／サポートページを本人が公開前に確認する。実アプリ直接撮影の候補（Simulator例示データ使用、生成・合成なし）は `FactoryTools-AppStore-Assets-Review-2026-11-21/latest-run-44866670896/` と `.../latest-run-44866670819/`。iPadの接続状態表示はSimulator内の試験表示で、実機接続を示しません。
+- [ ] iPhone/iPad/Watchの画像候補、ストア文面、Pro価格、プライバシー／サポートページを本人が公開前に確認する。実アプリ直接撮影の候補（Simulator例示データ使用、生成・合成なし）は `FactoryTools-AppStore-Assets-Review-2026-11-21/latest-run-44866670896/` と `.../latest-run-44866670819/`。iPadの接続状態表示はSimulator内の試験表示で、実機接続を示しません。プライバシー／サポートページは、発行者名と2026-11-21の候補日を入れた非公開・noindexの確認用HTMLを `FactoryTools-AppStore-Assets-Review-2026-11-21/Pages-preview/` に準備済み。まだページは公開していません。
 
 ## 登録後にまず確認
 
