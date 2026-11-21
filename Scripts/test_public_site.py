@@ -109,6 +109,7 @@ class PublicSiteDraftTests(unittest.TestCase):
             "*.xcresult/",
             "*.app/",
             "/FactoryTools/SitePublicationCandidate/",
+            "/FactoryTools-AppStore-Assets-Review-*/",
             "/FactoryTools-artifacts-*/",
             "/FactoryTools-diag-*/",
             "/FactoryTools-preview-ci-*/",
@@ -172,6 +173,32 @@ class PublicSiteDraftTests(unittest.TestCase):
         self.assertIn('href="mailto:support@example.org"', pages["support.html"])
         self.assertIn('href="https://example.org/privacy.html"', pages["support.html"])
         self.assertIn("candidate without the draft banner", pages["README.md"])
+
+    def test_publisher_review_preview_includes_identity_but_stays_noindex(self) -> None:
+        privacy_source = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
+        support_source = (generate_public_site.SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
+        pages = generate_public_site.build_outputs(
+            review_preview=True,
+            privacy_source=privacy_source,
+            support_source=support_source,
+            publisher_legal_name="Local Review Publisher",
+        )
+
+        self.assertIn('content="noindex, nofollow"', pages["index.html"])
+        self.assertIn('content="noindex, nofollow"', pages["privacy.html"])
+        self.assertIn('content="noindex, nofollow"', pages["support.html"])
+        self.assertIn("Private publisher review preview", pages["privacy.html"])
+        self.assertIn("Local Review Publisher", pages["privacy.html"])
+        self.assertIn("Local Review Publisher", pages["support.html"])
+        self.assertIn("azalea.fortask@outlook.jp", pages["support.html"])
+        self.assertNotIn("[Publisher&#x27;s legal name / 発行者の正式名称]", pages["privacy.html"])
+        self.assertNotIn("[Developer name]", pages["support.html"])
+        self.assertNotIn("[YYYY-MM-DD]", pages["privacy.html"])
+        self.assertIn("not a publication candidate", pages["README.md"])
+
+    def test_publisher_review_preview_requires_complete_copy(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Resolve publisher-page issues"):
+            generate_public_site.build_outputs(review_preview=True)
 
     def test_publication_name_can_be_injected_without_editing_public_source(self) -> None:
         privacy = (generate_public_site.SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")

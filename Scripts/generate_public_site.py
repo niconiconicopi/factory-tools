@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "FactoryTools"
 OUTPUT_DIR = SOURCE_DIR / "SiteDraft"
 PUBLICATION_DIR = SOURCE_DIR / "SitePublicationCandidate"
+REVIEW_PREVIEW_DIR = ROOT / "FactoryTools-AppStore-Assets-Review-2026-11-21" / "Pages-preview"
 
 STYLE = """\
 :root { color-scheme: light; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #17202a; background: #f3f5f6; }
@@ -150,10 +151,20 @@ def public_content(document: str, *, discard_after: str, remove_draft_notice: st
     return japanese, english
 
 
-def html_page(*, title: str, source: str, draft_notice: str, publication_ready: bool = False, privacy_link: str = "privacy.html") -> str:
+def html_page(
+    *,
+    title: str,
+    source: str,
+    draft_notice: str,
+    publication_ready: bool = False,
+    review_preview: bool = False,
+    privacy_link: str = "privacy.html",
+) -> str:
     ja, en = public_content(source, discard_after="## Before publication" if "## Before publication" in source else "## Publisher checklist", remove_draft_notice=draft_notice)
     indexing = "" if publication_ready else '  <meta name="robots" content="noindex, nofollow">\n'
     notice = "" if publication_ready else f'    <p class="draft" role="note">{escape("Draft page: publisher details and public URLs must be completed before publication. / 公開前に発行者情報と公開URLを確定してください。")}</p>\n'
+    if review_preview:
+        notice = '    <p class="draft" role="note">Private publisher review preview. The publisher name and support contact are included. This page remains noindex and unpublished.</p>\n'
     return f"""<!doctype html>
 <html lang="ja">
 <head>
@@ -286,10 +297,19 @@ def _valid_https_url(value: str | None) -> bool:
         return False
 
 
-def build_outputs(*, publication_ready: bool = False, privacy_source: str | None = None, support_source: str | None = None, publisher_legal_name: str | None = None) -> dict[str, str]:
+def build_outputs(
+    *,
+    publication_ready: bool = False,
+    review_preview: bool = False,
+    privacy_source: str | None = None,
+    support_source: str | None = None,
+    publisher_legal_name: str | None = None,
+) -> dict[str, str]:
+    if publication_ready and review_preview:
+        raise ValueError("Choose either a publisher review preview or a publication candidate, not both.")
     privacy = privacy_source if privacy_source is not None else (SOURCE_DIR / "PRIVACY_POLICY_DRAFT.md").read_text(encoding="utf-8")
     support = support_source if support_source is not None else (SOURCE_DIR / "SUPPORT_PAGE_DRAFT.md").read_text(encoding="utf-8")
-    if publication_ready:
+    if publication_ready or review_preview:
         if publisher_legal_name:
             name = publisher_legal_name.strip()
             if any(character in name for character in ("`", "[", "]", "\r", "\n")):
@@ -299,15 +319,20 @@ def build_outputs(*, publication_ready: bool = False, privacy_source: str | None
         support = apply_publisher_name_to_support(privacy, support)
         issues = publication_copy_issues(privacy, support)
         if issues:
-            raise ValueError("Resolve publisher-page issues before generating publication pages: " + "; ".join(issues))
+            destination = "the private review preview" if review_preview else "publication pages"
+            raise ValueError(f"Resolve publisher-page issues before generating {destination}: " + "; ".join(issues))
     privacy_notice = "**Draft only.** Complete every bracketed publisher field, review the text for the release build and applicable law, publish a stable public URL, and add an in-app link before submission. Do not publish this draft with placeholders."
     support_notice = "**Publication status: draft.** Before publishing, replace every bracketed publisher field with a real, monitored contact and update the supported app/platform versions. Do not publish a placeholder email or promise a response time that has not been established."
-    privacy_page = html_page(title="Privacy Policy / プライバシーポリシー", source=privacy, draft_notice=privacy_notice, publication_ready=publication_ready)
-    support_page = html_page(title="Support / サポート", source=support, draft_notice=support_notice, publication_ready=publication_ready)
+    privacy_page = html_page(title="Privacy Policy / プライバシーポリシー", source=privacy, draft_notice=privacy_notice, publication_ready=publication_ready, review_preview=review_preview)
+    support_page = html_page(title="Support / サポート", source=support, draft_notice=support_notice, publication_ready=publication_ready, review_preview=review_preview)
     if publication_ready:
         robots_tag = ""
         draft_banner = ""
         publication_status = "This publication candidate is generated from the publisher-reviewed bilingual source drafts. Verify the legal contact, privacy/support URLs, and HTTPS reachability before uploading. This command does not publish the pages."
+    elif review_preview:
+        robots_tag = '<meta name="robots" content="noindex, nofollow">'
+        draft_banner = '<p class="draft" role="note">Private publisher review preview. Publisher name and support contact are included; this page remains noindex and unpublished.</p>'
+        publication_status = "Private review preview includes the publisher identity and current support contact with a generated effective date. It remains noindex and is not a publication candidate. Keep this folder out of the public repository."
     else:
         robots_tag = '<meta name="robots" content="noindex, nofollow">'
         draft_banner = '<p class="draft" role="note">Draft site for local review. Complete publisher details and URLs before publishing. / ローカル確認用の下書きサイトです。公開前に発行者情報とURLを確定してください。</p>'
@@ -323,11 +348,12 @@ This folder is generated from the bilingual source drafts in the parent director
 
 ## Before publishing
 
-1. Keep the legal-name field as a placeholder in the public source drafts. Before publishing, save the publisher's name as the repository Actions secret `FACTORYTOOLS_PUBLISHER_LEGAL_NAME`; the workflow injects it only into the publication candidate. The published page will display it. Complete monitored support/privacy contact and privacy-policy link in `../PRIVACY_POLICY_DRAFT.md` and `../SUPPORT_PAGE_DRAFT.md`. The publication candidate receives its effective date automatically on the day it is generated.
-2. Review both documents against the signed release build and the publisher's legal obligations. Update the supported platform/version information.
-3. Run `python Scripts/generate_public_site.py` from the workspace root, then `python Scripts/generate_public_site.py --check` to ensure these pages match the source drafts.
-4. After the publisher has completed that review, run `python Scripts/generate_public_site.py --publication-copy-reviewed` and `python Scripts/generate_public_site.py --publication-copy-reviewed --check` with `FACTORYTOOLS_PUBLISHER_LEGAL_NAME` set in the local environment, or use the gated GitHub workflow which reads the Actions secret. This checks the injected name, remaining contact fields, a real effective date (stamped in Japan time when the candidate is generated), monitored email syntax, and one shared HTTPS privacy URL before writing a separate candidate without the draft banner or `noindex`. It does not publish the pages or verify contact ownership, URL ownership, or reachability.
-5. Publish the candidate folder on a publisher-controlled, stable HTTPS host, then configure the same privacy and support URLs in the app and App Store Connect. This repository includes a separately gated GitHub Pages deployment workflow; first set the repository's Pages source to **GitHub Actions**, then use it only after the owner approves the completed public copy.
+1. Keep the legal-name field as a placeholder in the public source drafts. Complete monitored support/privacy contact and privacy-policy link in `../PRIVACY_POLICY_DRAFT.md` and `../SUPPORT_PAGE_DRAFT.md`. The final effective date is stamped in Japan time when either review preview or publication candidate is generated.
+2. Set `FACTORYTOOLS_PUBLISHER_LEGAL_NAME` in the local environment, then run `python Scripts/generate_public_site.py --publisher-review-preview`. This writes a separate private review preview containing the publisher's name and current contact information while retaining `noindex` and a visible review banner. The folder is Git-ignored; do not copy it into the public source tree or publish it. This preview does not mean the copy has been approved.
+3. Review both source documents and the private preview against the actual app and the publisher's legal obligations. Update the supported platform/version information. Then run `python Scripts/generate_public_site.py --publisher-review-preview --check` to verify the preview still matches its sources.
+4. Run `python Scripts/generate_public_site.py` from the workspace root, then `python Scripts/generate_public_site.py --check` to ensure the public draft files match the bilingual source drafts.
+5. Only after the publisher explicitly approves the exact preview, run `python Scripts/generate_public_site.py --publication-copy-reviewed` and `python Scripts/generate_public_site.py --publication-copy-reviewed --check` with `FACTORYTOOLS_PUBLISHER_LEGAL_NAME` set in the local environment, or use the gated GitHub workflow which reads the Actions secret. This checks the injected name, remaining contact fields, date, monitored email syntax, and shared HTTPS privacy URL before writing a separate candidate without the draft banner or `noindex`. It does not publish the pages or verify contact ownership, URL ownership, or reachability.
+6. Publish the candidate folder on a publisher-controlled, stable HTTPS host, then configure the same privacy and support URLs in the app and App Store Connect. This repository includes a separately gated GitHub Pages deployment workflow; first set the repository's Pages source to **GitHub Actions**, then use it only after the owner approves the completed public copy.
 
 The repository is public, so GitHub Pages is available without a separate Pages hosting charge on GitHub Free. Keep the site limited to policy and support material: GitHub says Pages is not intended for a site primarily facilitating commercial transactions or SaaS. GitHub also logs visitor IP addresses for security. Review the host's processing and any required notice before publishing; this is separate from Factory Tools' on-device data handling. [GitHub Pages availability and source setup](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site), [GitHub Pages usage policy](https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits), [GitHub Pages visitor logging](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 
@@ -337,21 +363,31 @@ The repository is public, so GitHub Pages is available without a separate Pages 
     return {"index.html": index, "privacy.html": privacy_page, "support.html": support_page, "styles.css": STYLE, "README.md": readme}
 
 
-def write_outputs(*, check: bool, publication_ready: bool = False) -> bool:
-    publisher_legal_name = os.environ.get("FACTORYTOOLS_PUBLISHER_LEGAL_NAME") if publication_ready else None
-    outputs = build_outputs(publication_ready=publication_ready, publisher_legal_name=publisher_legal_name)
-    output_dir = PUBLICATION_DIR if publication_ready else OUTPUT_DIR
+def write_outputs(*, check: bool, publication_ready: bool = False, review_preview: bool = False) -> bool:
+    if publication_ready and review_preview:
+        raise ValueError("Choose either a publisher review preview or a publication candidate, not both.")
+    publisher_legal_name = os.environ.get("FACTORYTOOLS_PUBLISHER_LEGAL_NAME") if (publication_ready or review_preview) else None
+    if review_preview and not publisher_legal_name:
+        raise ValueError("Set FACTORYTOOLS_PUBLISHER_LEGAL_NAME in the local environment before generating the private review preview.")
+    outputs = build_outputs(
+        publication_ready=publication_ready,
+        review_preview=review_preview,
+        publisher_legal_name=publisher_legal_name,
+    )
+    output_dir = PUBLICATION_DIR if publication_ready else REVIEW_PREVIEW_DIR if review_preview else OUTPUT_DIR
     if check:
         mismatches = [name for name, content in outputs.items() if not (output_dir / name).is_file() or (output_dir / name).read_text(encoding="utf-8") != content]
         if mismatches:
             print("STALE: generated site files differ: " + ", ".join(mismatches), file=sys.stderr)
             return False
-        print(f"PASS: {len(outputs)} generated {'publication-candidate' if publication_ready else 'draft'} files match their bilingual Markdown sources.")
+        label = "publication-candidate" if publication_ready else "publisher-review preview" if review_preview else "draft"
+        print(f"PASS: {len(outputs)} generated {label} files match their bilingual Markdown sources.")
         return True
     output_dir.mkdir(parents=True, exist_ok=True)
     for name, content in outputs.items():
         (output_dir / name).write_text(content, encoding="utf-8", newline="\n")
-    print(f"WROTE: {len(outputs)} static {'publication-candidate' if publication_ready else 'draft'} files to FactoryTools/{output_dir.name}")
+    label = "publication-candidate" if publication_ready else "private publisher-review preview" if review_preview else "draft"
+    print(f"WROTE: {len(outputs)} static {label} files to {output_dir.relative_to(ROOT)}")
     return True
 
 
@@ -359,9 +395,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Generate the no-dependency bilingual Factory Tools public-page draft.")
     parser.add_argument("--check", action="store_true", help="check generated files without writing")
     parser.add_argument("--publication-copy-reviewed", action="store_true", help="after publisher review and completing every field, generate a separate candidate without draft/noindex indicators")
+    parser.add_argument("--publisher-review-preview", action="store_true", help="generate a private noindex preview with the publisher's name and current contacts; does not approve the copy")
     arguments = parser.parse_args()
     try:
-        return 0 if write_outputs(check=arguments.check, publication_ready=arguments.publication_copy_reviewed) else 1
+        if arguments.publisher_review_preview and arguments.publication_copy_reviewed:
+            parser.error("--publisher-review-preview and --publication-copy-reviewed cannot be combined")
+        return 0 if write_outputs(
+            check=arguments.check,
+            publication_ready=arguments.publication_copy_reviewed,
+            review_preview=arguments.publisher_review_preview,
+        ) else 1
     except (OSError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1

@@ -175,6 +175,7 @@ final class ProPurchaseManager: ObservableObject {
         }
     }
 
+    var configuredProductIdentifier: String { productID }
     var isConfigured: Bool { !productID.isEmpty && !productID.contains("$(") }
     var canPurchase: Bool { product?.type == .nonConsumable }
 

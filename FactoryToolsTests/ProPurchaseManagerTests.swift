@@ -164,6 +164,15 @@ final class ProPurchaseManagerTests: XCTestCase {
         session.locale = Locale(identifier: "ja_JP")
 
         let manager = ProPurchaseManager.shared
+        XCTAssertEqual(
+            manager.configuredProductIdentifier,
+            Self.productID,
+            "The hosted app must resolve FACTORYTOOLS_PRO_PRODUCT_ID to the lifetime product ID."
+        )
+        XCTAssertTrue(
+            manager.isConfigured,
+            "The hosted app must expose FACTORYTOOLS_PRO_PRODUCT_ID through FactoryToolsProProductID."
+        )
         await manager.refresh()
 
         XCTAssertEqual(manager.product?.id, "factorytools.pro.lifetime")

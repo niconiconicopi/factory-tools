@@ -15,7 +15,7 @@ permissions:
 jobs:
   storekit:
     if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
-    runs-on: xcode-27
+    runs-on: macos-26
     timeout-minutes: 30
     steps:
       - name: Check out source
@@ -23,10 +23,18 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Show Apple toolchain
+      - name: Select Xcode 26.5 for the StoreKit runtime comparison
+        shell: bash
         run: |
-          xcodebuild -version
-          xcrun simctl list runtimes
+          set -euo pipefail
+          developer_dir="/Applications/Xcode_26.5.app/Contents/Developer"
+          if [[ ! -d "$developer_dir" ]]; then
+            echo "The macOS 26 image does not contain the expected Xcode 26.5 installation." >&2
+            exit 1
+          fi
+          echo "DEVELOPER_DIR=$developer_dir" >> "$GITHUB_ENV"
+          DEVELOPER_DIR="$developer_dir" xcodebuild -version | tee "$RUNNER_TEMP/FactoryTools-StoreKit-toolchain.txt"
+          DEVELOPER_DIR="$developer_dir" xcrun simctl list runtimes | tee "$RUNNER_TEMP/FactoryTools-StoreKit-runtimes.txt"
 
       - name: Run the local StoreKit purchase integration test
         shell: bash
@@ -50,6 +58,8 @@ jobs:
             echo "No available iPhone Simulator device was found." >&2
             exit 1
           fi
+          printf '%s\n' "$simulator_id" > "$RUNNER_TEMP/FactoryTools-StoreKit-simulator-id.txt"
+          xcrun simctl list devices available --json > "$RUNNER_TEMP/FactoryTools-StoreKit-devices.json"
           result_bundle="$RUNNER_TEMP/FactoryTools-StoreKit.xcresult"
           xcode_log="$RUNNER_TEMP/FactoryTools-StoreKit-xcodebuild.log"
           test_status=0
@@ -69,6 +79,11 @@ jobs:
           test_status=${PIPESTATUS[0]}
           set -e
           if [[ "$test_status" -ne 0 ]]; then
+            xcrun simctl spawn "$simulator_id" log show \
+              --last 10m \
+              --style compact \
+              --predicate '(process == "storekitd") OR (process == "appstored") OR (subsystem CONTAINS[c] "StoreKit")' \
+              > "$RUNNER_TEMP/FactoryTools-StoreKit-simulator.log" 2>&1 || true
             {
               echo "## Local StoreKit integration diagnostics"
               echo
@@ -99,5 +114,10 @@ jobs:
           path: |
             ${{ runner.temp }}/FactoryTools-StoreKit.xcresult
             ${{ runner.temp }}/FactoryTools-StoreKit-xcodebuild.log
+            ${{ runner.temp }}/FactoryTools-StoreKit-toolchain.txt
+            ${{ runner.temp }}/FactoryTools-StoreKit-runtimes.txt
+            ${{ runner.temp }}/FactoryTools-StoreKit-devices.json
+            ${{ runner.temp }}/FactoryTools-StoreKit-simulator-id.txt
+            ${{ runner.temp }}/FactoryTools-StoreKit-simulator.log
           if-no-files-found: ignore
           retention-days: 7

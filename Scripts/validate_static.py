@@ -427,7 +427,8 @@ def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
         "pinned checkout major version": "uses: actions/checkout@v7",
         "checkout credential persistence disabled": "persist-credentials: false",
         "public or manually confirmed private-run job condition": "if: github.event.repository.visibility == 'public' || (inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')",
-        "hosted Xcode 27 macOS runner": "runs-on: xcode-27",
+        "hosted macOS 26 runner": "runs-on: macos-26",
+        "pinned Xcode 26.5 diagnostic toolchain": 'developer_dir="/Applications/Xcode_26.5.app/Contents/Developer"',
         "bounded StoreKit probe": "timeout-minutes: 30",
         "dedicated StoreKit test plan scheme": "-scheme FactoryToolsStoreKit",
         "explicit StoreKit test plan selection": "-testPlan FactoryToolsStoreKit",
@@ -2328,6 +2329,7 @@ def main() -> int:
             and "private final class StoreKitProPurchaseStore: ProPurchaseStore" in purchase_manager
             and "@MainActor\nprotocol ProPurchaseStore" in purchase_manager
             and "Product.products(for: [productID])" in purchase_manager
+            and "var configuredProductIdentifier: String { productID }" in purchase_manager
             and "product.purchase()" in purchase_manager
             and "Transaction.currentEntitlements" in purchase_manager
             and "Transaction.updates" in purchase_manager
@@ -2370,6 +2372,7 @@ def main() -> int:
             and "session.resetToDefaultState()" in purchase_test
             and 'session.storefront = "JPN"' in purchase_test
             and 'session.locale = Locale(identifier: "ja_JP")' in purchase_test
+            and "manager.configuredProductIdentifier" in purchase_test
             and '"factorytools.pro.lifetime"' in purchase_test
             and "Decimal(980)" in purchase_test
             and ".isFamilyShareable" in purchase_test
@@ -4193,8 +4196,7 @@ def main() -> int:
     localized_string_count = len(strings) + len(watch_strings)
     require(f"XCTestソース{test_case_count}件" in release_setup_guide
             and f"日英{localized_string_count}文字列" in release_setup_guide
-            and {"42819982935", "42819983047"}.issubset(release_setup_run_ids)
-            and "41244759649" not in release_setup_guide,
+            and {"44866670896", "44866670819"}.issubset(release_setup_run_ids),
             "Japanese Apple release setup guide must cite the latest hosted runs and current source counts")
     registered_tool_count = registry.count("ToolDefinition(")
     require(f"{test_case_count} XCTest methods across app and Core targets" in roadmap,
