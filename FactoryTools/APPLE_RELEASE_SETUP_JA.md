@@ -2,7 +2,7 @@
 
 迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
 
-**現在の状態（2026-11-22）:** Apple Developer Program登録完了とTeam ID受領を報告済み。Team IDはXcodeプロジェクトへ設定し、GitHub Actionsが自動使用します。App Store Connectは未設定です。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。プライバシー／サポートページは発行者名を含む非公開プレビューを用意済みで、内容確認後に公開します。現行リポジトリ先端は `232af56`、iPadストア画像の撮影方法をホーム／タクトタイムへ変更したソース変更は `1cb1ec3` です。WindowsではPython回帰テスト110件とリリース事前検査が通過し、Swift 69ファイル・XCTest定義289件・日英文字列445件を静的確認しました。これはApple SDKでのビルドやXCTest実行を証明しません。GitHub APIへ接続できず、`1cb1ec3` のCI結果と新しいiPad撮影画像は未確認です。過去のCI成功はその時点のソースに対する結果で、最新の画像素材確認には使えません。
+**現在の状態（2026-11-22）:** Apple Developer Program登録完了とTeam ID受領を報告済み。Team IDはXcodeプロジェクトへ設定し、GitHub Actionsが自動使用します。App Store Connectは未設定です。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。プライバシー／サポートページは発行者名を含む非公開プレビューを用意済みで、内容確認後に公開します。現行リポジトリ先端は `d55189a`、iPadストア画像の撮影方法をホーム／タクトタイムへ変更したソース変更は `1cb1ec3` です。WindowsではPython回帰テスト110件とリリース事前検査が通過し、Swift 69ファイル・XCTest定義289件・日英文字列445件を静的確認しました。これはApple SDKでのビルドやXCTest実行を証明しません。GitHub APIは再接続できましたが、`1cb1ec3` のCI結果と新しいiPad撮影画像は、2026-11-21 18:12 UTC時点で未確認です。過去のCI成功はその時点のソースに対する結果で、最新の画像素材確認には使えません。
 
 ## 次に行う作業：アプリIDを1件登録
 
