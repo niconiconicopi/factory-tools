@@ -856,6 +856,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("Watch {scenario} screen was not visible; restarting Watch Simulator.", capture_script)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
         self.assertIn('numericChecks = [("278", 0.20...0.82)]', screenshot_verifier)
+        self.assertIn('numericChecks = [("286", 0.36...0.84), ("300", 0.0...0.52)]', screenshot_verifier)
         self.assertIn('case ("production-progress", "ja"): expectedTitle = "生産進捗"', screenshot_verifier)
         self.assertIn('case ("production-progress", "en"): expectedTitle = "Production Progress"', screenshot_verifier)
         self.assertIn("VNRecognizeTextRequest()", screenshot_verifier)
@@ -891,6 +892,8 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('entry.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategorySystemBootTime"', workflow)
         self.assertIn('"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])', workflow)
         self.assertIn("factory-tools-app-store-watch-product-page", workflow)
+        self.assertIn("Require all six Watch product-page screenshots", workflow)
+        self.assertIn('CAPTURE_OUTCOME: ${{ steps.capture_watch_screenshots.outcome }}', workflow)
         self.assertRegex(
             workflow,
             r"id: capture_watch_screenshots\n\s+timeout-minutes: 30\n\s+continue-on-error: true",

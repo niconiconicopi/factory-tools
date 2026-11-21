@@ -43,8 +43,12 @@ do {
     }.flatMap { $0 }
     let numericChecks: [(expected: String, range: ClosedRange<CGFloat>)]
     switch scenario {
-    case "counter", "production-progress":
+    case "counter":
         numericChecks = [("286", 0.36...0.84), ("300", 0.08...0.52)]
+    case "production-progress":
+        // The target value is intentionally shown near the bottom edge of the
+        // compact progress view, so Vision reports a low normalized midY.
+        numericChecks = [("286", 0.36...0.84), ("300", 0.0...0.52)]
     case "cycle-time":
         numericChecks = [("278", 0.20...0.82)]
     default:

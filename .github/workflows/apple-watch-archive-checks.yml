@@ -103,6 +103,30 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
+      - name: Require all six Watch product-page screenshots
+        if: always()
+        shell: bash
+        env:
+          CAPTURE_OUTCOME: ${{ steps.capture_watch_screenshots.outcome }}
+          WATCH_CAPTURE_DIR: ${{ runner.temp }}/FactoryToolsWatchScreenshots
+        run: |
+          set -euo pipefail
+          if [[ "$CAPTURE_OUTCOME" != "success" ]]; then
+            echo "The bilingual Watch screenshot capture did not pass its build and OCR gates." >&2
+            exit 1
+          fi
+          for screenshot in \
+            watch-counter-ja.jpg watch-counter-en.jpg \
+            watch-cycle-time-ja.jpg watch-cycle-time-en.jpg \
+            watch-production-progress-ja.jpg watch-production-progress-en.jpg; do
+            if [[ ! -s "$WATCH_CAPTURE_DIR/$screenshot" ]]; then
+              echo "Required Watch product-page screenshot is missing: $screenshot" >&2
+              exit 1
+            fi
+          done
+          test -s "$WATCH_CAPTURE_DIR/capture-info.txt"
+          echo "All six bilingual Watch product-page screenshots passed capture and OCR checks." >> "$GITHUB_STEP_SUMMARY"
+
   archive:
     if: github.event.repository.visibility == 'public' || (github.event_name == 'workflow_dispatch' && inputs.enable_private_macos_runner == true && vars.FACTORYTOOLS_PRIVATE_MACOS_CI == 'enabled')
     runs-on: macos-26-intel
