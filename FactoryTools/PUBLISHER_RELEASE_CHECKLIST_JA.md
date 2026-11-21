@@ -4,9 +4,9 @@ Apple登録で入力する内容や、公開前に必要な作業を順番にま
 
 ## 今すぐ必要な作業
 
-Apple Developer Program登録完了の報告を受け、Team IDを受領してXcodeプロジェクトへ設定しました。次はApp Store Connectと署名アップロード用のGitHub設定です。法的氏名、住所、電話番号、Apple Account情報、確認コード、API秘密鍵は、このチャットや公開リポジトリへ送らないでください。
+Apple Developer Program登録完了の報告を受け、Team IDを受領してXcodeプロジェクトへ設定しました。次はApple Developer側でApp IDを登録し、その後App Store Connectにアプリ記録を作成します。法的氏名、住所、電話番号、Apple Account情報、確認コード、API秘密鍵は、このチャットや公開リポジトリへ送らないでください。
 
-**次に行うのは、App Store Connectでのアプリ記録作成ではなく、Apple Developer側でBundle IDを登録する作業です。** [公開準備ガイドの「App ID登録」手順](APPLE_RELEASE_SETUP_JA.md#次に行う作業アプリidを1件登録)に沿って、Descriptionを `Factory Tools`、Explicit Bundle IDを `com.niconiconicopi.factorytools` にします。これは識別子を確保する準備で、アプリ公開や追加料金は発生しません。使用済みで登録できない場合は、別のBundle IDを決める前に止めてください。
+- [ ] **次に行うのはApple Developer側でのApp ID登録です。** [公開準備ガイドの「App ID登録」手順](APPLE_RELEASE_SETUP_JA.md#次に行う作業アプリidを1件登録)に沿って、Descriptionを `Factory Tools`、Explicit Bundle IDを `com.niconiconicopi.factorytools` にします。これは識別子を確保する準備で、アプリ公開や追加料金は発生しません。使用済みで登録できない場合は、別のBundle IDを決める前に止めてください。
 
 - [ ] App Store Connectで最初のアプリ記録を作る前に、個人登録では法的氏名がApp Storeの販売元／開発者名として公開され、ペンネームにできず、初回登録後は変更できないことを確認する。[Appleの開発者名の説明](https://developer.apple.com/help/app-store-connect/create-an-app-record/set-your-developer-name/)
 - サポート／プライバシーページでは「Factory Tools」をブランド名として使えますが、それによってApp Storeの販売元名が非公開になるわけではありません。ページ上の運営者情報は別途公開前に確認します。
