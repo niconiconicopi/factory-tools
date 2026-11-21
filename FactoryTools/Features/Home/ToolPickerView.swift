@@ -222,7 +222,6 @@ struct ToolPickerView: View {
         case .cycleTime: "timer"
         case .taktTime: "clock"
         case .oee: "gauge"
-        default: "wrench.and.screwdriver"
         }
     }
 }
