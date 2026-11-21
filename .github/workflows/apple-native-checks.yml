@@ -114,6 +114,7 @@ jobs:
 
       - name: Capture bilingual iPhone product-page screenshots from Release Simulator build
         id: capture_iphone_screenshots
+        timeout-minutes: 30
         continue-on-error: true
         shell: bash
         run: |
@@ -149,6 +150,7 @@ jobs:
 
       - name: Capture bilingual Production Counter S/M/L layout evidence
         id: capture_counter_size_evidence
+        timeout-minutes: 20
         continue-on-error: true
         shell: bash
         run: |
@@ -177,6 +179,7 @@ jobs:
 
       - name: Capture bilingual 13-inch iPad product-page screenshots from Release Simulator build
         id: capture_ipad_screenshots
+        timeout-minutes: 20
         continue-on-error: true
         shell: bash
         run: |

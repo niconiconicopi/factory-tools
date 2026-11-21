@@ -26,11 +26,11 @@ Apple's October 5, 2026 announcement says apps submitted starting April 2027 nee
 
 ## Product-page screenshot sequence
 
-Keep the displayed feature state and access level accurate. The listed Japanese and English copy are draft overlay headlines; localize any overlay for each App Store localization. Avoid showing real workplace names, people, or production data.
+Keep the displayed feature state and access level accurate. This project uses direct, unaltered app-screen captures: do not composite the Japanese or English headline ideas in the tables onto the screenshots. Avoid showing real workplace names, people, or production data.
 
 ### iPhone
 
-| Order | Capture | Japanese headline | English headline |
+| Order | Capture | Japanese note (not overlaid) | English note (not overlaid) |
 |---:|---|---|---|
 | 1 | Industrial Dark home with Production Counter and target | 現場の数字を、ひと目で | Production at a glance |
 | 2 | Counter interaction showing +1, Quick Add, Undo, and target controls | 数える操作を、すばやく | Count with fewer taps |
@@ -42,14 +42,14 @@ Keep the displayed feature state and access level accurate. The listed Japanese 
 
 ### iPad
 
-| Order | Capture | Japanese headline | English headline |
+| Order | Capture | Japanese note (not overlaid) | English note (not overlaid) |
 |---:|---|---|---|
 | 1 | Paired iPad counter dashboard connected to its iPhone authority | iPadからカウンターを操作 | Control your counter from iPad |
 | 2 | Dashboard showing target and queued/offline state if the final UI makes that state clear | 接続状態と目標を確認 | See connection and target status |
 
 ### Apple Watch
 
-| Order | Capture | Japanese headline | English headline |
+| Order | Capture | Japanese note (not overlaid) | English note (not overlaid) |
 |---:|---|---|---|
 | 1 | Production Counter with count, target, and primary +1 action | 手元で、生産数をカウント | Count production from your wrist |
 | 2 | Cycle Time stopwatch with a one-unit sample ready to record | サイクルタイムを手元で計測 | Measure Cycle Time from your wrist |
@@ -67,7 +67,7 @@ Capture the actual signed iPhone Settings screen with the configured non-consuma
 - Keep synthetic home, counter, history, defect, and calculator data in the captured Release build.
 - Use the prepared Apple-listed iPhone, iPad, and Watch dimensions; recapture from CI or a simulator/device only if the release UI changes.
 - For submissions starting April 2027, include iPhone Duo outer- and inner-display screenshots in addition to the currently required Dynamic Island and 13-inch iPad screenshots.
-- Prepare both Japanese and English image sets if localized overlay text is used.
+- Capture each language directly from the app's Japanese or English UI; keep all screenshots free of added text or artwork.
 - Keep the Apple Watch screenshot dimensions identical across those localizations.
 - Verify every shown Pro feature is part of the approved launch offer and can be reached in the submitted build.
 - Remove personal, workplace, and location information from status bars and sample records.

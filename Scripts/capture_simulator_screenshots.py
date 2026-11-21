@@ -68,7 +68,8 @@ SCENARIO_EXPECTED_LABELS = {
         "ja": ("Cp", "Cpk", "工程平均"),
     },
 }
-COMMAND_TIMEOUT_SECONDS = 900
+COMMAND_TIMEOUT_SECONDS = 300
+SIMULATOR_BOOT_TIMEOUT_SECONDS = 900
 HOME_READINESS_TIMEOUT_SECONDS = 30
 HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10
 SCREENSHOT_CAPTURE_ATTEMPTS = 4
@@ -122,7 +123,10 @@ def ensure_simulator_booted(device_id: str) -> None:
         raise RuntimeError("The requested Simulator device is not available.")
     if state != "Booted":
         run(["xcrun", "simctl", "boot", device_id])
-    run(["xcrun", "simctl", "bootstatus", device_id, "-b"])
+    run(
+        ["xcrun", "simctl", "bootstatus", device_id, "-b"],
+        timeout_seconds=SIMULATOR_BOOT_TIMEOUT_SECONDS,
+    )
 
 
 def bundle_identifier(app_path: Path) -> str:

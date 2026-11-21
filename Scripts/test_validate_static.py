@@ -686,7 +686,9 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('f"--factorytools-screenshot-{scenario}"', capture_script)
         self.assertIn('"sips", "-s", "format", "jpeg"', capture_script)
         self.assertIn('f"{arguments.platform}-{scenario}-{language}.jpg"', capture_script)
-        self.assertIn("COMMAND_TIMEOUT_SECONDS = 900", capture_script)
+        self.assertIn("COMMAND_TIMEOUT_SECONDS = 300", capture_script)
+        self.assertIn("SIMULATOR_BOOT_TIMEOUT_SECONDS = 900", capture_script)
+        self.assertIn("timeout_seconds=SIMULATOR_BOOT_TIMEOUT_SECONDS", capture_script)
         self.assertIn("HOME_READINESS_TIMEOUT_SECONDS = 30", capture_script)
         self.assertIn("HOME_READINESS_COMMAND_TIMEOUT_SECONDS = 10", capture_script)
         self.assertIn("def clear_capture_outputs", capture_script)
@@ -891,8 +893,12 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         for capture_id in ("capture_iphone_screenshots", "capture_ipad_screenshots"):
             self.assertRegex(
                 ios_workflow,
-                rf"id: {capture_id}\n(?:\s+timeout-minutes: \d+\n)?\s+continue-on-error: true",
+                rf"id: {capture_id}\n\s+timeout-minutes: \d+\n\s+continue-on-error: true",
             )
+        self.assertRegex(
+            ios_workflow,
+            r"id: capture_counter_size_evidence\n\s+timeout-minutes: \d+\n\s+continue-on-error: true",
+        )
 
 
 class LegalPagesWorkflowContractTests(unittest.TestCase):
