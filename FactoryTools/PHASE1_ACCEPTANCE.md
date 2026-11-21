@@ -1,8 +1,8 @@
 # Phase 1 acceptance status
 
-This checklist maps the agreed iPhone Phase 1 goal to the current source and regression coverage. The latest app-source revision, `e01a704`, passed the iPhone and iPad Simulator XCTest suites, bilingual Release screenshot capture and OCR gates, six dedicated S/M/L counter captures, and the iPad screenshot gate in [native run 44866670896](https://github.com/niconiconicopi/factory-tools/actions/runs/44866670896). [Watch/archive run 44866670819](https://github.com/niconiconicopi/factory-tools/actions/runs/44866670819) passed shared Core tests, Watch Debug/Release Simulator builds, bilingual Watch captures, and the unsigned iOS archive embedding the Watch app. `git diff e01a704 HEAD` contains documentation changes only; the current Swift and Xcode project sources match the verified app revision. Physical Apple-device behavior remains unverified.
+This checklist maps the agreed iPhone Phase 1 goal to the current source and regression coverage. The latest app-source revision, `729f44a`, passed the iPhone and iPad Simulator XCTest suites, bilingual Release screenshot capture and OCR gates, six dedicated S/M/L counter captures, and the iPad screenshot gate in [native run 44888194069](https://github.com/niconiconicopi/factory-tools/actions/runs/44888194069). [Watch/archive run 44888194062](https://github.com/niconiconicopi/factory-tools/actions/runs/44888194062) passed shared Core tests, Watch Debug/Release Simulator builds, bilingual Watch captures, and the unsigned iOS archive embedding the Watch app. Physical Apple-device behavior remains unverified.
 
-The current workflow-only guard skips the focused headless `SKTestSession` case during routine native CI and signed-upload preflight while retaining the manager regression tests. A later Xcode 27.1 hosted run also failed to load the configured local product, but its exact cause is unconfirmed; the added runtime product-ID assertion and failure diagnostics have not yet run on Apple CI. This does not establish real StoreKit purchase or restore behavior.
+The current workflow-only guard skips the focused local `SKTestSession` transaction case during routine native CI and signed-upload preflight while retaining the manager regression tests. Dedicated run [44888208995](https://github.com/niconiconicopi/factory-tools/actions/runs/44888208995) verified product metadata, local Pro entitlement grant, and revocation after clearing the test transaction. This does not establish that the interactive purchase sheet or a signed App Store Connect Sandbox/TestFlight purchase and restore work.
 
 The source gives iPhone/iPad peer connections a 15-second TLS establishment deadline. The loopback XCTest leaves a peer handshake incomplete, confirms it times out, then confirms a correctly paired peer can connect; this passed on both simulators in run 42808313649.
 
@@ -19,8 +19,8 @@ The source gives iPhone/iPad peer connections a 15-second TLS establishment dead
 ## Verification on this workspace
 
 - `python Scripts/validate_static.py --release-preflight`: static inspection passes for 69 Swift files, 289 XCTest source cases, 445 Japanese/English strings, project/resource membership, architecture contracts, and bilingual listing/IAP limits. It does not compile or run Swift tests.
-- `python -m unittest discover -s Scripts -p 'test_*.py'`: all 108 verifier self-tests pass in the current working tree, including screenshot-capture recovery and release workflow guards.
-- The latest successful hosted iPhone/iPad and Watch/archive gates are runs 44866670896 and 44866670819 on app-source revision `e01a704`. The signed-release purchase screenshot and publisher acceptance remain distribution tasks.
+- `python -B -m unittest discover -s Scripts -p 'test_*.py'`: all 110 verifier self-tests pass in the current working tree, including screenshot-capture recovery and release workflow guards.
+- The latest successful hosted iPhone/iPad and Watch/archive gates are runs 44888194069 and 44888194062 on app-source revision `729f44a`. The signed-release purchase screenshot and publisher acceptance remain distribution tasks.
 - This Windows workspace still cannot run Apple's build tools or simulate interaction with physical devices. The simulator results are hosted CI evidence, not physical-device verification.
 
 ## Remaining gates
