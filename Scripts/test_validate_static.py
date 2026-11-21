@@ -107,6 +107,7 @@ run: xcodebuild test -scheme FactoryTools -scheme FactoryToolsCore -scheme Facto
         self.assertIn("missing read-only repository permission", errors)
         self.assertIn("missing checkout credential persistence disabled", errors)
         self.assertIn("missing iPad Simulator regression suite", errors)
+        self.assertIn("missing current standard macOS 26 runner", errors)
         self.assertIn("workflow must not access repository secrets", errors)
 
 
