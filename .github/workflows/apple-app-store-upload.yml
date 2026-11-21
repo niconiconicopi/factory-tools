@@ -125,7 +125,7 @@ jobs:
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
-            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \
@@ -155,7 +155,7 @@ jobs:
             -scheme FactoryTools \
             -destination "platform=iOS Simulator,id=$simulator_id" \
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
-            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \

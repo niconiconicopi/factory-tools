@@ -60,7 +60,7 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
             -resultBundlePath "$result_bundle" \
             -parallel-testing-enabled NO \
-            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$xcode_log"
           test_status=${PIPESTATUS[0]}
           set -e
@@ -257,7 +257,7 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsDerivedData" \
             -resultBundlePath "$result_bundle" \
             -parallel-testing-enabled NO \
-            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            -skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$xcode_log"
           test_status=${PIPESTATUS[0]}
           set -e

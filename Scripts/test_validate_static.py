@@ -350,7 +350,7 @@ class AppleUploadWorkflowContractTests(unittest.TestCase):
     def test_upload_workflow_skips_only_the_known_headless_storekit_test_twice(self) -> None:
         root = Path(__file__).resolve().parents[1]
         workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
-        skip = "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro"
+        skip = "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro"
 
         self.assertEqual(workflow.count(skip), 2)
         self.assertEqual(apple_upload_workflow_contract_errors(workflow), [])

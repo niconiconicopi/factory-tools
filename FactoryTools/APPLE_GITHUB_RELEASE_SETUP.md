@@ -4,7 +4,7 @@
 
 ワークフローは、iPhone・iPad Simulatorの回帰テスト、共有Coreテスト、Watch Simulatorビルドがすべて成功した後にだけApp Store Connect APIキーを読み込みます。検証が失敗した場合は秘密鍵をrunnerへ渡しません。
 
-ホスト型の通常テストとアップロード前テストでは、`testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro` だけを実行対象から外します。以前のXcode 26.6ではAppleが報告していたCLI Simulatorの `SKTestSession` 問題と一致しましたが、Xcode 27.1で同じ症状が出る根本原因は未確認です。今回の失敗ではローカル商品を取得できず、アプリログにXPC切断が記録されました。商品ID設定のアサーションとStoreKit／Simulatorの診断ログ取得を追加していますが、GitHub認証が戻るまで再実行できていません。購入マネージャーの通常回帰テストは引き続き実行します。この除外はStoreKit購入・復元の成功を証明しません。StoreKit統合の確認と、最終的なApp Store Connect Sandbox/TestFlight購入・復元確認は別ゲートです。
+ホスト型の通常テストとアップロード前テストでは、`testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro` だけを実行対象から外し、手動のStoreKit診断ワークフローで個別に実行します。iOS 26.2の実行では商品ID・買い切り種別・¥980・ファミリー共有オフを確認できましたが、テストから `Product.purchase()` を直接呼ぶと購入シートの表示に失敗しました。そのため統合テストはAppleが自動テスト向けに用意している `SKTestSession.buyProduct` でローカル取引を作り、商品情報とPro解除・取消を確認する形にします。購入マネージャーの結果処理は別途モックで検証します。この統合テストはアプリ上の購入シート表示や、App Store Connect Sandbox/TestFlightでの署名済み購入・復元成功を証明するものではありません。手動ワークフローもテストの停止後に診断ログを保存し、最長12分で終える設定です。
 
 ## できること / しないこと
 

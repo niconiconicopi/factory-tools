@@ -151,7 +151,7 @@ final class ProPurchaseManagerTests: XCTestCase {
         XCTAssertTrue(manager.hasPro)
     }
 
-    func testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro() async throws {
+    func testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro() async throws {
         let configurationURL = try XCTUnwrap(
             Bundle(for: ProPurchaseManagerTests.self)
                 .url(forResource: "FactoryToolsPro", withExtension: "storekit")
@@ -182,10 +182,10 @@ final class ProPurchaseManagerTests: XCTestCase {
         XCTAssertTrue(manager.canPurchase)
         XCTAssertFalse(manager.hasPro)
 
-        await manager.purchase()
-
+        let transaction = try await session.buyProduct(identifier: Self.productID, options: [])
+        XCTAssertEqual(transaction.productID, Self.productID)
+        await manager.refresh()
         XCTAssertTrue(manager.hasPro, "Purchase result: \(manager.statusMessageKey ?? "none")")
-        XCTAssertEqual(manager.statusMessageKey, "pro.purchaseComplete")
 
         session.clearTransactions()
         await manager.refresh()

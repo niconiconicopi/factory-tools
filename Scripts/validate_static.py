@@ -358,7 +358,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "checkout credential persistence disabled": "persist-credentials: false",
         "current standard macOS 26 runner": "runs-on: macos-26\n",
         "bounded native verification job": "timeout-minutes: 150",
-        "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "CI skips only the known headless StoreKit integration case": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro",
         "source contract checks": "python3 -B -m unittest discover -s Scripts -p 'test_*.py'",
         "iPhone Simulator XCTest": "-scheme FactoryTools",
         "iPad Simulator regression suite": 'name: Test iPad and app-hosted regression suite',
@@ -393,7 +393,7 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         )
         if "if: failure()" not in diagnostics_block or "actions/upload-artifact@" not in diagnostics_block:
             errors.append(f"{step_name} must upload XCTest diagnostics after timeout or failure")
-    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro") != 2:
         errors.append("both app-hosted CI test runs must isolate the known headless StoreKitTest failure")
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
         errors.append("workflow must not access repository secrets")
@@ -434,7 +434,7 @@ def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
         "explicit StoreKit test plan selection": "-testPlan FactoryToolsStoreKit",
         "iOS 26.2 simulator preferred for the StoreKit runtime comparison": "candidate[0] == (26, 2)",
         "iPhone Simulator fallback when iOS 26.2 is unavailable": "max(preferred or candidates)",
-        "focused local StoreKit purchase test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "focused local StoreKit transaction test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro",
         "StoreKit test has a bounded diagnostic timeout": "python3 Scripts/run_bounded_command.py --timeout-seconds 720 -- xcodebuild test",
         "simulator signing enabled for StoreKit integration": "CODE_SIGNING_ALLOWED=YES",
         "ad-hoc simulator identity avoids publisher signing account": "CODE_SIGN_IDENTITY=-",
@@ -468,11 +468,11 @@ def apple_sdk27_workflow_contract_errors(source: str) -> list[str]:
         "Watch Debug and Release builds": "Build Watch Debug and Release targets",
         "unsigned app archive": "Archive unsigned iPhone app with embedded Watch target",
         "embedded Watch app verification": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
-        "headless StoreKit test isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "headless StoreKit test isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
-    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro") != 2:
         errors.append("both app-hosted simulator runs must isolate the known headless StoreKitTest failure")
     if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
         errors.append("SDK 27 forward checks must be manually dispatched only")
@@ -493,7 +493,7 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         "read-only repository permission": "permissions:\n  contents: read",
         "checkout credentials disabled": "persist-credentials: false",
         "Apple-hosted macOS runner": "runs-on: macos-26",
-        "known headless StoreKit integration case is isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "known headless StoreKit integration case is isolated": "-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro",
         "release source preflight": "--release-preflight",
         "generic iOS archive": "-destination 'generic/platform=iOS'",
         "iPad Simulator regression suite": 'name: Run current iPad regression suite',
@@ -511,7 +511,7 @@ def apple_upload_workflow_contract_errors(source: str) -> list[str]:
         or "DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM" not in source
     ):
         errors.append("Team ID must fall back to the shared Xcode project setting")
-    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro") != 2:
+    if source.count("-skip-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro") != 2:
         errors.append("both iPhone and iPad upload-preflight suites must isolate the known headless StoreKitTest failure")
     if re.search(r"^\s{2}(push|pull_request|schedule):", source, re.MULTILINE):
         errors.append("distribution upload workflow must not run on push, pull request, or schedule")

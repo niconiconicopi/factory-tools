@@ -74,7 +74,7 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsStoreKitDerivedData" \
             -resultBundlePath "$result_bundle" \
             -parallel-testing-enabled NO \
-            -only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro \
+            -only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimeTransactionUnlocksAndClearingTransactionsRevokesPro \
             CODE_SIGNING_ALLOWED=YES \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY=- 2>&1 | tee "$xcode_log"
