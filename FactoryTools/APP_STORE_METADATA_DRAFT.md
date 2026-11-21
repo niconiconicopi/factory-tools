@@ -19,7 +19,7 @@ Apple requires an App Store support link with current contact information so cus
 | Support URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/support.html`; publish and verify contact details before submission |
 | Privacy Policy URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/privacy.html`; publish and verify before submission |
 | Promotional text | Leave blank for first submission |
-| Screenshots and previews | Genuine Release Simulator source captures plus 18 private Japanese/English iPhone/iPad layout drafts are prepared; all require publisher review, and none has been uploaded. The iPad layout drafts depict simulator-only paired states and must stay out of the submission set until confirmed with real paired devices |
+| Screenshots and previews | Genuine Release Simulator source captures plus 14 private Japanese/English iPhone layout drafts are prepared; all require publisher review, and none has been uploaded. Four iPad images are separate Simulator-only connection references and must stay out of the submission set until confirmed with real paired devices |
 | In-app purchase | One non-consumable Factory Tools Pro purchase; offer in all currently available territories where permitted; Japan base price is ¥980, then review generated local prices |
 | Family Sharing | Disabled for Version 1; verify the setting is off in App Store Connect |
 
@@ -138,7 +138,7 @@ Counts exclude the field labels and Markdown formatting. The descriptions are ch
 
 | Locale | Name | Subtitle | Keywords (UTF-8 bytes) | Description |
 |---|---:|---:|---:|---:|
-| Japanese | 13 / 30 | 12 / 30 | 96 / 100 bytes | 4,000-character limit |
+| Japanese | 4 / 30 | 12 / 30 | 96 / 100 bytes | 4,000-character limit |
 | English | 13 / 30 | 27 / 30 | 84 / 100 bytes | 4,000-character limit |
 
 

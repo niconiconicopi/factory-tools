@@ -4198,7 +4198,7 @@ def main() -> int:
     localized_string_count = len(strings) + len(watch_strings)
     require(f"XCTestソース{test_case_count}件" in release_setup_guide
             and f"日英{localized_string_count}文字列" in release_setup_guide
-            and {"44888194069", "44888194062"}.issubset(release_setup_run_ids),
+            and {"44895497260", "44895497362"}.issubset(release_setup_run_ids),
             "Japanese Apple release setup guide must cite the latest hosted runs and current source counts")
     registered_tool_count = registry.count("ToolDefinition(")
     require(f"{test_case_count} XCTest methods across app and Core targets" in roadmap,
