@@ -3,6 +3,13 @@
 Audit date: 2026-11-22
 Purpose: track evidence for the first public iPhone, Apple Watch, and iPad release. A source-level pass is not evidence of a successful Apple-platform build or App Review approval.
 
+## Latest follow-up (2026-11-22, repository commit 58a2176)
+
+- Removed an unreachable `default` branch from the Registry-backed tool picker after the Apple StoreKit build reported the enum as exhaustive. The change preserves picker behavior and removes the compiler warning.
+- Windows verification on this exact source revision passed all 110 Python regression tests, `python Scripts/validate_static.py --release-preflight` (69 Swift files, 289 XCTest methods, 445 bilingual strings), and `git diff --check`. These checks do not compile or type-check Swift.
+- Apple-hosted verification was started for this revision: native run [44930125592](https://github.com/niconiconicopi/factory-tools/actions/runs/44930125592) and Watch/archive run [44930125630](https://github.com/niconiconicopi/factory-tools/actions/runs/44930125630). The last available observation showed Watch builds and archive succeeded while native iPhone/iPad screenshot capture was still running. A later status refresh could not reach GitHub; do not treat the native run as passed until its result is checked.
+- The latest confirmed complete native runs remain [44916840967](https://github.com/niconiconicopi/factory-tools/actions/runs/44916840967) and [44916841101](https://github.com/niconiconicopi/factory-tools/actions/runs/44916841101) on `b61c387`, before this compiler-warning-only source edit.
+
 ## Latest verification update (2026-11-22, repository commit b61c387)
 
 - Apple native run [44916840967](https://github.com/niconiconicopi/factory-tools/actions/runs/44916840967) passed on the current repository tip: source checks, iPhone/iPad app-hosted XCTest, 14 iPhone screenshots, six S/M/L card screenshots, four iPad screenshots, and the required capture gate. The Watch/archive run [44916841101](https://github.com/niconiconicopi/factory-tools/actions/runs/44916841101) also passed: shared Core tests, Watch Debug/Release builds, six localized Watch screenshots and OCR checks, and an unsigned iOS/iPad archive embedding Watch.
