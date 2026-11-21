@@ -16,7 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSET_ROOT = ROOT / "FactoryTools-AppStore-Assets-Review-2026-11-21"
 METADATA = ROOT / "FactoryTools" / "APP_STORE_METADATA_DRAFT.md"
 OUTPUT = ASSET_ROOT / "STORE_LISTING_REVIEW_JA.html"
+GALLERY_OUTPUT = ASSET_ROOT / "STORE_REVIEW_GALLERY_JA.html"
 ART_DIR = "store-artwork-redesign-v5"
+IPHONE_CAPTURE_DIR = "run-44932996378/iphone"
+WATCH_CAPTURE_DIR = "run-44930125630/watch"
+CARD_CAPTURE_DIR = "run-44932996378/card-sizes"
 SCREENSHOTS = [
     ("01-home", "Home"),
     ("02-counter-quick-add", "Quick Add"),
@@ -95,6 +99,74 @@ def ipad_screenshot_strip(locale: str, labels: dict[str, str]) -> str:
     return "\n".join(cards)
 
 
+def gallery_cards(items: list[tuple[str, str, str]]) -> str:
+    cards = []
+    for image, source, label in items:
+        source_link = f'<a href="{source}">実画面</a>' if source else ""
+        cards.append(
+            f'<figure><a href="{image}"><img loading="lazy" src="{image}" alt="{esc(label)}"></a>'
+            f'<figcaption>{esc(label)}{" · " if source_link else ""}{source_link}</figcaption></figure>'
+        )
+    return "\n".join(cards)
+
+
+def build_gallery() -> None:
+    sections = []
+    localized_names = {"ja": "日本語", "en": "English"}
+    tool_names = {
+        "ja": {"Home": "ホーム", "Quick Add": "クイック追加", "Cycle Time": "サイクルタイム", "Defect Counter": "不良カウンター", "Count History": "カウント履歴", "Takt Time": "タクトタイム", "Process Capability": "工程能力 Cp・Cpk（Pro）"},
+        "en": {"Home": "Home", "Quick Add": "Quick Add", "Cycle Time": "Cycle Time", "Defect Counter": "Defect Counter", "Count History": "Count History", "Takt Time": "Takt Time", "Process Capability": "Process Capability Cp/Cpk (Pro)"},
+    }
+    for locale in ("ja", "en"):
+        lang = localized_names[locale]
+        phone_items = [
+            (
+                f"{ART_DIR}/{basename}-{locale}.jpg",
+                f"{IPHONE_CAPTURE_DIR}/iphone-{basename.split('-', 1)[1]}-{locale}.jpg",
+                f"{lang} · iPhone · {tool_names[locale][label]}",
+            )
+            for index, (basename, label) in enumerate(SCREENSHOTS, 1)
+        ]
+        sections.append(
+            f'<section><h2>iPhone · {lang} · 7枚</h2><div class="grid">{gallery_cards(phone_items)}</div></section>'
+        )
+        ipad_items = [
+            (
+                f"store-artwork-ipad-v1/{index:02d}-{basename}-{locale}.jpg",
+                f"{IPAD_CAPTURE_DIR}/{basename}-{locale}.jpg",
+                f"{lang} · iPad · {tool_names[locale][label]}",
+            )
+            for index, (basename, label) in enumerate(IPAD_SCREENSHOTS, 1)
+        ]
+        sections.append(
+            f'<section><h2>iPad · {lang} · 2枚</h2><div class="grid">{gallery_cards(ipad_items)}</div></section>'
+        )
+        watch_items = [
+            (f"{WATCH_CAPTURE_DIR}/watch-{key}-{locale}.jpg", "", f"{lang} · Apple Watch · {label}")
+            for key, label in (("counter", "Production Counter"), ("cycle-time", "Cycle Time"), ("production-progress", "Production Progress · Pro"))
+        ]
+        sections.append(
+            f'<section><h2>Apple Watch · {lang} · 3枚</h2><div class="grid small">{gallery_cards(watch_items)}</div></section>'
+        )
+        size_items = [
+            (f"{CARD_CAPTURE_DIR}/iphone-counter-size-{size}-{locale}.jpg", "", f"{lang} · Counter card · {size.upper()}")
+            for size in ("small", "medium", "large")
+        ]
+        sections.append(
+            f'<section><h2>生産カウンターカード · {lang} · S／M／L</h2><div class="grid small">{gallery_cards(size_items)}</div></section>'
+        )
+
+    GALLERY_OUTPUT.write_text(
+        f"""<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>現場ギア／Factory Tools — ストア画像レビュー</title>
+<style>:root{{color-scheme:light;--ink:#172125;--muted:#58666b;--accent:#ef711f;--paper:#f3f1ea;--card:#fff}}*{{box-sizing:border-box}}body{{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}}header{{padding:38px max(24px,calc((100% - 1280px)/2));background:#182125;color:white;border-bottom:7px solid var(--accent)}}h1{{margin:0 0 8px;font-size:clamp(28px,4vw,42px)}}header p{{margin:6px 0;color:#d8e0e1}}main{{max-width:1280px;margin:0 auto;padding:24px}}.notice{{padding:18px 20px;background:#fff4df;border-left:5px solid var(--accent);border-radius:8px;margin:18px 0 32px}}section{{margin:40px 0}}h2{{font-size:25px;margin-bottom:14px}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;align-items:start}}figure{{margin:0;padding:10px;background:var(--card);border-radius:12px;box-shadow:0 2px 10px #18212514}}img{{display:block;width:100%;height:auto;border-radius:7px}}figcaption{{padding:8px 2px 2px;font-weight:650;font-size:14px}}.small img{{max-width:260px;margin:auto}}a{{color:#a5480d}}</style></head><body>
+<header><h1>現場ギア／Factory Tools — ストア画像レビュー</h1><p>掲載前の確認用 · すべて未承認・未公開</p><p>日本 ¥980 · Pro買い切り · Family Sharingオフ · 表示値はアプリの合成サンプル</p><p><a style="color:#ffd0a6" href="STORE_LISTING_REVIEW_JA.html">日英の掲載文・Pro価格・プライバシー／サポートページを確認する</a></p></header><main>
+<div class="notice"><strong>画像の見方</strong><br>iPhone・iPadの掲載案はRelease Simulatorで撮った現行アプリ画面を使い、見出し・背景・枠を追加したものです。アプリUIを描き直していません。下の「実画面」リンクからiPadの未加工キャプチャを確認できます。Apple Watch画像はSimulator例で、実機でのペアリング確認を意味しません。いずれも公開・App Store提出はしていません。</div>
+{"".join(sections)}</main></body></html>""",
+        encoding="utf-8",
+    )
+
+
 def locale_section(locale: str, data: dict[str, str], iap_description: str) -> str:
     ja = locale == "ja"
     labels = (
@@ -157,6 +229,21 @@ def main() -> None:
         for locale in ("ja", "en")
         for index, (basename, _) in enumerate(IPAD_SCREENSHOTS, 1)
     )
+    required.extend(
+        ASSET_ROOT / f"{IPHONE_CAPTURE_DIR}/iphone-{basename.split('-', 1)[1]}-{locale}.jpg"
+        for locale in ("ja", "en")
+        for basename, _ in SCREENSHOTS
+    )
+    required.extend(
+        ASSET_ROOT / f"{WATCH_CAPTURE_DIR}/watch-{key}-{locale}.jpg"
+        for locale in ("ja", "en")
+        for key in ("counter", "cycle-time", "production-progress")
+    )
+    required.extend(
+        ASSET_ROOT / f"{CARD_CAPTURE_DIR}/iphone-counter-size-{size}-{locale}.jpg"
+        for locale in ("ja", "en")
+        for size in ("small", "medium", "large")
+    )
     required.append(ROOT / "FactoryTools/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png")
     required.extend(
         [
@@ -211,6 +298,7 @@ h3{{font-size:19px;margin:28px 0 12px}}.screens{{display:flex;gap:14px;overflow-
 <footer>Factory Tools private review artifact · Metadata sourced from APP_STORE_METADATA_DRAFT.md · Promotional images use genuine app captures; no generated app UI.</footer>
 </body></html>"""
     OUTPUT.write_text(page, encoding="utf-8")
+    build_gallery()
     print("Wrote private App Store listing review page")
 
 
