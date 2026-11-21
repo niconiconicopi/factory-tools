@@ -184,6 +184,7 @@ final class ProPurchaseManagerTests: XCTestCase {
 
         let transaction = try await session.buyProduct(identifier: Self.productID, options: [])
         XCTAssertEqual(transaction.productID, Self.productID)
+        await transaction.finish()
         await manager.refresh()
         XCTAssertTrue(manager.hasPro, "Purchase result: \(manager.statusMessageKey ?? "none")")
 
