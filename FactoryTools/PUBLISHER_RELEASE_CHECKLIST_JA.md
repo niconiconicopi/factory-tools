@@ -9,6 +9,16 @@ Apple Developer Program登録完了の報告を受け、Team IDを受領してXc
 - [ ] App Store Connectで最初のアプリ記録を作る前に、個人登録では法的氏名がApp Storeの販売元／開発者名として公開され、ペンネームにできず、初回登録後は変更できないことを確認する。[Appleの開発者名の説明](https://developer.apple.com/help/app-store-connect/create-an-app-record/set-your-developer-name/)
 - サポート／プライバシーページでは「Factory Tools」をブランド名として使えますが、それによってApp Storeの販売元名が非公開になるわけではありません。ページ上の運営者情報は別途公開前に確認します。
 
+### App Store Connectで最初のアプリ記録を作るとき
+
+1. [App Store Connect](https://appstoreconnect.apple.com/) の「App」から「＋」→「新規App」を選ぶ。
+2. プラットフォームは **iOS** を選ぶ（iPadとWatchのコンパニオンを含む）。
+3. 基本言語 **English**、アプリ名 **Factory Tools**、Bundle ID **`com.niconiconicopi.factorytools`** を選ぶ。日本語名 **現場ギア** はアプリ記録作成後に日本語ローカライズとして追加する。
+4. SKU **`FACTORYTOOLS-IOS-001`** を使う前に、App Store Connectアカウント内で未使用と確認する。SKUは作成後に変更できない。
+5. 個人登録者の販売元名は法的氏名となり、アプリ記録作成後に変更できない。Apple画面で本人が確認してから作成する。法的氏名をこのチャットやリポジトリへ入力しない。
+
+Appleの現行手順では、ビルドをアップロードする前にアプリ記録が必要です。個人登録の開発者名は法的氏名で、後から変更できません。[アプリ記録を追加する](https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app) · [開発者名を設定する](https://developer.apple.com/help/app-store-connect/create-an-app-record/set-your-developer-name/)
+
 ## 配布前の公開者確認
 
 - [ ] サポートメールを公開後も確認できるようにし、日本語・英語の返信体制を整える。テストメールの受信は確認済みです。
@@ -18,8 +28,8 @@ Apple Developer Program登録完了の報告を受け、Team IDを受領してXc
 - [x] 無料のGitHub Pagesを公開先として選択（2026-11-20）。発行者名などの原稿を確定し、公開前にページ内容を確認する。
 - [ ] GitHub Pagesを有効にしてプライバシー／サポートページを公開し、安定したHTTPS URLへのアクセスを確認する。
 - [ ] EUを含む全地域で配信する方針に沿って、AppleのDSA販売者／非販売者の説明を読み、自分の活動実態から申告内容を判断する。現時点での本人の説明は「趣味として運営する」ですが、Proの買い切り販売（日本価格¥980）もAppleが挙げる判断要素の一つです。この回答だけで非販売者と確定せず、実際の販売・宣伝・事業との関係を踏まえ、App Store Connectで公開前に自己判断してください。個人登録や価格だけでこちらが法的区分を決めることはできません。販売者として申告する場合、Appleが求めるEU向け連絡先の表示・確認条件を先に確認してください。
-- [x] リポジトリコミット `082a087` のApple CIが通過。ネイティブ run `44892068709` でiPhone/iPadテスト、iPhone 14枚＋iPad 4枚の画面撮影、S/M/L証拠6枚、画像最終ゲートが成功。Watch/archive run `44892068626` でWatch/Coreテスト・日英撮影2枚・署名なしiOS/iPadアーカイブが成功。StoreKit local run `44888208995` では商品読込・Pro解除・模擬取引消去後の再ロックも成功。これらは実機・署名済みApp Store購入の確認ではありません。
-- [ ] iPhone/iPad/Watchの画像候補、ストア文面、Pro価格、プライバシー／サポートページを本人が公開前に確認する。実アプリ直接撮影の原本（Simulator例示データ使用）はiPhone/iPadが `FactoryTools-AppStore-Assets-Review-2026-11-21/latest-run-44892068709/`、Watchが `.../latest-run-44892068626/factory-tools-app-store-watch-home/`。iPhone/iPad用の見出し付きレイアウト案18枚は、非公開の `FactoryTools-AppStore-Assets-Review-2026-11-21/store-artwork-draft/rendered/review-gallery.html` で確認できます。画面素材は実アプリのキャプチャですが、見出し・背景・枠を加え、収まりに合わせて縮小・一部トリミングしています。架空UIは使っていません。iPad版にはSimulatorの試験接続状態（「接続しました」を含む）が表示されるため、実機でiPhoneとのペアリングを確認し、実際の状態に合った画像を選ぶまで提出候補にしません。どの画像も未承認・未提出です。プライバシー／サポートページは、発行者名と2026-11-21の候補日を入れた非公開・noindexの確認用HTMLを `FactoryTools-AppStore-Assets-Review-2026-11-21/Pages-preview/` に準備済み。まだページは公開していません。
+- [x] リポジトリコミット `f85aa07` のApple CIが通過。ネイティブ run `44895497260` でiPhone/iPadテスト、iPhone 14枚＋iPad 4枚の画面撮影、S/M/L証拠6枚、画像最終ゲートが成功。Watch/archive run `44895497362` でWatch/Coreテスト・日英撮影2枚・署名なしiOS/iPadアーカイブが成功。StoreKit local run `44888208995` では商品読込・Pro解除・模擬取引消去後の再ロックも成功。これらは実機・署名済みApp Store購入の確認ではありません。
+- [ ] iPhone/iPad/Watchの画像候補、ストア文面、Pro価格、プライバシー／サポートページを本人が公開前に確認する。実アプリ直接撮影の原本（Simulator例示データ使用）はiPhone/iPadが `FactoryTools-AppStore-Assets-Review-2026-11-21/latest-run-44895497260/`、Watchが `.../latest-run-44895497362/factory-tools-app-store-watch-home/`。新しいiPhone用見出し付き案14枚（日英各7枚）は非公開の `FactoryTools-AppStore-Assets-Review-2026-11-21/store-artwork-redesign-v1/contact-sheet.jpg` で一覧できます。背景・見出し・端末枠を加え、実画面の一部を拡大するためにトリミングしています。画面内の画素は改変せず、架空UIも使っていません。以前の18枚案は旧デザインとして提出対象から外します。iPad版にはSimulatorの試験接続状態（「接続しました」を含む）が表示されるため、実機でiPhoneとのペアリングを確認し、実際の状態に合った画像を選ぶまで提出候補にしません。どの画像も未承認・未提出です。プライバシー／サポートページは、発行者名と2026-11-21の候補日を入れた非公開・noindexの確認用HTMLを `FactoryTools-AppStore-Assets-Review-2026-11-21/Pages-preview/` に準備済み。まだページは公開していません。
 
 ## 登録後にまず確認
 
