@@ -373,6 +373,13 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "archive verifies required elapsed-time privacy reason": '"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])',
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
+    docs_only_exclusion = (
+        'paths-ignore:\n      - "**.md"\n'
+        '      - "Scripts/build_store_listing_review.py"\n'
+        '      - "FactoryTools-AppStore-Assets-Review-2026-11-21/**"'
+    )
+    if source.count(docs_only_exclusion) != 4:
+        errors.append("native Apple workflows must skip documentation-only and private listing-preview changes on push and pull request")
     for step_name in (
         "Test iPhone and app-hosted regression suite",
         "Test iPad and app-hosted regression suite",

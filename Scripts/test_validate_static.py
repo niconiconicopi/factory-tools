@@ -69,6 +69,27 @@ class AppleWorkflowContractTests(unittest.TestCase):
 
         self.assertEqual(apple_workflow_contract_errors(workflow), [])
 
+    def test_documentation_only_changes_skip_native_apple_runs(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        contract = (
+            'paths-ignore:\n      - "**.md"\n'
+            '      - "Scripts/build_store_listing_review.py"\n'
+            '      - "FactoryTools-AppStore-Assets-Review-2026-11-21/**"'
+        )
+        workflows = [
+            (root / ".github" / "workflows" / "apple-native-checks.yml").read_text(encoding="utf-8"),
+            (root / ".github" / "workflows" / "apple-watch-archive-checks.yml").read_text(encoding="utf-8"),
+        ]
+        for workflow in workflows:
+            self.assertEqual(workflow.count(contract), 2)
+        combined = "\n".join(workflows)
+        self.assertEqual(apple_workflow_contract_errors(combined), [])
+        missing_one_filter = combined.replace(contract, "", 1)
+        self.assertIn(
+            "native Apple workflows must skip documentation-only and private listing-preview changes on push and pull request",
+            apple_workflow_contract_errors(missing_one_filter),
+        )
+
     def test_native_xctest_steps_are_bounded_to_produce_diagnostics(self) -> None:
         root = Path(__file__).resolve().parents[1]
         workflow_path = root / ".github" / "workflows" / "apple-native-checks.yml"

@@ -2,7 +2,15 @@ name: Apple Watch and archive checks
 
 on:
   pull_request:
+    paths-ignore:
+      - "**.md"
+      - "Scripts/build_store_listing_review.py"
+      - "FactoryTools-AppStore-Assets-Review-2026-11-21/**"
   push:
+    paths-ignore:
+      - "**.md"
+      - "Scripts/build_store_listing_review.py"
+      - "FactoryTools-AppStore-Assets-Review-2026-11-21/**"
   workflow_dispatch:
     inputs:
       enable_private_macos_runner:
