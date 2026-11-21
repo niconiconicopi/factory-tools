@@ -715,6 +715,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"counter-size-large": ("286", "300")', capture_script)
         self.assertIn('"process-capability": ("1.333", "1.067")', capture_script)
         self.assertIn('"en": ("Cp", "Cpk", "Process mean")', capture_script)
+        self.assertIn('"ja": ("Cp", "Cpk", "工程能力", "計算結果")', capture_script)
         self.assertNotIn("pro-purchase", capture_script)
         self.assertIn('if scenario in COUNTER_ROW_SCENARIOS:', capture_script)
         self.assertIn('"--counter-row"', capture_script)

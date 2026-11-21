@@ -65,7 +65,9 @@ SCENARIO_EXPECTED_LABELS = {
     },
     "process-capability": {
         "en": ("Cp", "Cpk", "Process mean"),
-        "ja": ("Cp", "Cpk", "工程平均"),
+        # Hosted Apple Silicon OCR can confuse 工 with エ in 工程平均.
+        # Verify the calculator title and results section alongside the indices instead.
+        "ja": ("Cp", "Cpk", "工程能力", "計算結果"),
     },
 }
 COMMAND_TIMEOUT_SECONDS = 300
