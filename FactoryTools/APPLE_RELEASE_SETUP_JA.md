@@ -2,7 +2,19 @@
 
 迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
 
-**現在の状態（2026-11-21）:** Apple Developer Program登録完了とTeam ID受領を報告済み。Team IDはXcodeプロジェクトへ設定し、GitHub Actionsが自動使用します。App Store Connectは未設定です。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。プライバシー／サポートページは発行者名を含む非公開プレビューを用意済みで、内容確認後に公開します。
+**現在の状態（2026-11-22）:** Apple Developer Program登録完了とTeam ID受領を報告済み。Team IDはXcodeプロジェクトへ設定し、GitHub Actionsが自動使用します。App Store Connectは未設定です。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。プライバシー／サポートページは発行者名を含む非公開プレビューを用意済みで、内容確認後に公開します。ソースの直近commitは `58a2176`、Windowsの110件の回帰テストと静的検査は通過。Apple側の最新iPhone/iPad CI完了状態だけ再確認できていません。
+
+## 次に行う作業：アプリIDを1件登録
+
+Apple Developer Programの登録が済んだので、次はAppleの画面でFactory Tools用の識別子を登録します。これはアプリを公開したり料金を発生させたりする操作ではありません。Bundle ID候補をアカウントで確保するための準備です。
+
+1. [Apple Developerアカウント](https://developer.apple.com/account/)に、Factory ToolsのTeam ID `5NKGZ84ZW3` のチームでサインインします。
+2. **Certificates, Identifiers & Profiles → Identifiers** を開き、左上の **＋** を選びます。
+3. **App IDs** を選んで続け、種類が **App** であることを確認して続けます。
+4. Descriptionに `Factory Tools`、Bundle IDは **Explicit** を選び、`com.niconiconicopi.factorytools` を入力します。
+5. 内容を確認して **Register** を選びます。Explicit App IDではIn-App Purchaseは既定で有効です。Push Notifications、Sign in with Apple、App Groupsなど、このアプリで使わない機能は追加しません。
+
+Appleの公式手順では、明示Bundle IDはXcode側のBundle IDと一致させます。[App ID登録手順](https://developer.apple.com/help/account/identifiers/register-an-app-id/)。もしBundle IDが使用済みで登録できなければ、別のIDを作る前に止めてください。Xcode設定、Watch識別子、提出設定をまとめて同じIDへ変更します。成功したら「App ID登録できた」と知らせてもらえれば、次のApp Store Connect記録作成へ進みます。パスワードや認証コードをチャットに送る必要はありません。
 
 ## 公開にかかるApple登録料
 
@@ -80,7 +92,7 @@ Apple Developer Programには、Xcode Cloudの計算時間が**月25時間分**�
 
 1. `PRODUCT_DECISIONS.md` の確定したFree／Pro境界と、アプリ・ストア説明の一致を確認する。
 2. 料金が発生しない実装・文書・ソース検証を完了し、発行者名義で使うBundle ID、商品ID、公開連絡先、プライバシー／サポートページの内容を準備する。
-3. 追加費用をかけずに、Windows上のソース検証と文書の準備を進める。2026-11-21時点のローカル検証は、Pythonテスト110件、静的構造検査（Swift 69ファイル・XCTestソース289件・日英445文字列）、公開ページ原稿の整合確認が通過しています。作業ルートのソースrevision `c05cb40` では [Apple native run 44912566669](https://github.com/niconiconicopi/factory-tools/actions/runs/44912566669) がiPhone/iPadテスト、日英Release画面14枚、S/M/L画像、スクリーンショット検査を通過し、[Watch/archive run 44912566658](https://github.com/niconiconicopi/factory-tools/actions/runs/44912566658) も共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面6枚とOCR、Watch入り未署名archiveを通過しました。StoreKitの自動テスト [run 44888208995](https://github.com/niconiconicopi/factory-tools/actions/runs/44888208995) は¥980の非消耗型商品を取得し、模擬購入でProを解除、テスト取引を消去して解除が戻るところまで成功しました。これらはSimulator／未署名ビルドとローカルStoreKitテストの証拠であり、実機、表示される購入シート、App Store Connect Sandbox／TestFlightでの署名購入・復元の確認ではありません。掲載用の日英文面と画像案は非公開の `STORE_LISTING_REVIEW_JA.html` で確認できます。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使用しません。
+3. 追加費用をかけずに、Windows上のソース検証と文書の準備を進める。2026-11-22時点のローカル検証は、Pythonテスト110件と静的構造検査（Swift 69ファイル・XCTestソース289件・日英445文字列）が通過しています。`c05cb40` では [Apple native run 44912566669](https://github.com/niconiconicopi/factory-tools/actions/runs/44912566669) がiPhone/iPadテスト、日英Release画面14枚、S/M/L画像、スクリーンショット検査を通過し、[Watch/archive run 44912566658](https://github.com/niconiconicopi/factory-tools/actions/runs/44912566658) も共有Coreテスト、Watch Debug/Releaseビルド、日英Watch画面6枚とOCR、Watch入り未署名archiveを通過しました。さらに `b61c387` の [Apple native run 44916840967](https://github.com/niconiconicopi/factory-tools/actions/runs/44916840967) と [Watch/archive run 44916841101](https://github.com/niconiconicopi/factory-tools/actions/runs/44916841101) はすべて通過。`58a2176` ではApple側の再検証を起動しましたが、iPhone/iPad側の最終状態はまだ照合できていません。StoreKitの自動テスト [run 44929262670](https://github.com/niconiconicopi/factory-tools/actions/runs/44929262670) は模擬買い切り取引によるPro解除と取引消去後の解除取り消しに成功しました。これらはSimulator／未署名ビルドとローカルStoreKitテストの証拠であり、実機、表示される購入シート、App Store Connect Sandbox／TestFlightでの署名購入・復元の確認ではありません。掲載用の日英文面と画像案は非公開の `STORE_LISTING_REVIEW_JA.html` で確認できます。Xcode Cloudは任意であり、初回設定にはMacとXcodeが必要なため使用しません。
 4. Apple Developer Program登録は発行者から完了報告を受けており、Team IDもXcodeプロジェクトへ設定済み。通常はGitHub Actionsへの重複登録は不要です。
 5. Bundle IDの利用可能性を確認してApp Store ConnectにアプリとPro商品を作成し、APIキーと署名設定を行う。商品、価格、Family Sharing、アプリ情報を登録し、EU配信の有無にかかわらずDSA販売者ステータスを申告する。販売者と判断した場合は、EU向け商品ページに表示する連絡先を本人確認し、支払い口座情報も登録する。
 6. 公開したプライバシー／サポートページとHTTPSアドレスを設定し、App Review連絡先を登録する。
