@@ -2,7 +2,7 @@
 
 迷ったときの順番は[公開者向けチェックリスト](PUBLISHER_RELEASE_CHECKLIST_JA.md)にまとめています。
 
-**現在の状態（2026-11-20）:** 発行者からApple Developer Program登録完了の報告あり。Team IDを受領してXcodeプロジェクトの共有設定に追加済み。GitHub Actionsではこの値を自動使用するため、Team ID変数の登録は通常不要です。App Store Connectは未設定。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。
+**現在の状態（2026-11-21）:** Apple Developer Program登録完了とTeam ID受領を報告済み。Team IDはXcodeプロジェクトへ設定し、GitHub Actionsが自動使用します。App Store Connectは未設定です。Free／ProのVersion 1機能境界、日本を基準ストアとすること（JPY ¥980）、Family Sharingオフは決定済み。商品ID候補は `factorytools.pro.lifetime`。プライバシー／サポートページは発行者名を含む非公開プレビューを用意済みで、内容確認後に公開します。
 
 ## 公開にかかるApple登録料
 
@@ -16,7 +16,7 @@ Apple公式はApple Developer Programへの登録をWebとDeveloperアプリの�
 
 Appleの年会費免除は、一定の条件を満たす非営利団体、認定教育機関、政府機関向けです。個人・個人事業主は対象外で、免除申請者は有料アプリ契約に署名しておらず、アプリでデジタル商品・サービスを販売していない必要があります。Factory Tools Proを買い切りアプリ内購入として販売する計画とは両立しないため、このプロジェクトでは免除を見込まず、年会費を必要な公開コストとして扱います。[Appleの年会費免除条件](https://developer.apple.com/help/account/membership/fee-waivers)
 
-発行者は2026-11-18にApple Developer Program登録完了を報告しました。次にTeam IDを確認し、その後App Store Connectの商品設定と署名付き提出を進めます。年会費は年ごとの更新費用であり、Developerアプリから加入した場合は自動更新です。更新を望まない場合は更新日の少なくとも1日前に解約し、支払い済みの年会費は返金されない点に注意してください。[年会費・更新の説明](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
+発行者は2026-11-18にApple Developer Program登録完了を報告し、Team IDも共有済みです。どちらもXcodeプロジェクトへ反映しました。次はApp Store Connectのアプリ／Pro商品設定と署名付き提出の準備です。年会費は年ごとの更新費用であり、Developerアプリから加入した場合は自動更新です。更新を望まない場合は更新日の少なくとも1日前に解約し、支払い済みの年会費は返金されない点に注意してください。[年会費・更新の説明](https://developer.apple.com/help/account/membership/enrolling-in-the-app)
 
 ## 決定済みの登録名義
 
@@ -48,7 +48,7 @@ Appleが示す判断材料は、アプリ内購入などの収益、消費者に
 
 | 項目 | かんたんな説明 | どこで決まるか | 今の状態 |
 |---|---|---|---|
-| Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 個人登録完了の報告あり（2026-11-18）。Team ID確認とApp Store Connect設定が次の作業 |
+| Apple Developer Program | App Storeでアプリを一般公開し、販売するための開発者メンバーシップ | 公開者本人または組織がAppleに登録。Account Holderが契約を管理する | 個人登録完了とTeam ID受領の報告あり（2026-11-18）。Team IDはXcode設定済み。App Store Connect設定が次の作業 |
 | 公開者の登録区分・販売者名 | 個人名または法人等の法的名称のどちらをApp Store販売者として表示するか | 個人登録では本人の法的氏名がApp Storeの販売者名に表示される | 個人登録を選択済み。法的氏名はAppleの登録画面に入力。チャット・公開文面には入力しない |
 | Free／Proの機能境界 | どの機能を無料で使え、どの機能をPro購入で解放するか | Version 1の境界は決定済み。無料は基本ツール・基本不良記録・基本履歴・基本Watch/iPad操作・Industrial Dark。Proは独立した生産進捗、OEE、追加ホーム、詳細分析・専門ツール・高度なWatch機能・将来のProテーマ | 決定済み。公開前にアプリ表示とストア説明の一致を確認 |
 | Bundle ID | iPhoneアプリを識別する固有番号。Watch版も同じ番号をもとに関連付ける | 公開者のWebドメイン等に合わせて決め、XcodeとApp Store Connectに同じ値を登録。アップロード後は変更できない | 暫定候補 `com.niconiconicopi.factorytools` をDebug/Releaseに設定済み。Apple Developerで登録可能かを確認し、初回アップロード前に確定する |
