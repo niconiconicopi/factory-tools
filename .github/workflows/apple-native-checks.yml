@@ -196,7 +196,7 @@ jobs:
             --app "$app_path" \
             --output-dir "$RUNNER_TEMP/FactoryToolsAppStoreiPadScreenshots" \
             --platform ipad \
-            --scenarios ipad-dashboard ipad-offline
+            --scenarios home takt-time
 
       - name: Upload bilingual 13-inch iPad screenshot artifact
         if: always()

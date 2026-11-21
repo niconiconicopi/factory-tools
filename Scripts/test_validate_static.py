@@ -784,7 +784,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn("def ensure_simulator_booted(device_id: str) -> None:", capture_script)
         self.assertIn('["xcrun", "simctl", "boot", device_id]', capture_script)
         self.assertIn("Capture bilingual 13-inch iPad product-page screenshots from Release Simulator build", workflow)
-        self.assertIn("--scenarios ipad-dashboard ipad-offline", workflow)
+        self.assertIn("--scenarios home takt-time", workflow)
         self.assertIn("factory-tools-app-store-ipad-product-page", workflow)
 
     def test_watch_archive_privacy_manifest_check_script_is_valid_python(self) -> None:
