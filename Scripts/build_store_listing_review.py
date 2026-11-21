@@ -26,6 +26,11 @@ SCREENSHOTS = [
     ("06-takt-time", "Takt Time"),
     ("07-process-capability", "Process Capability"),
 ]
+IPAD_SCREENSHOTS = [
+    ("ipad-home", "Home"),
+    ("ipad-takt-time", "Takt Time"),
+]
+IPAD_CAPTURE_DIR = "run-44932996378/ipad"
 
 
 def extract_field(section: str, name: str) -> str:
@@ -76,6 +81,20 @@ def screenshot_strip(locale: str, labels: dict[str, str]) -> str:
     return "\n".join(cards)
 
 
+def ipad_screenshot_strip(locale: str, labels: dict[str, str]) -> str:
+    cards = []
+    for index, (basename, label) in enumerate(IPAD_SCREENSHOTS, 1):
+        path = f"store-artwork-ipad-v1/{index:02d}-{basename}-{locale}.jpg"
+        source = f"{IPAD_CAPTURE_DIR}/{basename}-{locale}.jpg"
+        cards.append(
+            f'<figure><a href="{path}"><img loading="lazy" src="{path}" '
+            f'alt="{esc(labels[label])} · iPad"></a>'
+            f'<figcaption>{esc(labels[label])} · iPad Pro 13-inch · '
+            f'<a href="{source}">{"実画面" if locale == "ja" else "Source capture"}</a></figcaption></figure>'
+        )
+    return "\n".join(cards)
+
+
 def locale_section(locale: str, data: dict[str, str], iap_description: str) -> str:
     ja = locale == "ja"
     labels = (
@@ -112,6 +131,8 @@ def locale_section(locale: str, data: dict[str, str], iap_description: str) -> s
   <div><small>{'公開状態' if ja else 'Status'}</small><strong>{'未公開・要確認' if ja else 'Draft · review required'}</strong></div></div>
   <h3>{'掲載画像案（日英各7枚）' if ja else 'Screenshot sequence (7 images)'}</h3>
   <div class="screens">{screenshot_strip(locale, labels)}</div>
+  <h3>{'iPad掲載候補（日英各2枚）' if ja else 'iPad screenshot candidates (2 images)'}</h3>
+  <div class="screens">{ipad_screenshot_strip(locale, labels)}</div>
   <div class="copy-grid"><article><h3>{'説明文' if ja else 'Description'}</h3><div class="description">{multiline(data['description'])}</div></article>
   <aside><h3>{'検索キーワード案' if ja else 'Keyword draft'}</h3><p class="keywords">{esc(data['keywords'])}</p>
   <h3>{'Pro商品表示名' if ja else 'Pro display name'}</h3><p>Factory Tools Pro</p>
@@ -126,7 +147,23 @@ def main() -> None:
         for locale in ("ja", "en")
         for basename, _ in SCREENSHOTS
     ]
+    required.extend(
+        ASSET_ROOT / f"{IPAD_CAPTURE_DIR}/{basename}-{locale}.jpg"
+        for locale in ("ja", "en")
+        for basename, _ in IPAD_SCREENSHOTS
+    )
+    required.extend(
+        ASSET_ROOT / f"store-artwork-ipad-v1/{index:02d}-{basename}-{locale}.jpg"
+        for locale in ("ja", "en")
+        for index, (basename, _) in enumerate(IPAD_SCREENSHOTS, 1)
+    )
     required.append(ROOT / "FactoryTools/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png")
+    required.extend(
+        [
+            ASSET_ROOT / "Pages-preview/privacy.html",
+            ASSET_ROOT / "Pages-preview/support.html",
+        ]
+    )
     missing = [path for path in required if not path.is_file()]
     if missing:
         names = ", ".join(path.name for path in missing)
@@ -165,8 +202,8 @@ h3{{font-size:19px;margin:28px 0 12px}}.screens{{display:flex;gap:14px;overflow-
 </style></head><body>
 <header><h1>現場ギア／Factory Tools</h1><p>App Store掲載内容の確認用ページ · 公開前ドラフト</p></header>
 <main><div class="notice"><strong>これはApp Store画面の偽装画像ではなく、掲載素材を確認するための非公開ページです。</strong><br>
-実画面を使った画像案と、掲載予定の文章・Pro価格を同時に確認できます。すべて未承認・未公開です。表示値は合成サンプルです。iPhone画像は実アプリのSimulator撮影画面を使い、周囲に見出しとデザインを加えています。iPadの接続画像はSimulator例のため、掲載候補に含めていません。</div>
-<nav class="toolbar"><a href="#ja">日本語の掲載内容</a><a href="#en">English listing</a><a href="../FactoryTools/APP_STORE_METADATA_DRAFT.md">元の掲載文書</a></nav>
+実画面を使った画像案と、掲載予定の文章・Pro価格を同時に確認できます。すべて未承認・未公開です。表示値は合成サンプルです。iPhoneの掲載画像は実アプリのSimulator画面を使い、周囲に見出しとデザインを加えています。iPad画像は13インチiPad Pro Simulatorの実画面です。</div>
+<nav class="toolbar"><a href="#ja">日本語の掲載内容</a><a href="#en">English listing</a><a href="Pages-preview/privacy.html">プライバシーポリシー案</a><a href="Pages-preview/support.html">サポートページ案</a><a href="../FactoryTools/APP_STORE_METADATA_DRAFT.md">元の掲載文書</a></nav>
 {locale_section('ja', ja, ja_iap)}
 {locale_section('en', en, en_iap)}
 <section class="locale"><h2>未確定の公開設定</h2><p>英語を基本言語、日本語を追加言語とする案。配信対象はAppleが許可する全地域。日本のPro価格は¥980、Family Sharingはオフ。日本以外の価格、App Store Connectでのアプリ名・商品ID・URL登録、質問票、署名・実機テストはまだ未完了です。</p>
