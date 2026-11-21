@@ -65,7 +65,7 @@ Unlock Pro tools and advanced features.
 
 **Description**
 
-生産数の記録から、サイクルタイムやOEEの確認まで。現場ギアは、製造現場で使うカウンターと計算ツールをまとめたアプリです。
+生産数の記録やサイクルタイムの計測から、Factory Tools Proで使えるOEE計算まで。現場ギアは、製造現場で使うカウンターと計算ツールをまとめたアプリです。
 
 生産カウンターで数量を記録し、目標への進捗を確認。タクトタイム、サイクルタイム、不良率、箱詰め、単位換算などの計算もすぐに行えます。無料のホームではカードのサイズや並び順を調整できます。追加ホームはFactory Tools Proで利用できます。
 
@@ -105,7 +105,7 @@ manufacturing,production,counter,cycle time,takt time,OEE,defects,packing,conver
 
 **Description**
 
-Record production and review cycle time or OEE with Factory Tools, a practical toolbox for manufacturing work.
+Record production and measure Cycle Time with Factory Tools. Factory Tools Pro also unlocks OEE calculations in this practical manufacturing toolbox.
 
 Log output with the production counter and track progress toward a target. Calculate takt time, cycle time, defect rate, box packing, and unit conversions. Customize card sizes and ordering in your Free home; Factory Tools Pro unlocks additional homes.
 
