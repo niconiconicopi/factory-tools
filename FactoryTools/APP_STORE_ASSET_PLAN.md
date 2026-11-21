@@ -1,8 +1,8 @@
 # App Store screenshot and purchase-review asset plan
 
-**Status: direct bilingual Release Simulator captures passed their capture/OCR gates on 2026-11-21 from repository commit `f85aa07`; designed Store-image layouts are a separate, private review draft.** Native Apple CI run [44895497260](https://github.com/niconiconicopi/factory-tools/actions/runs/44895497260) passed capture and screenshot OCR gates for 14 iPhone images (seven per language), four iPad images (two per language), and six S/M/L layout evidence images. Watch/archive run [44895497362](https://github.com/niconiconicopi/factory-tools/actions/runs/44895497362) passed and produced two Watch images (one per language). Current source captures are under `FactoryTools-AppStore-Assets-Review-2026-11-21/latest-run-44895497260/` and `.../latest-run-44895497362/factory-tools-app-store-watch-home/`. Their dimensions are iPhone 1206 × 2622, iPad 2064 × 2752, and Watch 416 × 496. They are direct JPEG captures of the Release Simulator apps using app-provided in-memory sample fixtures. They remain publisher-review candidates and have not been uploaded to App Store Connect.
+**Status: direct bilingual Release Simulator captures passed their capture/OCR gates on 2026-11-21 from repository commit `f85aa07`; designed Store-image layouts are separate private review drafts.** Native Apple CI run [44895497260](https://github.com/niconiconicopi/factory-tools/actions/runs/44895497260) passed capture and screenshot OCR gates for 14 iPhone images (seven per language), four iPad images (two per language), and six S/M/L layout evidence images. Watch/archive run [44895497362](https://github.com/niconiconicopi/factory-tools/actions/runs/44895497362) passed and produced two Watch counter images (one per language). Those historical artifacts are under `FactoryTools-AppStore-Assets-Review-2026-11-21/latest-run-44895497260/` and `.../latest-run-44895497362/factory-tools-app-store-watch-home/`. A pending local change extends Watch capture to counter, Cycle Time, and Pro Production Progress in both languages; those six additional captures are not evidence until the hosted workflow passes. Source images are direct JPEG captures of the Release Simulator apps using app-provided in-memory sample fixtures. They remain publisher-review candidates and have not been uploaded to App Store Connect.
 
-**Important limitations:** iPad connected/reconnecting states in the images are Simulator fixtures and do not prove an actual paired-device connection. The screenshots are not physical-device validation. Only one Watch screen is currently captured per language (the production counter); Cycle Time and Pro progress screens remain optional candidate additions in the asset plan. Do not imply that those Watch screens are represented by the current image set. The separate App Review screenshot for the real StoreKit purchase panel is not captured; it requires the App Store Connect product and a signed build.
+**Important limitations:** iPad connected/reconnecting states in the images are Simulator fixtures and do not prove an actual paired-device connection. The screenshots are not physical-device validation. The currently passing Watch evidence contains only the production counter; the added Cycle Time and Pro progress captures still require hosted build and OCR verification. Do not imply that these additional screens have already passed. The separate App Review screenshot for the real StoreKit purchase panel is not captured; it requires the App Store Connect product and a signed build.
 
 Capture method: launch the actual Release Simulator app, enter screenshot-only sample-data mode, take the screen directly with `xcrun simctl io screenshot`, then use `sips` only to convert the PNG capture to JPEG. Synthetic values exist only inside the app's screenshot fixture; they are not real production records. The connected/offline iPad state is also a fixture. Do not present it as a physical-device test.
 
@@ -12,7 +12,7 @@ Apple requires at least one iPhone Dynamic Island medium-display screenshot, at 
 
 ## Private designed layout drafts
 
-The first 18-layout treatment in `store-artwork-draft/rendered/review-gallery.html` is superseded and must not be treated as final. A bolder second private treatment is now generated in `FactoryTools-AppStore-Assets-Review-2026-11-21/store-artwork-redesign-v1/`: 14 Japanese/English iPhone layouts (seven per locale) plus `contact-sheet.jpg`. It uses a graphite field, a clear localized benefit headline, a strong orange diagonal, and a restrained calibration scale. Each screen uses a genuine Release Simulator capture, proportionally resized and cropped to enlarge the key app content. App content is not retouched or replaced; only the surrounding design, copy, and frame are added. The layout files are 1206 × 2622 opaque RGB JPEGs. This is a review draft, not approved or uploaded. The iPad layouts remain separate reference-only drafts because their connection state is a Simulator fixture, not proven physical pairing. All sample values are synthetic examples. Apple requires screenshots to represent the app accurately, even when marketing copy is included ([screenshot guideline 2.3.3](https://developer.apple.com/help/app-store/review/guideline-reference/2-3-3-screenshots/)).
+The first 18-layout treatment in `store-artwork-draft/rendered/review-gallery.html` and the earlier `store-artwork-redesign-v1/` treatment are superseded. The current private review treatment is `FactoryTools-AppStore-Assets-Review-2026-11-21/store-artwork-redesign-v2/`: 14 iPhone layouts (seven per language) plus `contact-sheet.jpg` and a reproducible local composition script. It uses a restrained graphite background, short localized benefit headlines, and a large direct Release Simulator capture. Unlike v1, it has no diagonal promotional band, decorative scale, or hardware mockup. The screenshot pixels are not retouched or replaced; the complete capture is proportionally scaled inside a rounded crop with a soft edge shadow. Layouts are opaque RGB JPEGs at 1206 × 2622. This is a private review draft, not approved or uploaded. The iPad layouts remain separate reference-only drafts because their connection state is a Simulator fixture, not proven physical pairing. All sample values are synthetic examples. Apple requires screenshots to represent the app accurately, even when marketing copy is included ([screenshot guideline 2.3.3](https://developer.apple.com/help/app-store/review/guideline-reference/2-3-3-screenshots/)).
 
 ## Listing references reviewed
 
@@ -38,13 +38,13 @@ Keep the displayed feature state and access level accurate. The source captures 
 
 | Order | Capture | Japanese headline (layout draft) | English headline (layout draft) |
 |---:|---|---|---|
-| 1 | Industrial Dark home with Production Counter and target | 数える。目標まで、 / すぐわかる。 | Count production. / See your target. |
-| 2 | Counter interaction showing Quick Add amount entry | まとめて入力。 / 一度に加算。 | Add a batch. / Keep the count moving. |
-| 3 | Cycle Time with sample values | サイクルタイムを / 記録・振り返る。 | Measure Cycle Time. |
-| 4 | Defect Counter and Defect Rate using a separate home-scoped sample session | 生産数と不良数から、 / 不良率を確認。 | Track output and defects. / See the defect rate. |
-| 5 | Basic counter history with sample events | カウント履歴を残す。 / CSVで書き出す。 | Keep a count history. / Export it as CSV. |
-| 6 | Takt Time with sample values | 稼働時間と必要数から、 / タクトを計算。 | Calculate takt time. / Plan from your inputs. |
-| 7 | The real Process Capability (Cp/Cpk) form and calculated result from the app | 規格と工程データから、 / Cp・Cpkを計算。 | Calculate Cp and Cpk. / From process data. |
+| 1 | Industrial Dark home with Production Counter and target | 数える。目標まで、ひと目。 | Count production. / See your target. |
+| 2 | Counter interaction showing Quick Add amount entry | まとめて入力。記録は正確に。 | Add a batch. / Keep the count moving. |
+| 3 | Cycle Time with sample values | 1サイクルずつ、現場で計測。 | Measure each cycle. / Save the result. |
+| 4 | Defect Counter and Defect Rate using a separate home-scoped sample session | 生産数と不良数を、同じ画面で。 | Track output and defects. / See the defect rate. |
+| 5 | Basic counter history with sample events | カウント履歴を残す。CSVで書き出す。 | Keep a count history. / Export it as CSV. |
+| 6 | Takt Time with sample values | 稼働時間と必要数から、タクトを計算。 | Calculate takt time. / Plan from your inputs. |
+| 7 | The real Process Capability (Cp/Cpk) form and calculated result from the app | 規格と工程データから、Cp・Cpkを計算。 | Calculate Cp and Cpk. / From process data. |
 
 ### iPad
 
@@ -57,10 +57,10 @@ Keep the displayed feature state and access level accurate. The source captures 
 
 | Order | Capture | Japanese note (not overlaid) | English note (not overlaid) |
 |---:|---|---|---|
-| 1 | Production Counter with count, target, and primary +1 action | 手元で、生産数をカウント | Count production from your wrist |
-| 2 | Cycle Time stopwatch with a one-unit sample ready to record | サイクルタイムを手元で計測 | Measure Cycle Time from your wrist |
-| 3 | Pro read-only Production Progress card with count, target, and completion | Watchで生産進捗を確認 | Check production progress on Watch |
-| 4 | Pending/offline command state, only if it is visually clear and non-alarming | 接続後に操作を同期 | Commands sync when connected |
+| 1 | Production Counter detail with count, target, and primary +1 action | 手元で、生産数をカウント | Count production from your wrist |
+| 2 | Cycle Time stopwatch with a paused one-unit sample ready to resume | サイクルタイムを手元で計測 | Measure Cycle Time from your wrist |
+| 3 | Pro read-only Production Progress detail with count, target, and completion | Watchで生産進捗を確認 | Check production progress on Watch |
+| — | Pending/offline command state is a future optional capture, only if it is visually clear and non-alarming | 接続後に操作を同期 | Commands sync when connected |
 
 ## Separate App Review purchase screenshot
 

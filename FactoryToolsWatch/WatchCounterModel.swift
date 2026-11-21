@@ -3,6 +3,20 @@ import FactoryToolsCore
 import Foundation
 @preconcurrency import WatchConnectivity
 
+#if targetEnvironment(simulator)
+enum WatchScreenshotDemoScenario: String {
+    case counter
+    case cycleTime = "cycle-time"
+    case productionProgress = "production-progress"
+
+    static func requested(in arguments: [String]) -> Self {
+        allCases.first { arguments.contains("--factorytools-screenshot-watch-\($0.rawValue)") } ?? .counter
+    }
+
+    private static var allCases: [Self] { [.counter, .cycleTime, .productionProgress] }
+}
+#endif
+
 @MainActor
 final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
     @Published private(set) var sessions: [WatchCounterSessionSnapshot] = []
@@ -21,6 +35,7 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
 
     #if targetEnvironment(simulator)
     private(set) var screenshotDemoSessionID: UUID?
+    private(set) var screenshotDemoScenario: WatchScreenshotDemoScenario?
     #endif
 
     private var outbox = CounterCommandOutbox()
@@ -46,9 +61,11 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
 
         #if targetEnvironment(simulator)
         if ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-demo") {
+            let arguments = ProcessInfo.processInfo.arguments
             let homeID = UUID()
             let sessionID = UUID()
             screenshotDemoSessionID = sessionID
+            screenshotDemoScenario = WatchScreenshotDemoScenario.requested(in: arguments)
             sessions = [
                 WatchCounterSessionSnapshot(
                     sessionID: sessionID,
@@ -62,7 +79,28 @@ final class WatchCounterModel: NSObject, ObservableObject, WCSessionDelegate {
                     homeNameIsDefault: true
                 )
             ]
-            displayLanguage = ProcessInfo.processInfo.arguments.contains("--factorytools-screenshot-japanese")
+            cycleTimeHome = WatchCycleTimeHomeSnapshot(
+                homeProfileID: homeID,
+                homeName: "Production",
+                homeNameIsDefault: true
+            )
+            progressCards = [
+                WatchProductionProgressSnapshot(
+                    cardID: UUID(),
+                    sessionID: sessionID,
+                    homeProfileID: homeID,
+                    homeName: "Production",
+                    currentCount: 286,
+                    targetCount: 300,
+                    homeNameIsDefault: true
+                )
+            ]
+            var demoTimer = WatchCycleTimeOutbox()
+            demoTimer.start(homeProfileID: homeID)
+            demoTimer.pause(totalElapsedMilliseconds: 27_800)
+            cycleTimeOutbox = demoTimer
+            cycleTimerRunning = false
+            displayLanguage = arguments.contains("--factorytools-screenshot-japanese")
                 ? .japanese
                 : .english
             isReachable = false

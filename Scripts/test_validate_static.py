@@ -312,12 +312,15 @@ class ScreenshotFailureArtifactTests(unittest.TestCase):
         import capture_watch_screenshots
 
         with tempfile.TemporaryDirectory() as temporary_directory:
-            output_path = Path(temporary_directory) / "watch-home-ja.jpg"
+            output_path = Path(temporary_directory) / "watch-counter-ja.jpg"
             with patch.object(capture_watch_screenshots, "run", side_effect=self.failed_verification_capture), \
                     patch.object(capture_watch_screenshots, "restart_simulator"), \
                     patch.object(capture_watch_screenshots.time, "sleep"):
                 with self.assertRaisesRegex(RuntimeError, "Diagnostic JPEG retained"):
-                    capture_watch_language("simulator", "com.example.FactoryTools.watch", output_path, japanese=True)
+                    capture_watch_language(
+                        "simulator", "com.example.FactoryTools.watch", output_path,
+                        japanese=True, scenario="counter",
+                    )
 
             self.assertTrue(output_path.is_file())
             self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
@@ -834,30 +837,30 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertNotIn("Text(session.currentCount, format: .number)", counter_detail)
         self.assertIn('"simctl", "install", arguments.device_id, str(arguments.app)', capture_script)
         self.assertIn("dimensions != (416, 496)", capture_script)
-        self.assertIn('"watch-home-en.jpg"', capture_script)
-        self.assertIn('"watch-home-ja.jpg"', capture_script)
-        self.assertLess(
-            capture_script.index('"watch-home-ja.jpg": capture_language'),
-            capture_script.index('captures["watch-home-en.jpg"] = capture_language'),
-        )
+        self.assertIn('filename = f"watch-{scenario}-{language}.jpg"', capture_script)
+        self.assertIn('launch_arguments.append(f"--factorytools-screenshot-watch-{scenario}")', capture_script)
+        self.assertIn('scenarios = ("counter", "cycle-time", "production-progress")', capture_script)
+        self.assertIn('for language, japanese in (("ja", True), ("en", False)):', capture_script)
         self.assertIn('print("Installing the Release Watch app.", flush=True)', capture_script)
         self.assertIn('print(f"Capturing {output_path.name}.", flush=True)', capture_script)
         self.assertIn("time.sleep(20)", capture_script)
         self.assertIn("MAX_SCREENSHOT_ATTEMPTS = 3", capture_script)
-        self.assertIn('"swift", str(WATCH_SCREENSHOT_VERIFIER)', capture_script)
-        self.assertIn('str(WATCH_SCREENSHOT_VERIFIER), str(output_path), "286", "300"', capture_script)
+        self.assertIn('"swift",\n                    str(WATCH_SCREENSHOT_VERIFIER)', capture_script)
+        self.assertIn('scenario,\n                    "ja" if japanese else "en",', capture_script)
+        screenshot_capture_index = capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')
         self.assertLess(
-            capture_script.index('"--out", str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
-            capture_script.index('str(WATCH_SCREENSHOT_VERIFIER), str(output_path)', capture_script.index('run(["xcrun", "simctl", "io", device_id, "screenshot"')),
+            capture_script.index('"--out", str(output_path)', screenshot_capture_index),
+            capture_script.index("str(WATCH_SCREENSHOT_VERIFIER)", screenshot_capture_index),
         )
-        self.assertIn('"286", "300"', capture_script)
-        self.assertIn("Counter text was not visible; restarting Watch Simulator.", capture_script)
+        self.assertIn('f"{output_path.name} did not show the expected {scenario} screen after "', capture_script)
+        self.assertIn("Watch {scenario} screen was not visible; restarting Watch Simulator.", capture_script)
         self.assertIn("Diagnostic JPEG retained at {output_path}", capture_script)
-        self.assertIn("Watch screenshot is missing visible counter values", screenshot_verifier)
+        self.assertIn('numericChecks = [("278", 0.20...0.82)]', screenshot_verifier)
+        self.assertIn('case ("production-progress", "ja"): expectedTitle = "生産進捗"', screenshot_verifier)
+        self.assertIn('case ("production-progress", "en"): expectedTitle = "Production Progress"', screenshot_verifier)
         self.assertIn("VNRecognizeTextRequest()", screenshot_verifier)
         self.assertIn("VNImageRequestHandler(url: imageURL).perform([request])", screenshot_verifier)
-        self.assertIn("requiredVerticalRange.contains(item.bounds.midY)", screenshot_verifier)
-        self.assertIn("index == 0 ? 0.40...0.75 : 0.10...0.42", screenshot_verifier)
+        self.assertIn("check.range.contains(item.bounds.midY)", screenshot_verifier)
         self.assertIn("Watch screenshot OCR:", screenshot_verifier)
         self.assertIn('"log", "show", "--last", "2m"', capture_script)
         self.assertNotIn("restart_simulator(arguments.device_id)", capture_script)
@@ -887,7 +890,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do', workflow)
         self.assertIn('entry.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategorySystemBootTime"', workflow)
         self.assertIn('"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])', workflow)
-        self.assertIn("factory-tools-app-store-watch-home", workflow)
+        self.assertIn("factory-tools-app-store-watch-product-page", workflow)
         self.assertRegex(
             workflow,
             r"id: capture_watch_screenshots\n\s+timeout-minutes: 30\n\s+continue-on-error: true",

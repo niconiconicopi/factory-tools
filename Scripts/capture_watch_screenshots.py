@@ -119,15 +119,23 @@ def image_dimensions(image_path: Path) -> tuple[int, int]:
     return dimensions
 
 
-def capture_language(device_id: str, identifier: str, output_path: Path, *, japanese: bool) -> tuple[int, int]:
+def capture_language(
+    device_id: str,
+    identifier: str,
+    output_path: Path,
+    *,
+    japanese: bool,
+    scenario: str,
+) -> tuple[int, int]:
     launch_arguments = ["--factorytools-screenshot-demo"]
     if japanese:
         launch_arguments.append("--factorytools-screenshot-japanese")
+    launch_arguments.append(f"--factorytools-screenshot-watch-{scenario}")
     temporary_png = output_path.with_suffix(".png")
 
     for attempt in range(1, MAX_SCREENSHOT_ATTEMPTS + 1):
         print(
-            f"Launching {'Japanese' if japanese else 'English'} Watch counter detail "
+            f"Launching {'Japanese' if japanese else 'English'} Watch {scenario} screen "
             f"(attempt {attempt}/{MAX_SCREENSHOT_ATTEMPTS}).",
             flush=True,
         )
@@ -142,7 +150,13 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
         ])
         try:
             verification = run(
-                ["swift", str(WATCH_SCREENSHOT_VERIFIER), str(output_path), "286", "300"],
+                [
+                    "swift",
+                    str(WATCH_SCREENSHOT_VERIFIER),
+                    str(output_path),
+                    scenario,
+                    "ja" if japanese else "en",
+                ],
                 capture_output=True,
             )
         except subprocess.CalledProcessError as error:
@@ -150,11 +164,11 @@ def capture_language(device_id: str, identifier: str, output_path: Path, *, japa
             temporary_png.unlink(missing_ok=True)
             if attempt == MAX_SCREENSHOT_ATTEMPTS:
                 raise RuntimeError(
-                    f"{output_path.name} did not show count and target after "
+                    f"{output_path.name} did not show the expected {scenario} screen after "
                     f"{MAX_SCREENSHOT_ATTEMPTS} captures. Diagnostic JPEG retained at {output_path}. {recognized}"
                 ) from error
             output_path.unlink(missing_ok=True)
-            print(f"Counter text was not visible; restarting Watch Simulator. {recognized}", flush=True)
+            print(f"Watch {scenario} screen was not visible; restarting Watch Simulator. {recognized}", flush=True)
             restart_simulator(device_id)
             continue
 
@@ -232,20 +246,24 @@ def main() -> int:
     # hang indefinitely during a second bootstatus after an otherwise successful
     # install. Each launch terminates the prior app process and supplies the
     # requested locale explicitly.
-    captures = {
-        "watch-home-ja.jpg": capture_language(
-            arguments.device_id, identifier, arguments.output_dir / "watch-home-ja.jpg", japanese=True
-        )
-    }
-    captures["watch-home-en.jpg"] = capture_language(
-        arguments.device_id, identifier, arguments.output_dir / "watch-home-en.jpg", japanese=False
-    )
+    captures = {}
+    scenarios = ("counter", "cycle-time", "production-progress")
+    for scenario in scenarios:
+        for language, japanese in (("ja", True), ("en", False)):
+            filename = f"watch-{scenario}-{language}.jpg"
+            captures[filename] = capture_language(
+                arguments.device_id,
+                identifier,
+                arguments.output_dir / filename,
+                japanese=japanese,
+                scenario=scenario,
+            )
     print_screenshot_diagnostics(arguments.device_id)
     metadata = [
         "Factory Tools App Store Apple Watch screenshot capture",
         f"Simulator: {device}",
         f"Bundle ID: {identifier}",
-        "Build configuration: Release Watch Simulator; counter data is in-memory and simulator-only.",
+        "Build configuration: Release Watch Simulator; all values are in-memory and simulator-only.",
     ]
     for filename, (width, height) in captures.items():
         metadata.append(f"{filename}: {width}×{height} JPEG")

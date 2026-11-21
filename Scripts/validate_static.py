@@ -2082,6 +2082,8 @@ def main() -> int:
     counter_outbox_source = counter_outbox_path.read_text(encoding="utf-8") if counter_outbox_path.is_file() else ""
     watch_model_path = ROOT / "FactoryToolsWatch" / "WatchCounterModel.swift"
     watch_model_source = watch_model_path.read_text(encoding="utf-8") if watch_model_path.is_file() else ""
+    watch_app_path = ROOT / "FactoryToolsWatch" / "FactoryToolsWatchApp.swift"
+    watch_app_source = watch_app_path.read_text(encoding="utf-8") if watch_app_path.is_file() else ""
     watch_view_path = ROOT / "FactoryToolsWatch" / "WatchHomeView.swift"
     watch_view_source = watch_view_path.read_text(encoding="utf-8") if watch_view_path.is_file() else ""
     watch_processor_path = ROOT / "FactoryTools" / "Services" / "WatchCommandProcessor.swift"
@@ -2109,6 +2111,15 @@ def main() -> int:
             and "processor.peerCatalog(isPro: true).progressCards.isEmpty" in watch_progress_test_body
             and "card.showsOnWatch = false" in watch_progress_test_body,
             "Watch Production Progress must be a read-only, Pro-gated card with explicit visibility and compatibility coverage")
+    require("enum WatchScreenshotDemoScenario: String" in watch_model_source
+            and 'case cycleTime = "cycle-time"' in watch_model_source
+            and 'case productionProgress = "production-progress"' in watch_model_source
+            and 'demoTimer.pause(totalElapsedMilliseconds: 27_800)' in watch_model_source
+            and "case .cycleTime:" in watch_app_source
+            and "WatchCycleTimeDetailView(home: home)" in watch_app_source
+            and "case .productionProgress:" in watch_app_source
+            and "WatchProductionProgressDetailView(progress: progress)" in watch_app_source,
+            "Watch Release screenshot scenarios must open the real counter, Cycle Time, and Pro progress views with isolated sample state")
     other_swift = "\n".join(
         path.read_text(encoding="utf-8")
         for path in source_files

@@ -181,7 +181,7 @@ struct WatchHomeView: View {
     }
 }
 
-private struct WatchProductionProgressDetailView: View {
+struct WatchProductionProgressDetailView: View {
     @Environment(\.locale) private var locale
     let progress: WatchProductionProgressSnapshot
 
@@ -248,7 +248,7 @@ private func watchHomeNameText(_ name: String, isDefault: Bool?) -> Text {
     isDefault == true ? Text("home.defaultName") : Text(verbatim: name)
 }
 
-private struct WatchCycleTimeDetailView: View {
+struct WatchCycleTimeDetailView: View {
     @EnvironmentObject private var model: WatchCounterModel
     @State private var showingResetConfirmation = false
     let home: WatchCycleTimeHomeSnapshot

@@ -16,8 +16,23 @@ struct FactoryToolsWatchApp: App {
         WindowGroup {
             #if targetEnvironment(simulator)
             if let sessionID = model.screenshotDemoSessionID {
-                NavigationStack {
-                    WatchCounterDetailView(sessionID: sessionID)
+                Group {
+                    switch model.screenshotDemoScenario {
+                    case .cycleTime:
+                        if let home = model.cycleTimeHome {
+                            NavigationStack { WatchCycleTimeDetailView(home: home) }
+                        } else {
+                            WatchHomeView()
+                        }
+                    case .productionProgress:
+                        if let progress = model.progressCards.first {
+                            NavigationStack { WatchProductionProgressDetailView(progress: progress) }
+                        } else {
+                            WatchHomeView()
+                        }
+                    case .counter, .none:
+                        NavigationStack { WatchCounterDetailView(sessionID: sessionID) }
+                    }
                 }
                 .environmentObject(model)
                 .environment(\.locale, displayLocale)
