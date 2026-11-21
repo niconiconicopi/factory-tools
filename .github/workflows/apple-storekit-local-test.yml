@@ -52,7 +52,9 @@ jobs:
                   continue
               version = (int(match.group(1)), int(match.group(2)))
               candidates.extend((version, device["udid"]) for device in devices if device["isAvailable"] and device["name"].startswith("iPhone"))
-          print(max(candidates)[1] if candidates else "")
+          preferred = [candidate for candidate in candidates if candidate[0] == (26, 2)]
+          selected = max(preferred or candidates) if candidates else None
+          print(selected[1] if selected else "")
           ')"
           if [[ -z "$simulator_id" ]]; then
             echo "No available iPhone Simulator device was found." >&2
