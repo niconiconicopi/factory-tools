@@ -66,6 +66,7 @@ struct ProcessCapabilityView: View {
             .scrollContentBackground(.hidden)
             .background(theme.background)
             .navigationTitle("tool.processCapability.title")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("common.done") { dismiss() }
