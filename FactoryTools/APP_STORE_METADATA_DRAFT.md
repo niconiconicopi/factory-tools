@@ -19,7 +19,7 @@ Apple requires an App Store support link with current contact information so cus
 | Support URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/support.html`; publish and verify contact details before submission |
 | Privacy Policy URL | Candidate configured: `https://niconiconicopi.github.io/factory-tools/privacy.html`; publish and verify before submission |
 | Promotional text | Leave blank for first submission |
-| Screenshots and previews | Genuine Release Simulator source captures plus 14 private Japanese/English iPhone layout drafts are prepared; all require publisher review, and none has been uploaded. The earlier iPad connection-state fixtures are reference-only and must not be uploaded. The native capture workflow now produces bilingual iPad home and Takt Time screens without implying a paired-device connection; review those fresh captures before selecting iPad submission images |
+| Screenshots and previews | Genuine Release Simulator source captures plus 14 private Japanese/English iPhone layout drafts are prepared; all require publisher review, and none has been uploaded. The earlier iPad connection-state fixtures are reference-only and must not be uploaded. The native capture workflow is now configured to capture bilingual iPad home and Takt Time screens without implying a paired-device connection; inspect the fresh captures after that workflow completes before selecting iPad submission images |
 | In-app purchase | One non-consumable Factory Tools Pro purchase; offer in all currently available territories where permitted; Japan base price is ¥980, then review generated local prices |
 | Family Sharing | Disabled for Version 1; verify the setting is off in App Store Connect |
 
