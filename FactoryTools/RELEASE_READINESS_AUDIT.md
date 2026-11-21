@@ -1,7 +1,16 @@
 # Factory Tools Release Readiness Audit
 
-Audit date: 2026-11-20
+Audit date: 2026-11-21
 Purpose: track evidence for the first public iPhone, Apple Watch, and iPad release. A source-level pass is not evidence of a successful Apple-platform build or App Review approval.
+
+## Latest verification update (2026-11-21)
+
+- The latest source revision is `6f97638` (`Update quality tool search expectations`). On that revision, the Watch/Core workflow [44838374812](https://github.com/niconiconicopi/factory-tools/actions/runs/44838374812) passed shared Core tests, Watch Simulator Debug and Release builds, bilingual Watch Release screenshots, and an unsigned iPhone/iPad archive. This verifies the new Process Capability source compiles into the shared project and archive; it is not a signed distribution build.
+- The matching iPhone/iPad native workflow [44838374753](https://github.com/niconiconicopi/factory-tools/actions/runs/44838374753) passed source-level checks, but its iPhone and app-hosted XCTest step was still running when checked at 2026-11-21 09:02 JST. iPad XCTest and fresh iPhone/iPad screenshot steps had not started, so no native-suite or updated product-screenshot pass is claimed yet. Continue monitoring this run before deciding whether another source fix is needed.
+- Local checks on 2026-11-21 passed all 108 Python regression tests, Windows release static preflight (69 Swift files, 289 XCTest source cases, 445 bilingual strings), source-hygiene scan, and the five-file bilingual publication-candidate comparison. Static preflight explicitly cannot compile or type-check Swift on this Windows host.
+- The current unaccepted screenshot review folder contains 12 iPhone Release Simulator images and two Watch images. Visual inspection confirms the Japanese iPhone home shows the agreed name `現場ギア`, Industrial Dark styling, and a 286/300 production counter; Cycle Time shows 120 seconds / 4 units and 30 seconds per unit. These are direct captures from the app with synthetic in-memory example data, not generated or composited artwork. The set does not yet contain iPad captures or the new Cp/Cpk screen, and it remains a review candidate, not an approved or uploaded Store set. Await the current native workflow for updated captures.
+- The Tool Registry currently implements 10 tools: seven Free (Production Counter, Cycle Time, Takt Time, Defect Counter, Defect Rate, Box Calculator, Unit Converter) and three Pro (Production Progress, OEE, Process Capability/Cp-Cpk). Detailed defect analysis, downtime, tool life, advanced QC, tolerance calculations, and machining-condition calculations remain future Pro candidates, not current V1 features. This status is now explicit in the [roadmap](ROADMAP.md) and [product decision record](PRODUCT_DECISIONS.md).
+- The private bilingual privacy/support publication candidate passes source-to-HTML consistency checks with the publisher name supplied locally; it remains unpublished and awaiting the publisher's review. GitHub Pages reachability, App Store Connect setup, signed upload, StoreKit sandbox purchase/restore, external paired-device checks, final metadata/image approval, and App Review remain open release gates.
 
 ## Latest verification update (2026-11-20)
 

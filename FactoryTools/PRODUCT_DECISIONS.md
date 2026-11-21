@@ -28,6 +28,8 @@ The publisher approved the Version 1 boundary below on 2026-10-31. The table rec
 
 The table and the Version 1 list below are the approved commercial boundary for the first release. Keep Industrial Dark, the basic Defect Counter and Defect Rate, basic history/export, basic Watch and iPad controls, and the listed basic tools free. Production Progress, OEE, additional homes, detailed analysis, specialist tools, advanced Watch features, and future Pro themes belong to the single Pro purchase.
 
+**Implementation status for the Version 1 build:** the Pro tools currently implemented are Production Progress, OEE, and Process Capability (Cp/Cpk). The other specialist items named in the table (detailed defect analysis, downtime, tool life, advanced QC, tolerance, and machining-condition calculations) describe the approved Pro direction but are not present in the current Version 1 Tool Registry. Treat them as future candidates; do not list them as available features or imply they are already implemented.
+
 ### Confirmed Version 1 boundary
 
 Approved: use the current Registry mapping for the first release, with the following plain-language limits:
