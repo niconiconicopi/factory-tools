@@ -46,7 +46,7 @@ Keep the displayed feature state and access level accurate. The source captures 
 | 4 | Defect Counter and Defect Rate using a separate home-scoped sample session | 生産数と不良数を同時に。 | Track output and defects. / See the defect rate. |
 | 5 | Basic counter history with sample events | カウントの変化を記録。 | Keep a count history. / Export it as CSV. |
 | 6 | Takt Time form and result calculated from net time and demand | 必要数から、タクトを計算。 | Calculate takt time. / Plan from your inputs. |
-| 7 | The real Process Capability (Cp/Cpk) form and calculated result from the app | Cp・Cpkを、現場で計算。 | Calculate Cp and Cpk. / From process data. |
+| 7 | The real Process Capability (Cp/Cpk) form and calculated result from the app; the surrounding headline labels it as a Pro tool | Proツールで、Cp・Cpkを計算。 | Calculate Cp and Cpk with Pro. / From process data. |
 
 ### iPad
 
