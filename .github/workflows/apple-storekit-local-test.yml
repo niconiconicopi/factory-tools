@@ -66,7 +66,7 @@ jobs:
           xcode_log="$RUNNER_TEMP/FactoryTools-StoreKit-xcodebuild.log"
           test_status=0
           set +e
-          xcodebuild test \
+          python3 Scripts/run_bounded_command.py --timeout-seconds 720 -- xcodebuild test \
             -project FactoryTools.xcodeproj \
             -scheme FactoryToolsStoreKit \
             -testPlan FactoryToolsStoreKit \

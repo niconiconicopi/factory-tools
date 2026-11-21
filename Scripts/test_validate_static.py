@@ -146,6 +146,8 @@ run: xcodebuild archive -destination 'generic/platform=iOS' ${{ secrets.SIGNING_
         self.assertIn("xcrun simctl list runtimes", workflow)
         self.assertIn("candidate[0] == (26, 2)", workflow)
         self.assertIn("max(preferred or candidates)", workflow)
+        self.assertIn("python3 Scripts/run_bounded_command.py --timeout-seconds 720 -- xcodebuild test", workflow)
+        self.assertTrue((root / "Scripts" / "run_bounded_command.py").is_file())
 
     def test_dedicated_storekit_test_plan_targets_app_and_local_configuration(self) -> None:
         root = Path(__file__).resolve().parents[1]

@@ -435,6 +435,7 @@ def apple_storekit_workflow_contract_errors(source: str) -> list[str]:
         "iOS 26.2 simulator preferred for the StoreKit runtime comparison": "candidate[0] == (26, 2)",
         "iPhone Simulator fallback when iOS 26.2 is unavailable": "max(preferred or candidates)",
         "focused local StoreKit purchase test": "-only-testing:FactoryToolsTests/ProPurchaseManagerTests/testLocalLifetimePurchaseUnlocksAndClearingTransactionsRevokesPro",
+        "StoreKit test has a bounded diagnostic timeout": "python3 Scripts/run_bounded_command.py --timeout-seconds 720 -- xcodebuild test",
         "simulator signing enabled for StoreKit integration": "CODE_SIGNING_ALLOWED=YES",
         "ad-hoc simulator identity avoids publisher signing account": "CODE_SIGN_IDENTITY=-",
         "failure diagnostics are retained": "factory-tools-storekit-integration-diagnostics",
