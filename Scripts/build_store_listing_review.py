@@ -18,9 +18,9 @@ METADATA = ROOT / "FactoryTools" / "APP_STORE_METADATA_DRAFT.md"
 OUTPUT = ASSET_ROOT / "STORE_LISTING_REVIEW_JA.html"
 GALLERY_OUTPUT = ASSET_ROOT / "STORE_REVIEW_GALLERY_JA.html"
 ART_DIR = "store-artwork-redesign-v5"
-IPHONE_CAPTURE_DIR = "run-44941781304/iphone"
-WATCH_CAPTURE_DIR = "run-44941781248/watch"
-CARD_CAPTURE_DIR = "run-44941781304/card-sizes"
+IPHONE_CAPTURE_DIR = "run-44945378464/iphone"
+WATCH_CAPTURE_DIR = "run-44945378401/watch"
+CARD_CAPTURE_DIR = "run-44945378464/card-sizes"
 SCREENSHOTS = [
     ("01-home", "Home"),
     ("02-counter-quick-add", "Quick Add"),
@@ -34,7 +34,7 @@ IPAD_SCREENSHOTS = [
     ("ipad-home", "Home"),
     ("ipad-takt-time", "Takt Time"),
 ]
-IPAD_CAPTURE_DIR = "run-44941781304/ipad"
+IPAD_CAPTURE_DIR = "run-44945378464/ipad"
 
 
 def extract_field(section: str, name: str) -> str:
