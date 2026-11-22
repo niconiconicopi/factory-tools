@@ -47,7 +47,7 @@ class PublicSiteDraftTests(unittest.TestCase):
         self.assertNotIn("[Monitored support email address]", support)
         self.assertIn("Unsent iPad commands remain in the queue for the old code", support)
         for filename in ("index.html", "privacy.html", "support.html"):
-            self.assertIn("現場ギア / Factory Tools", pages[filename])
+            self.assertIn("ラインギア / Factory Tools", pages[filename])
 
     def test_generated_pages_omit_internal_publication_checklists(self) -> None:
         pages = generate_public_site.build_outputs()

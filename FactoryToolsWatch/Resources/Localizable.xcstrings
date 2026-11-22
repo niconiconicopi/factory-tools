@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "ja",
   "strings" : {
-    "watch.title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Factory Tools" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "現場ギア" } } } },
+    "watch.title" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Factory Tools" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "ラインギア" } } } },
     "watch.storageUnavailable" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Saved actions are unavailable" } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "保存済み操作を読み込めません" } } } },
     "watch.storageUnavailable.message" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "Try loading the saved action queue again. Saved data will not be deleted." } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "保存済み操作キューを再読み込みします。再試行しても保存データは削除されません。" } } } },
     "watch.queueFull.message" : { "localizations" : { "en" : { "stringUnit" : { "state" : "translated", "value" : "The offline queue is full. Reconnect to send saved actions before adding more." } }, "ja" : { "stringUnit" : { "state" : "translated", "value" : "オフラインキューが上限です。保存済み操作を送るため接続してください" } } } },

@@ -12,7 +12,7 @@ let expectedTitle = CommandLine.arguments[2]
 let request = VNRecognizeTextRequest()
 request.recognitionLevel = .accurate
 request.usesLanguageCorrection = false
-request.recognitionLanguages = expectedTitle == "現場ギア" ? ["ja-JP"] : ["en-US"]
+request.recognitionLanguages = expectedTitle == "ラインギア" ? ["ja-JP"] : ["en-US"]
 request.customWords = [expectedTitle]
 
 do {

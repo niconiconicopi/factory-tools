@@ -158,9 +158,9 @@ def build_gallery() -> None:
 
     GALLERY_OUTPUT.write_text(
         f"""<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>現場ギア／Factory Tools — ストア画像レビュー</title>
+<meta name="robots" content="noindex,nofollow"><title>ラインギア／Factory Tools — ストア画像レビュー</title>
 <style>:root{{color-scheme:light;--ink:#172125;--muted:#58666b;--accent:#ef711f;--paper:#f3f1ea;--card:#fff}}*{{box-sizing:border-box}}body{{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}}header{{padding:38px max(24px,calc((100% - 1280px)/2));background:#182125;color:white;border-bottom:7px solid var(--accent)}}h1{{margin:0 0 8px;font-size:clamp(28px,4vw,42px)}}header p{{margin:6px 0;color:#d8e0e1}}main{{max-width:1280px;margin:0 auto;padding:24px}}.notice{{padding:18px 20px;background:#fff4df;border-left:5px solid var(--accent);border-radius:8px;margin:18px 0 32px}}section{{margin:40px 0}}h2{{font-size:25px;margin-bottom:14px}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;align-items:start}}figure{{margin:0;padding:10px;background:var(--card);border-radius:12px;box-shadow:0 2px 10px #18212514}}img{{display:block;width:100%;height:auto;border-radius:7px}}figcaption{{padding:8px 2px 2px;font-weight:650;font-size:14px}}.small img{{max-width:260px;margin:auto}}a{{color:#a5480d}}</style></head><body>
-<header><h1>現場ギア／Factory Tools — ストア画像レビュー</h1><p>掲載前の確認用 · すべて未承認・未公開</p><p>日本 ¥980 · Pro買い切り · Family Sharingオフ · 表示値はアプリの合成サンプル</p><p><a style="color:#ffd0a6" href="STORE_LISTING_REVIEW_JA.html">日英の掲載文・Pro価格・プライバシー／サポートページを確認する</a></p></header><main>
+<header><h1>ラインギア／Factory Tools — ストア画像レビュー</h1><p>掲載前の確認用 · すべて未承認・未公開</p><p>日本 ¥980 · Pro買い切り · Family Sharingオフ · 表示値はアプリの合成サンプル</p><p><a style="color:#ffd0a6" href="STORE_LISTING_REVIEW_JA.html">日英の掲載文・Pro価格・プライバシー／サポートページを確認する</a></p></header><main>
 <div class="notice"><strong>画像の見方</strong><br>iPhone・iPadの掲載案はRelease Simulatorで撮った現行アプリ画面を使い、見出し・背景・枠を追加したものです。アプリUIを描き直していません。下の「実画面」リンクからiPadの未加工キャプチャを確認できます。Apple Watch画像はSimulator例で、実機でのペアリング確認を意味しません。いずれも公開・App Store提出はしていません。</div>
 {"".join(sections)}</main></body></html>""",
         encoding="utf-8",
@@ -196,7 +196,7 @@ def locale_section(locale: str, data: dict[str, str], iap_description: str) -> s
 <section class="locale" id="{locale}">
   <div class="locale-head"><div><p class="eyebrow">{locale_code} · {title}</p>
   <h2>{esc(data['name'])}</h2><p class="subtitle">{esc(data['subtitle'])}</p></div>
-  <div class="appmark"><img src="../FactoryTools/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="現場ギア / Factory Tools app icon"></div></div>
+  <div class="appmark"><img src="../FactoryTools/Resources/Assets.xcassets/AppIcon.appiconset/AppIcon.png" alt="ラインギア / Factory Tools app icon"></div></div>
   <div class="facts"><div><small>{'Pro価格（日本）' if ja else 'Japan Pro price'}</small><strong>¥980 · {'買い切り' if ja else 'one-time'}</strong></div>
   <div><small>{'カテゴリ案' if ja else 'Category draft'}</small><strong>{'ビジネス' if ja else 'Business'}</strong></div>
   <div><small>{'ファミリー共有' if ja else 'Family Sharing'}</small><strong>{'オフ' if ja else 'Off'}</strong></div>
@@ -269,7 +269,7 @@ def main() -> None:
     )
     page = f"""<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>現場ギア／Factory Tools — 掲載内容レビュー</title>
+<meta name="robots" content="noindex,nofollow"><title>ラインギア／Factory Tools — 掲載内容レビュー</title>
 <style>
 :root{{color-scheme:light;--ink:#202729;--muted:#657072;--paper:#f2f0e9;--card:#fffefa;--line:#ddd9ce;--orange:#ed6a18;--night:#111719}}
 *{{box-sizing:border-box}}body{{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}}
@@ -287,7 +287,7 @@ h3{{font-size:19px;margin:28px 0 12px}}.screens{{display:flex;gap:14px;overflow-
 .description{{white-space:normal;line-height:1.75}}.keywords{{overflow-wrap:anywhere;color:var(--muted)}}footer{{max-width:1180px;margin:0 auto;padding:0 20px 36px;color:var(--muted);font-size:13px}}
 @media(max-width:700px){{.copy-grid{{grid-template-columns:1fr}}.locale-head{{align-items:flex-start}}.appmark{{width:68px;height:68px}}}}
 </style></head><body>
-<header><h1>現場ギア／Factory Tools</h1><p>App Store掲載内容の確認用ページ · 公開前ドラフト</p></header>
+<header><h1>ラインギア／Factory Tools</h1><p>App Store掲載内容の確認用ページ · 公開前ドラフト</p></header>
 <main><div class="notice"><strong>これはApp Store画面の偽装画像ではなく、掲載素材を確認するための非公開ページです。</strong><br>
 実画面を使った画像案と、掲載予定の文章・Pro価格を同時に確認できます。すべて未承認・未公開です。表示値は合成サンプルです。iPhoneの掲載画像は実アプリのSimulator画面を使い、周囲に見出しとデザインを加えています。iPad画像は13インチiPad Pro Simulatorの実画面です。</div>
 <nav class="toolbar"><a href="#ja">日本語の掲載内容</a><a href="#en">English listing</a><a href="Pages-preview/privacy.html">プライバシーポリシー案</a><a href="Pages-preview/support.html">サポートページ案</a><a href="../FactoryTools/APP_STORE_METADATA_DRAFT.md">元の掲載文書</a></nav>

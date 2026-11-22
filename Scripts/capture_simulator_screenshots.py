@@ -256,7 +256,7 @@ def capture_language(
                 verification_arguments.append("--counter-row")
             verification_commands = [verification_arguments]
             if scenario == "home":
-                expected_app_name = "現場ギア" if japanese else "Factory Tools"
+                expected_app_name = "ラインギア" if japanese else "Factory Tools"
                 verification_commands.append([
                     "swift", str(APP_NAME_SCREENSHOT_VERIFIER), str(output_path), expected_app_name,
                 ])

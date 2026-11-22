@@ -171,18 +171,18 @@ def html_page(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 {indexing}  <meta name="description" content="{escape(title, quote=True)}">
-  <title>{escape(title)} | 現場ギア / Factory Tools</title>
+  <title>{escape(title)} | ラインギア / Factory Tools</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content / 本文へ</a>
-  <header><h1>現場ギア / Factory Tools</h1><nav aria-label="Site navigation"><a href="index.html">Home / ホーム</a><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header>
+  <header><h1>ラインギア / Factory Tools</h1><nav aria-label="Site navigation"><a href="index.html">Home / ホーム</a><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header>
   <main id="main" tabindex="-1">
 {notice}    <h2>{escape(title)}</h2>
     <section lang="ja">{markdown_body(ja)}</section>
     <section lang="en"><h2>English</h2>{markdown_body(en)}</section>
   </main>
-  <footer><a href="{escape(privacy_link, quote=True)}">Privacy / プライバシー</a> · 現場ギア / Factory Tools</footer>
+  <footer><a href="{escape(privacy_link, quote=True)}">Privacy / プライバシー</a> · ラインギア / Factory Tools</footer>
 </body>
 </html>
 """
@@ -338,8 +338,8 @@ def build_outputs(
         draft_banner = '<p class="draft" role="note">Draft site for local review. Complete publisher details and URLs before publishing. / ローカル確認用の下書きサイトです。公開前に発行者情報とURLを確定してください。</p>'
         publication_status = "The pages intentionally carry `noindex` and a visible draft banner. Do not publish before completing all placeholders and the publisher's legal/contact review."
     index = """<!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">{robots_tag}<title>現場ギア / Factory Tools</title><link rel="stylesheet" href="styles.css"></head>
-<body><a class="skip-link" href="#main">Skip to content / 本文へ</a><header><h1>現場ギア / Factory Tools</h1><nav aria-label="Site navigation"><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header><main id="main" tabindex="-1">{draft_banner}<h2>Information / ご案内</h2><p>Read our <a href="privacy.html">privacy policy / プライバシーポリシー</a> or visit <a href="support.html">support / サポート</a>.</p></main></body></html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">{robots_tag}<title>ラインギア / Factory Tools</title><link rel="stylesheet" href="styles.css"></head>
+<body><a class="skip-link" href="#main">Skip to content / 本文へ</a><header><h1>ラインギア / Factory Tools</h1><nav aria-label="Site navigation"><a href="privacy.html">Privacy / プライバシー</a><a href="support.html">Support / サポート</a></nav></header><main id="main" tabindex="-1">{draft_banner}<h2>Information / ご案内</h2><p>Read our <a href="privacy.html">privacy policy / プライバシーポリシー</a> or visit <a href="support.html">support / サポート</a>.</p></main></body></html>
 """
     index = index.format(robots_tag=robots_tag, draft_banner=draft_banner)
     readme = """# Factory Tools public-pages draft

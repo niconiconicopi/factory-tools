@@ -75,6 +75,7 @@ B00000000000000000000072 /* Localizable.xcstrings in Resources */ = {isa = PBXBu
 B00000000000000000000084 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000084 /* Assets.xcassets */; };
 	B00000000000000000000085 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000085 /* PrivacyInfo.xcprivacy */; };
 B00000000000000000000091 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000085 /* PrivacyInfo.xcprivacy */; };
+B00000000000000000000096 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000095 /* InfoPlist.strings */; };
 B00000000000000000000073 /* FactoryToolsCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C00000000000000000000060 /* FactoryToolsCore.framework */; };
 B00000000000000000000074 /* FactoryToolsWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = C00000000000000000000075 /* FactoryToolsWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, );}; };
 B00000000000000000000075 /* CounterPeerMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00000000000000000000076 /* CounterPeerMessage.swift */; };
@@ -183,6 +184,9 @@ C00000000000000000000088 /* FactoryToolsSchema.swift */ = {isa = PBXFileReferenc
 C00000000000000000000089 /* FactoryToolsPro.storekit */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Resources/FactoryToolsPro.storekit; sourceTree = "<group>"; };
 	C00000000000000000000091 /* ProcessCapabilityMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessCapabilityMath.swift; sourceTree = "<group>"; };
 	C00000000000000000000092 /* ProcessCapabilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Tools/ProcessCapabilityView.swift; sourceTree = "<group>"; };
+	C00000000000000000000095 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (C00000000000000000000096 /* en */, C00000000000000000000097 /* ja */,); name = InfoPlist.strings; sourceTree = "<group>"; };
+	C00000000000000000000096 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+	C00000000000000000000097 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 	C00000000000000000000090 /* ProPurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProPurchaseManagerTests.swift; sourceTree = "<group>"; };
 C00000000000000000000075 /* FactoryToolsWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FactoryToolsWatch.app; sourceTree = BUILT_PRODUCTS_DIR;};
 C00000000000000000000076 /* CounterPeerMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CounterPeerMessage.swift; sourceTree = "<group>";};
@@ -220,7 +224,7 @@ D10000000000000000000003 /* FactoryToolsTests */ = {isa = PBXGroup; children = (
 	C00000000000000000000047 /* InfoPlist.strings */ = {isa = PBXVariantGroup; children = (C00000000000000000000048 /* en */, C00000000000000000000049 /* ja */,); name = InfoPlist.strings; sourceTree = "<group>"; };
 	D10000000000000000000006 /* FactoryToolsCoreTests */ = {isa = PBXGroup; children = (C00000000000000000000063,); path = FactoryToolsCoreTests; sourceTree = "<group>"; };
 	D10000000000000000000004 /* Products */ = {isa = PBXGroup; children = (C00000000000000000000024, C00000000000000000000025, C00000000000000000000060, C00000000000000000000064, C00000000000000000000075,); name = Products; sourceTree = "<group>"; };
-D10000000000000000000007 /* FactoryToolsWatch */ = {isa = PBXGroup; children = (C00000000000000000000070, C00000000000000000000071, C00000000000000000000072, C00000000000000000000073, C00000000000000000000074, C00000000000000000000084,); path = FactoryToolsWatch; sourceTree = "<group>";};
+D10000000000000000000007 /* FactoryToolsWatch */ = {isa = PBXGroup; children = (C00000000000000000000070, C00000000000000000000071, C00000000000000000000072, C00000000000000000000073, C00000000000000000000074, C00000000000000000000084, C00000000000000000000095,); path = FactoryToolsWatch; sourceTree = "<group>";};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -280,7 +284,7 @@ D40000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActio
 D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000060,); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000008 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000068, B00000000000000000000069, B00000000000000000000070, B00000000000000000000071,); runOnlyForDeploymentPostprocessing = 0;};
-D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084, B00000000000000000000091,); runOnlyForDeploymentPostprocessing = 0;};
+D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084, B00000000000000000000091, B00000000000000000000096,); runOnlyForDeploymentPostprocessing = 0;};
 D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
 /* End PBXSourcesBuildPhase section */
 

@@ -4818,8 +4818,8 @@ def main() -> int:
     require(resource_membership("D40000000000000000000007") == set(),
             "standalone Core tests must not bundle app resources or localization catalogs")
     require(resource_membership("D40000000000000000000009") == {
-                "Localizable.xcstrings", "Assets.xcassets", "PrivacyInfo.xcprivacy"
-            }, "FactoryToolsWatch must bundle its Japanese/English catalog, watchOS AppIcon, and required-reason privacy manifest")
+                "Localizable.xcstrings", "Assets.xcassets", "PrivacyInfo.xcprivacy", "InfoPlist.strings"
+            }, "FactoryToolsWatch must bundle localized app names, its Japanese/English catalog, watchOS AppIcon, and required-reason privacy manifest")
     privacy_manifest_path = ROOT / "FactoryTools" / "PrivacyInfo.xcprivacy"
     try:
         privacy_manifest = plistlib.loads(privacy_manifest_path.read_bytes())
@@ -4974,12 +4974,23 @@ def main() -> int:
         "ja": ROOT / "FactoryTools" / "ja.lproj" / "InfoPlist.strings",
     }
     for language, path in localized_info_files.items():
-        expected_app_name = "Factory Tools" if language == "en" else "現場ギア"
+        expected_app_name = "Factory Tools" if language == "en" else "ラインギア"
         require(path.is_file()
                 and f'CFBundleDisplayName = "{expected_app_name}";' in path.read_text(encoding="utf-8")
                 and f'CFBundleName = "{expected_app_name}";' in path.read_text(encoding="utf-8")
                 and "NSLocalNetworkUsageDescription" in path.read_text(encoding="utf-8"),
                 f"{language} InfoPlist.strings must use the approved localized app name and local-network permission text")
+    watch_localized_names = {
+        "en": ROOT / "FactoryToolsWatch" / "en.lproj" / "InfoPlist.strings",
+        "ja": ROOT / "FactoryToolsWatch" / "ja.lproj" / "InfoPlist.strings",
+    }
+    for language, path in watch_localized_names.items():
+        expected_app_name = "Factory Tools" if language == "en" else "ラインギア"
+        content = path.read_text(encoding="utf-8") if path.is_file() else ""
+        require(path.is_file()
+                and f'CFBundleDisplayName = "{expected_app_name}";' in content
+                and f'CFBundleName = "{expected_app_name}";' in content,
+                f"{language} Watch InfoPlist.strings must use the approved localized app name")
     japanese_network_copy = localized_info_plist_value(
         localized_info_files["ja"].read_text(encoding="utf-8") if localized_info_files["ja"].is_file() else "",
         "NSLocalNetworkUsageDescription",

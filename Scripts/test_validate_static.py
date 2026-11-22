@@ -595,7 +595,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
             self.assertEqual(dimensions, (2064, 2752))
             self.assertTrue(output_path.read_bytes().startswith(b"\xff\xd8"))
         self.assertTrue(any("verify_store_home_title.swift" in command[1] for command in verifier_arguments))
-        self.assertEqual(verifier_arguments[-1][-1], "現場ギア")
+        self.assertEqual(verifier_arguments[-1][-1], "ラインギア")
 
     def test_english_home_capture_requires_factory_tools_app_name(self) -> None:
         import capture_simulator_screenshots
@@ -655,7 +655,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('"cycle-time": ("120", "30")', capture_script)
         self.assertIn('"--language", "ja-JP" if japanese else "en-US"', capture_script)
         self.assertIn('verification_arguments.extend(["--required-label", label])', capture_script)
-        self.assertIn('expected_app_name = "現場ギア" if japanese else "Factory Tools"', capture_script)
+        self.assertIn('expected_app_name = "ラインギア" if japanese else "Factory Tools"', capture_script)
         self.assertIn('str(APP_NAME_SCREENSHOT_VERIFIER)', capture_script)
         self.assertIn('request.customWords = [expectedTitle]', app_name_verifier)
         self.assertIn("!expectedValues.isEmpty || !requiredLabels.isEmpty", home_verifier)
