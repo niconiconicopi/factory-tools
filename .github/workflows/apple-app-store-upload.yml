@@ -41,7 +41,7 @@ jobs:
 
   upload:
     if: inputs.confirm_app_store_connect_upload == true && inputs.confirm_store_content_reviewed == true && github.ref == 'refs/heads/main'
-    runs-on: macos-26
+    runs-on: macos-26-intel
     timeout-minutes: 60
     env:
       FACTORYTOOLS_APP_BUNDLE_ID: ${{ vars.FACTORYTOOLS_APP_BUNDLE_ID }}
