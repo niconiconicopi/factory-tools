@@ -191,7 +191,7 @@ jobs:
           echo "FACTORYTOOLS_ASC_API_KEY_PATH=$key_path" >> "$GITHUB_ENV"
           unset APP_STORE_CONNECT_API_KEY_CONTENTS
 
-      - name: Create archive for App Store distribution signing
+      - name: Create signed App Store archive with automatic signing
         shell: bash
         run: |
           set -euo pipefail
