@@ -208,6 +208,7 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
             CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
             DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
             FACTORYTOOLS_APP_BUNDLE_ID="$FACTORYTOOLS_APP_BUNDLE_ID" \
             FACTORYTOOLS_PRIVACY_POLICY_URL="$FACTORYTOOLS_PRIVACY_POLICY_URL" \
