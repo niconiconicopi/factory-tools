@@ -216,8 +216,21 @@ jobs:
             FACTORYTOOLS_PRO_PRODUCT_ID="$FACTORYTOOLS_PRO_PRODUCT_ID" \
             MARKETING_VERSION="$MARKETING_VERSION" \
             CURRENT_PROJECT_VERSION="$CURRENT_PROJECT_VERSION"
-          app_info="$archive_path/Products/Applications/FactoryTools.app/Info.plist"
-          watch_info="$archive_path/Products/Applications/FactoryTools.app/PlugIns/FactoryToolsWatch.app/Info.plist"
+          app_path="$archive_path/Products/Applications/FactoryTools.app"
+          watch_app_path="$app_path/Watch/FactoryToolsWatch.app"
+          staged_watch_app_path="$app_path/PlugIns/FactoryToolsWatch.app"
+          if [[ ! -d "$watch_app_path" && -d "$staged_watch_app_path" ]]; then
+            mkdir -p "$app_path/Watch"
+            mv "$staged_watch_app_path" "$watch_app_path"
+            rmdir "$app_path/PlugIns" 2>/dev/null || true
+          fi
+          if [[ ! -d "$watch_app_path" || -d "$staged_watch_app_path" ]]; then
+            echo "Expected exactly one embedded Watch app at FactoryTools.app/Watch/FactoryToolsWatch.app." >&2
+            find "$app_path" -maxdepth 5 -name "FactoryToolsWatch.app" -print >&2 || true
+            exit 1
+          fi
+          app_info="$app_path/Info.plist"
+          watch_info="$watch_app_path/Info.plist"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_info")" = "$FACTORYTOOLS_APP_BUNDLE_ID"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$watch_info")" = "$FACTORYTOOLS_APP_BUNDLE_ID.watchkitapp"
           test "$(/usr/libexec/PlistBuddy -c 'Print :FactoryToolsPrivacyPolicyURL' "$app_info")" = "$FACTORYTOOLS_PRIVACY_POLICY_URL"
