@@ -1158,9 +1158,9 @@ def main() -> int:
     ]
     require(
         len(watch_embed_phases) == 1
-        and watch_embed_phases[0].get("dstSubfolderSpec") == "16"
+        and watch_embed_phases[0].get("dstSubfolderSpec") == "13"
         and watch_embed_phases[0].get("dstPath") == "",
-        "Watch companion app must embed in the parent Watch directory for App Store upload",
+        "Xcode must stage the Watch app in PlugIns before archive normalization into Watch for App Store upload",
     )
     target_ids_by_name = {target.get("name"): target_id for target_id, target in native_targets.items()}
 
