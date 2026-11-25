@@ -285,7 +285,7 @@ D40000000000000000000006 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActio
 D40000000000000000000007 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 D40000000000000000000008 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000068, B00000000000000000000069, B00000000000000000000070, B00000000000000000000071,); runOnlyForDeploymentPostprocessing = 0;};
 D40000000000000000000009 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000072, B00000000000000000000084, B00000000000000000000091, B00000000000000000000096,); runOnlyForDeploymentPostprocessing = 0;};
-D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 13; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
+D40000000000000000000010 /* Embed Watch Content */ = {isa = PBXCopyFilesBuildPhase; buildActionMask = 2147483647; dstPath = ""; dstSubfolderSpec = 16; files = (B00000000000000000000074,); name = "Embed Watch Content"; runOnlyForDeploymentPostprocessing = 0;};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
