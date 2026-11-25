@@ -34,5 +34,13 @@ jobs:
             CODE_SIGNING_ALLOWED=NO
           app_path="$archive_path/Products/Applications/FactoryTools.app"
           test -d "$app_path"
-          test -d "$app_path/PlugIns/FactoryToolsWatch.app"
-          echo "Unsigned iOS archive contains the Watch companion at PlugIns/FactoryToolsWatch.app." >> "$GITHUB_STEP_SUMMARY"
+          watch_app_path="$app_path/Watch/FactoryToolsWatch.app"
+          staged_watch_app_path="$app_path/PlugIns/FactoryToolsWatch.app"
+          if [[ ! -d "$watch_app_path" && -d "$staged_watch_app_path" ]]; then
+            mkdir -p "$app_path/Watch"
+            mv "$staged_watch_app_path" "$watch_app_path"
+            rmdir "$app_path/PlugIns" 2>/dev/null || true
+          fi
+          test -d "$watch_app_path"
+          test ! -d "$staged_watch_app_path"
+          echo "Unsigned iOS archive contains the Watch companion at Watch/FactoryToolsWatch.app." >> "$GITHUB_STEP_SUMMARY"
