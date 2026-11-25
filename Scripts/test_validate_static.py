@@ -402,6 +402,17 @@ class AppleUploadWorkflowContractTests(unittest.TestCase):
             errors,
         )
 
+    def test_upload_workflow_uses_unique_build_number_when_input_is_blank(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        workflow = (root / ".github" / "workflows" / "apple-app-store-upload.yml").read_text(encoding="utf-8")
+
+        self.assertIn("description: Optional positive App Store Connect build number.", workflow)
+        self.assertIn("        required: false\n        type: string\n        default: \"\"", workflow)
+        self.assertIn("RUN_NUMBER: ${{ github.run_number }}", workflow)
+        self.assertIn('build_number="${INPUT_BUILD_NUMBER:-$RUN_NUMBER}"', workflow)
+        self.assertIn('[[ ! "$build_number" =~ ^[1-9][0-9]*$ ]]', workflow)
+        self.assertIn('echo "CURRENT_PROJECT_VERSION=$build_number" >> "$GITHUB_ENV"', workflow)
+
     def test_upload_workflow_rejects_automatic_distribution_or_secret_echo(self) -> None:
         source = """name: Upload
 on:
