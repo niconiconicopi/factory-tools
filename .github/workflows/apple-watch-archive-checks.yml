@@ -162,9 +162,19 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
             CODE_SIGNING_ALLOWED=NO
           app_path="$archive_path/Products/Applications/FactoryTools.app"
-          test -d "$app_path"
+          echo "Archive application bundle contents:"
+          find "$archive_path/Products/Applications" -maxdepth 5 \( -name "FactoryTools.app" -o -name "FactoryToolsWatch.app" \) -print
+          if [[ ! -d "$app_path" ]]; then
+            echo "Expected iOS app bundle is missing: $app_path" >&2
+            exit 1
+          fi
           watch_app_path="$app_path/Watch/FactoryToolsWatch.app"
-          test -d "$watch_app_path"
+          if [[ ! -d "$watch_app_path" ]]; then
+            echo "Expected Watch bundle is missing: $watch_app_path" >&2
+            echo "Actual Watch bundle candidates:" >&2
+            find "$app_path" -maxdepth 5 -name "FactoryToolsWatch.app" -print >&2 || true
+            exit 1
+          fi
           for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do
             test -f "$manifest"
             python3 - "$manifest" <<'PY'
