@@ -162,17 +162,21 @@ jobs:
             -derivedDataPath "$RUNNER_TEMP/FactoryToolsArchiveDerivedData" \
             CODE_SIGNING_ALLOWED=NO
           app_path="$archive_path/Products/Applications/FactoryTools.app"
-          echo "Archive application bundle contents:"
-          find "$archive_path/Products/Applications" -maxdepth 5 \( -name "FactoryTools.app" -o -name "FactoryToolsWatch.app" \) -print
           if [[ ! -d "$app_path" ]]; then
             echo "Expected iOS app bundle is missing: $app_path" >&2
             exit 1
           fi
           watch_app_path="$app_path/Watch/FactoryToolsWatch.app"
-          if [[ ! -d "$watch_app_path" ]]; then
-            echo "Expected Watch bundle is missing: $watch_app_path" >&2
-            echo "Actual Watch bundle candidates:" >&2
-            find "$app_path" -maxdepth 5 -name "FactoryToolsWatch.app" -print >&2 || true
+          staged_watch_app_path="$app_path/PlugIns/FactoryToolsWatch.app"
+          if [[ ! -d "$watch_app_path" && -d "$staged_watch_app_path" ]]; then
+            mkdir -p "$app_path/Watch"
+            mv "$staged_watch_app_path" "$watch_app_path"
+            rmdir "$app_path/PlugIns" 2>/dev/null || true
+          fi
+          echo "Archive Watch app bundle contents:"
+          find "$app_path" -maxdepth 5 -name "FactoryToolsWatch.app" -print
+          if [[ ! -d "$watch_app_path" || -d "$staged_watch_app_path" ]]; then
+            echo "Expected exactly one Watch bundle at FactoryTools.app/Watch/FactoryToolsWatch.app." >&2
             exit 1
           fi
           for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do
