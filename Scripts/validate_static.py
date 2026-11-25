@@ -368,7 +368,8 @@ def apple_workflow_contract_errors(source: str) -> list[str]:
         "bilingual S/M/L counter screenshots are included in the required gate": "--scenarios counter-size-small counter-size-medium counter-size-large",
         "S/M/L screenshot artifact is retained for review": "factory-tools-iphone-counter-card-size-evidence",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
-        "archive verifies Watch app in the PlugIns bundle directory": "FactoryTools.app/PlugIns/FactoryToolsWatch.app",
+        "archive stages Watch app from PlugIns": 'staged_watch_app_path="$app_path/PlugIns/FactoryToolsWatch.app"',
+        "archive verifies Watch app in the Watch bundle directory": "Watch/FactoryToolsWatch.app",
         "archive verifies privacy manifests in both app bundles": 'for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do',
         "archive verifies required elapsed-time privacy reason": '"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])',
     }
@@ -418,7 +419,7 @@ def apple_archive_workflow_contract_errors(source: str) -> list[str]:
         "bounded archive job": "timeout-minutes: 30",
         "generic iOS archive": "-destination 'generic/platform=iOS'",
         "code signing disabled": "CODE_SIGNING_ALLOWED=NO",
-        "archive verifies embedded Watch app": "PlugIns/FactoryToolsWatch.app",
+        "archive verifies normalized Watch app": "Watch/FactoryToolsWatch.app",
     }
     errors = [f"missing {label}" for label, text in requirements.items() if text not in source]
     if re.search(r"\bsecrets\.[A-Z0-9_]+\b", source):
