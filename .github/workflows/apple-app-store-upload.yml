@@ -19,10 +19,10 @@ on:
         type: string
         default: "1.0"
       build_number:
-        description: New, unused App Store Connect build number.
-        required: true
+        description: Optional positive App Store Connect build number. Defaults to the unique GitHub Actions run number.
+        required: false
         type: string
-        default: "1"
+        default: ""
 
 permissions:
   contents: read
@@ -52,7 +52,6 @@ jobs:
       ASC_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
       ASC_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
       MARKETING_VERSION: ${{ inputs.marketing_version }}
-      CURRENT_PROJECT_VERSION: ${{ inputs.build_number }}
     steps:
       - name: Check out source
         uses: actions/checkout@v7
@@ -85,6 +84,21 @@ jobs:
 
       - name: Show Apple toolchain
         run: xcodebuild -version
+
+      - name: Resolve unique App Store Connect build number
+        shell: bash
+        env:
+          INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          build_number="${INPUT_BUILD_NUMBER:-$RUN_NUMBER}"
+          if [[ ! "$build_number" =~ ^[1-9][0-9]*$ ]]; then
+            echo "The App Store Connect build number must be a positive integer." >&2
+            exit 1
+          fi
+          echo "CURRENT_PROJECT_VERSION=$build_number" >> "$GITHUB_ENV"
+          echo "Using App Store Connect build number $build_number."
 
       - name: Validate release values and existing public pages
         shell: bash
