@@ -908,7 +908,7 @@ class SimulatorScreenshotWorkflowTests(unittest.TestCase):
         self.assertIn('--device-name "$simulator_name"', workflow)
         self.assertIn("INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp=YES", workflow)
         self.assertIn("Release-watchsimulator/FactoryToolsWatch.app", workflow)
-        self.assertIn("FactoryTools.app/PlugIns/FactoryToolsWatch.app", workflow)
+        self.assertIn('staged_watch_app_path="$app_path/PlugIns/FactoryToolsWatch.app"', workflow)
         self.assertIn('for manifest in "$app_path/PrivacyInfo.xcprivacy" "$watch_app_path/PrivacyInfo.xcprivacy"; do', workflow)
         self.assertIn('entry.get("NSPrivacyAccessedAPIType") == "NSPrivacyAccessedAPICategorySystemBootTime"', workflow)
         self.assertIn('"35F9.1" in entry.get("NSPrivacyAccessedAPITypeReasons", [])', workflow)
